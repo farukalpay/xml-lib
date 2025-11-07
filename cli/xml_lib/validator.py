@@ -35,10 +35,12 @@ class Validator:
         schemas_dir: Path,
         guardrails_dir: Path,
         telemetry: Optional[TelemetrySink] = None,
+        math_policy: MathPolicy = MathPolicy.SANITIZE,
     ):
         self.schemas_dir = schemas_dir
         self.guardrails_dir = guardrails_dir
         self.telemetry = telemetry
+        self.math_policy = math_policy
         self.content_store = ContentStore(Path("store"))
         self.guardrail_engine = GuardrailEngine(guardrails_dir)
 
@@ -72,6 +74,74 @@ class Validator:
         except Exception as e:
             print(f"Warning: Failed to load Schematron schema {filename}: {e}")
             return None
+
+    def _validate_file(self, path: Path) -> None:
+        """Private shim for single-file validation with sanitization support.
+
+        Mirrors the single-file path in validate_project: read bytes → attempt parse
+        → on XMLSyntaxError apply Sanitizer → reparse → run RNG + Schematron + guardrails.
+        """
+        # Read file content
+        content = path.read_bytes()
+
+        # Attempt to parse
+        doc = None
+        try:
+            doc = etree.parse(io.BytesIO(content))
+        except etree.XMLSyntaxError as parse_error:
+            if self.math_policy == MathPolicy.SANITIZE:
+                # Apply sanitizer
+                sanitizer = Sanitizer(Path("out"))
+                sanitize_result = sanitizer.sanitize_for_parse(
+                    path, policy=self.math_policy
+                )
+                if sanitize_result.has_surrogates:
+                    # Reparse from sanitized content
+                    doc = etree.parse(io.BytesIO(sanitize_result.content))
+                else:
+                    raise parse_error
+            else:
+                raise parse_error
+
+        if doc is None:
+            return
+
+        # Create a minimal result for tracking
+        result = ValidationResult(is_valid=True)
+
+        # Calculate checksum
+        checksum = hashlib.sha256(content).hexdigest()
+        result.checksums[str(path)] = checksum
+
+        # Store in content-addressed storage
+        self.content_store.store(content, checksum)
+
+        # Run Relax NG validation
+        self._validate_relaxng(doc, path, result)
+
+        # Run Schematron validation
+        self._validate_schematron(doc, path, result)
+
+        # Guardrails (single file, minimal check)
+        all_ids: Set[str] = set()
+        id_locations: Dict[str, str] = {}
+        self._check_cross_file_ids(doc, path, all_ids, id_locations, result)
+
+        # Validate temporal order
+        self._validate_temporal_order(doc, path, result)
+
+        result.validated_files.append(str(path))
+
+        # Update telemetry if configured
+        if self.telemetry:
+            self.telemetry.log_validation(
+                project=str(path.parent),
+                success=result.is_valid,
+                duration=0.0,
+                file_count=1,
+                error_count=len(result.errors),
+                warning_count=len(result.warnings),
+            )
 
     def validate_project(
         self, project_path: Path, math_policy: MathPolicy = MathPolicy.SANITIZE

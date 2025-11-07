@@ -40,10 +40,15 @@ class GuardrailEngine:
         self.rules: List[GuardrailRule] = []
         self._load_rules()
 
-    def _load_rules(self) -> None:
-        """Load and compile guardrail rules from XML files."""
+    def load_guardrails(self) -> List[GuardrailRule]:
+        """Load and compile guardrail rules from XML files.
+
+        Returns:
+            List of compiled GuardrailRule objects.
+        """
+        rules: List[GuardrailRule] = []
         if not self.guardrails_dir.exists():
-            return
+            return rules
 
         # Load rules from guardrails directory
         for xml_file in self.guardrails_dir.rglob("*.xml"):
@@ -55,10 +60,20 @@ class GuardrailEngine:
                 for guardrail in root.xpath("//guardrail[@id]"):
                     rule = self._parse_guardrail(guardrail, xml_file)
                     if rule:
-                        self.rules.append(rule)
+                        rules.append(rule)
 
             except Exception as e:
                 print(f"Warning: Failed to load guardrail from {xml_file}: {e}")
+
+        return rules
+
+    def _load_guardrails(self) -> List[GuardrailRule]:
+        """Private shim for benchmarking guardrail rule compilation."""
+        return self.load_guardrails()
+
+    def _load_rules(self) -> None:
+        """Load and compile guardrail rules from XML files (legacy internal method)."""
+        self.rules = self.load_guardrails()
 
     def _parse_guardrail(
         self,
