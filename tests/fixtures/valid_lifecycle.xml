@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document id="doc-001" timestamp="2025-01-15T10:00:00Z" checksum="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+  <meta>
+    <title>Valid Lifecycle Test</title>
+    <description>A valid lifecycle document for testing</description>
+    <author>Test Suite</author>
+    <created>2025-01-15T10:00:00Z</created>
+  </meta>
+  <phases>
+    <phase name="begin" timestamp="2025-01-15T10:00:00Z">
+      <use path="lib/begin.xml">Initialize the document</use>
+      <payload>
+        <note>Starting fresh</note>
+      </payload>
+    </phase>
+    <phase name="start" timestamp="2025-01-15T10:05:00Z">
+      <use path="lib/start.xml">Set up engineering constraints</use>
+      <payload>
+        <iterations>3</iterations>
+      </payload>
+    </phase>
+    <phase name="iteration" timestamp="2025-01-15T10:10:00Z">
+      <use path="lib/iteration.xml">Execute cycles</use>
+      <payload>
+        <iteration id="iter-1" cycle="1">Process A</iteration>
+        <iteration id="iter-2" cycle="2">Process B</iteration>
+      </payload>
+    </phase>
+    <phase name="end" timestamp="2025-01-15T10:15:00Z">
+      <use path="lib/end.xml">Finalize</use>
+      <payload>
+        <status>completed</status>
+      </payload>
+    </phase>
+    <phase name="continuum" timestamp="2025-01-15T10:20:00Z">
+      <use path="lib/continuum.xml">Extend to governance</use>
+      <payload>
+        <telemetry>enabled</telemetry>
+      </payload>
+    </phase>
+  </phases>
+  <summary>
+    <status>complete</status>
+    <next-action>Monitor telemetry</next-action>
+  </summary>
+</document>
