@@ -42,23 +42,32 @@ class GuardrailEngine:
 
     def _load_rules(self) -> None:
         """Load and compile guardrail rules from XML files."""
-        if not self.guardrails_dir.exists():
-            return
+        self.rules = self.load_guardrails()
 
-        # Load rules from guardrails directory
+    def load_guardrails(self) -> List[GuardrailRule]:
+        """Return compiled guardrail rules."""
+        compiled_rules: List[GuardrailRule] = []
+        if not self.guardrails_dir.exists():
+            return compiled_rules
+
         for xml_file in self.guardrails_dir.rglob("*.xml"):
             try:
                 doc = etree.parse(str(xml_file))
                 root = doc.getroot()
 
-                # Look for guardrail elements
                 for guardrail in root.xpath("//guardrail[@id]"):
                     rule = self._parse_guardrail(guardrail, xml_file)
                     if rule:
-                        self.rules.append(rule)
+                        compiled_rules.append(rule)
 
             except Exception as e:
                 print(f"Warning: Failed to load guardrail from {xml_file}: {e}")
+
+        return compiled_rules
+
+    def _load_guardrails(self) -> List[GuardrailRule]:
+        """Compatibility shim for benchmark suite."""
+        return self.load_guardrails()
 
     def _parse_guardrail(
         self,
