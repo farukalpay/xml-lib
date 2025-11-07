@@ -218,6 +218,12 @@ class Publisher:
                     output_file.write_bytes(bytes(html))
                     result.files.append(str(output_file))
 
+                except etree.XMLSyntaxError as e:
+                    # Skip files with invalid XML (e.g., mathematical operators in tags)
+                    # These are pre-existing files in lib/engine with special content
+                    print(f"Warning: Skipping {xml_file} - XML parse error: {e}")
+                    continue
+
                 except Exception as e:
                     result.success = False
                     result.error = f"Failed to transform {xml_file}: {e}"
