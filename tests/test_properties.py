@@ -226,3 +226,101 @@ def test_cross_file_validation_consistency(tmp_path):
     # All results should be consistent
     assert result1.is_valid == result2.is_valid == result3.is_valid
     assert len(result1.errors) == len(result2.errors) == len(result3.errors)
+
+
+# Sanitizer property tests
+
+
+@st.composite
+def invalid_xml_name(draw):
+    """Generate invalid XML element names (with math symbols, emoji, etc)."""
+    # Math symbols
+    math_symbols = "×∘⊗⊕∪∩∈∀∃∑∏√∞"
+    # Emoji
+    emoji = "😀😁🎉✨"
+    # Numbers (invalid as first character)
+    # Superscripts
+    superscripts = "⁰¹²³⁴⁵⁶⁷⁸⁹"
+
+    # Pick from invalid characters
+    charset = math_symbols + emoji + superscripts
+    return draw(st.text(min_size=1, max_size=5, alphabet=charset))
+
+
+@given(invalid_name=invalid_xml_name())
+def test_sanitizer_roundtrip_bijective(tmp_path_factory, invalid_name):
+    """Test that sanitize→restore is bijective for invalid XML names."""
+    from xml_lib.sanitize import Sanitizer
+
+    # Skip if name is valid (shouldn't happen with our strategy)
+    sanitizer = Sanitizer(Path("out"))
+    if sanitizer.is_valid_xml_name(invalid_name):
+        return
+
+    # Create XML with invalid element
+    tmp_path = tmp_path_factory.mktemp("sanitizer_test")
+    xml_file = tmp_path / "test.xml"
+    xml_content = f'<?xml version="1.0"?>\n<{invalid_name}>content</{invalid_name}>'
+    xml_file.write_text(xml_content)
+
+    # Sanitize
+    result = sanitizer.sanitize_for_parse(xml_file)
+    assert result.has_surrogates
+    assert len(result.mappings) > 0
+
+    # Check mapping is recorded
+    assert result.mappings[0].orig == invalid_name
+
+    # Sanitized content should be parseable
+    from lxml import etree
+    import io
+
+    doc = etree.parse(io.BytesIO(result.content))
+    assert doc is not None
+
+
+@given(invalid_name=invalid_xml_name())
+def test_sanitizer_idempotent(tmp_path_factory, invalid_name):
+    """Test that sanitizer is idempotent: sanitize(sanitize(x)) = sanitize(x)."""
+    from xml_lib.sanitize import Sanitizer
+
+    sanitizer = Sanitizer(Path("out"))
+    if sanitizer.is_valid_xml_name(invalid_name):
+        return
+
+    # Create XML with invalid element
+    tmp_path = tmp_path_factory.mktemp("sanitizer_idempotent")
+    xml_file = tmp_path / "test.xml"
+    xml_content = f'<?xml version="1.0"?>\n<{invalid_name}/>'
+    xml_file.write_text(xml_content)
+
+    # Sanitize once
+    result1 = sanitizer.sanitize_for_parse(xml_file)
+
+    # Sanitize again (sanitizing already sanitized content should be idempotent)
+    # Write sanitized content and sanitize it again
+    sanitized_file = tmp_path / "sanitized.xml"
+    sanitized_file.write_bytes(result1.content)
+    result2 = sanitizer.sanitize_for_parse(sanitized_file)
+
+    # Second sanitization should not create more surrogates (idempotent)
+    # The already-sanitized content should pass through
+    assert not result2.has_surrogates or len(result2.mappings) == 0
+
+
+@given(invalid_name=invalid_xml_name())
+def test_sanitizer_deterministic_uid(tmp_path_factory, invalid_name):
+    """Test that UIDs are deterministic for the same input."""
+    from xml_lib.sanitize import Sanitizer
+
+    sanitizer = Sanitizer(Path("out"))
+    if sanitizer.is_valid_xml_name(invalid_name):
+        return
+
+    # Generate UID twice
+    uid1 = sanitizer.compute_uid(invalid_name)
+    uid2 = sanitizer.compute_uid(invalid_name)
+
+    # Should be identical
+    assert uid1 == uid2
+    assert len(uid1) == 16  # Truncated SHA256

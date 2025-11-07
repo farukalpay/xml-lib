@@ -6,6 +6,7 @@
   <start>
     <choice>
       <ref name="Document"/>
+      <ref name="SanitizedDocument"/>
       <ref name="Begin"/>
       <ref name="Start"/>
       <ref name="Iteration"/>
@@ -13,6 +14,36 @@
       <ref name="Continuum"/>
     </choice>
   </start>
+
+  <!-- Sanitized document with surrogate elements -->
+  <define name="SanitizedDocument">
+    <element name="document">
+      <attribute name="sanitized">
+        <value>true</value>
+      </attribute>
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="checksum">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="AnyElement"/>
+          <ref name="OpSurrogate"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
 
   <!-- Full document with lifecycle phases -->
   <define name="Document">
@@ -279,6 +310,36 @@
           </attribute>
           <text/>
           <ref name="AnyElement"/>
+          <ref name="OpSurrogate"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <!-- Surrogate element for sanitized mathy XML -->
+  <define name="OpSurrogate">
+    <element name="op">
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <optional>
+        <attribute name="xml:orig">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="xml:uid">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <text/>
+          <ref name="AnyElement"/>
+          <ref name="OpSurrogate"/>
         </choice>
       </zeroOrMore>
     </element>

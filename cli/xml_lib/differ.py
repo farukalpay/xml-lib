@@ -92,6 +92,17 @@ class Differ:
             "guardrails-end": "Guardrail finalization and sign-off",
         }
 
+    def _get_element_name(self, elem: etree._Element) -> str:
+        """Get normalized element name, preferring xml:orig for surrogates."""
+        if (
+            elem.tag == "op"
+            and "{http://www.w3.org/XML/1998/namespace}orig" in elem.attrib
+        ):
+            return elem.get("{http://www.w3.org/XML/1998/namespace}orig")
+        if elem.tag == "op" and "xml:orig" in elem.attrib:
+            return elem.get("xml:orig")
+        return elem.tag
+
     def diff(
         self,
         file1: Path,
@@ -156,50 +167,55 @@ class Differ:
         if elem1 is None and elem2 is None:
             return
         if elem1 is None:
+            name2 = self._get_element_name(elem2)
             explanation = None
             if explain:
-                explanation = f"Element '{elem2.tag}' was added"
-                if elem2.tag in self.semantic_map:
-                    explanation += f" ({self.semantic_map[elem2.tag]})"
+                explanation = f"Element '{name2}' was added"
+                if name2 in self.semantic_map:
+                    explanation += f" ({self.semantic_map[name2]})"
 
             differences.append(
                 Difference(
                     type=DiffType.ADDED,
                     path=path,
-                    new_value=elem2.tag,
+                    new_value=name2,
                     explanation=explanation,
                 )
             )
             return
         if elem2 is None:
+            name1 = self._get_element_name(elem1)
             explanation = None
             if explain:
-                explanation = f"Element '{elem1.tag}' was removed"
-                if elem1.tag in self.semantic_map:
-                    explanation += f" ({self.semantic_map[elem1.tag]})"
+                explanation = f"Element '{name1}' was removed"
+                if name1 in self.semantic_map:
+                    explanation += f" ({self.semantic_map[name1]})"
 
             differences.append(
                 Difference(
                     type=DiffType.REMOVED,
                     path=path,
-                    old_value=elem1.tag,
+                    old_value=name1,
                     explanation=explanation,
                 )
             )
             return
 
-        # Compare tags
-        if elem1.tag != elem2.tag:
+        # Compare tags (using normalized names for surrogates)
+        name1 = self._get_element_name(elem1)
+        name2 = self._get_element_name(elem2)
+
+        if name1 != name2:
             explanation = None
             if explain:
-                explanation = f"Element changed from '{elem1.tag}' to '{elem2.tag}'"
+                explanation = f"Element changed from '{name1}' to '{name2}'"
 
             differences.append(
                 Difference(
                     type=DiffType.MODIFIED,
                     path=path,
-                    old_value=elem1.tag,
-                    new_value=elem2.tag,
+                    old_value=name1,
+                    new_value=name2,
                     explanation=explanation,
                 )
             )

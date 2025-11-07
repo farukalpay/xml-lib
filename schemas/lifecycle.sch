@@ -6,6 +6,16 @@
 
   <ns prefix="xsl" uri="http://www.w3.org/1999/XSL/Transform"/>
 
+  <!-- Surrogate element normalization: treat xml:orig as element name -->
+  <pattern id="surrogate-normalization">
+    <rule context="op[@xml:orig]">
+      <let name="original-name" value="@xml:orig"/>
+      <report test="true()" role="info">
+        Surrogate element '<value-of select="name()"/>' represents '<value-of select="$original-name"/>'
+      </report>
+    </rule>
+  </pattern>
+
   <!-- Cross-file ID uniqueness -->
   <pattern id="unique-ids">
     <rule context="*[@id]">
