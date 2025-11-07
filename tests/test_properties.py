@@ -31,7 +31,13 @@ def xml_timestamp(draw):
 @st.composite
 def xml_document(draw):
     """Generate a valid XML document."""
-    doc_id = draw(st.text(min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("Ll", "Nd"))))
+    doc_id = draw(
+        st.text(
+            min_size=1,
+            max_size=20,
+            alphabet=st.characters(whitelist_categories=("Ll", "Nd")),
+        )
+    )
     title = draw(st.text(min_size=1, max_size=100))
 
     phases = []
@@ -125,8 +131,8 @@ def test_validation_idempotence(tmp_path_factory, doc_data):
 """
     for phase_name, timestamp in phases:
         xml_content += f'    <phase name="{phase_name}" timestamp="{timestamp}">\n'
-        xml_content += f'      <payload>Test {phase_name}</payload>\n'
-        xml_content += f'    </phase>\n'
+        xml_content += f"      <payload>Test {phase_name}</payload>\n"
+        xml_content += f"    </phase>\n"
 
     xml_content += """  </phases>
 </document>
@@ -182,7 +188,8 @@ def test_cross_file_validation_consistency(tmp_path):
     """Test that cross-file validation is consistent."""
     # Create first file
     file1 = tmp_path / "file1.xml"
-    file1.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file1.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document id="doc-1">
   <phases>
     <phase name="begin" id="phase-1">
@@ -190,11 +197,13 @@ def test_cross_file_validation_consistency(tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     # Create second file referencing first
     file2 = tmp_path / "file2.xml"
-    file2.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file2.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document id="doc-2">
   <phases>
     <phase name="begin" ref-begin="phase-1">
@@ -202,7 +211,8 @@ def test_cross_file_validation_consistency(tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     schemas_dir = Path("schemas")
     guardrails_dir = Path("guardrails")

@@ -41,7 +41,8 @@ def test_invalid_amphibians(validator, fixtures_dir):
 
     # Should have errors from the invalid file
     invalid_errors = [
-        e for e in result.errors
+        e
+        for e in result.errors
         if "invalid_amphibians" in e.file or "amphibians" in e.message.lower()
     ]
 
@@ -57,7 +58,8 @@ def test_cross_file_id_uniqueness(validator, tmp_path):
     """Test cross-file ID uniqueness checking."""
     # Create two files with duplicate IDs
     file1 = tmp_path / "file1.xml"
-    file1.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file1.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document id="duplicate-id">
   <phases>
     <phase name="begin">
@@ -65,10 +67,12 @@ def test_cross_file_id_uniqueness(validator, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     file2 = tmp_path / "file2.xml"
-    file2.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file2.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document id="duplicate-id">
   <phases>
     <phase name="begin">
@@ -76,7 +80,8 @@ def test_cross_file_id_uniqueness(validator, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     result = validator.validate_project(tmp_path)
 
@@ -89,7 +94,8 @@ def test_cross_file_id_uniqueness(validator, tmp_path):
 def test_temporal_monotonicity(validator, tmp_path):
     """Test temporal monotonicity validation."""
     xml_file = tmp_path / "temporal.xml"
-    xml_file.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    xml_file.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document>
   <phases>
     <phase name="begin" timestamp="2025-01-15T10:00:00Z">
@@ -100,14 +106,16 @@ def test_temporal_monotonicity(validator, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     result = validator.validate_project(tmp_path)
 
     # Should detect temporal ordering violation
     assert not result.is_valid
     temporal_errors = [
-        e for e in result.errors
+        e
+        for e in result.errors
         if "temporal" in e.rule or "timestamp" in e.message.lower()
     ]
     assert len(temporal_errors) > 0
@@ -116,7 +124,8 @@ def test_temporal_monotonicity(validator, tmp_path):
 def test_checksum_format(validator, tmp_path):
     """Test checksum format validation."""
     xml_file = tmp_path / "checksum.xml"
-    xml_file.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    xml_file.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document checksum="invalid">
   <phases>
     <phase name="begin">
@@ -124,14 +133,14 @@ def test_checksum_format(validator, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     result = validator.validate_project(tmp_path)
 
     # Should detect invalid checksum format
     checksum_errors = [
-        e for e in result.errors + result.warnings
-        if "checksum" in e.message.lower()
+        e for e in result.errors + result.warnings if "checksum" in e.message.lower()
     ]
     assert len(checksum_errors) > 0
 
@@ -167,7 +176,8 @@ def test_deterministic_uuid():
 def test_validation_result_serialization(validator, tmp_path):
     """Test that validation results can be serialized."""
     xml_file = tmp_path / "test.xml"
-    xml_file.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    xml_file.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document>
   <phases>
     <phase name="begin">
@@ -175,7 +185,8 @@ def test_validation_result_serialization(validator, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     result = validator.validate_project(tmp_path)
 
@@ -200,7 +211,8 @@ def test_validation_result_serialization(validator, tmp_path):
 def test_minimum_phase_requirement(validator, tmp_path):
     """Test that documents require at least a 'begin' phase."""
     xml_file = tmp_path / "no_begin.xml"
-    xml_file.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    xml_file.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document>
   <phases>
     <phase name="end">
@@ -208,7 +220,8 @@ def test_minimum_phase_requirement(validator, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     result = validator.validate_project(tmp_path)
 

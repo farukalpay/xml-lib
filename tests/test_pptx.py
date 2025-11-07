@@ -16,7 +16,8 @@ def composer():
 def sample_xml(tmp_path):
     """Create sample XML file."""
     xml_file = tmp_path / "sample.xml"
-    xml_file.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    xml_file.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document timestamp="2025-01-15T10:00:00Z">
   <meta>
     <title>Test Presentation</title>
@@ -41,7 +42,8 @@ def sample_xml(tmp_path):
     <next-action>Monitor progress</next-action>
   </summary>
 </document>
-""")
+"""
+    )
     return xml_file
 
 

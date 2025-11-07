@@ -22,7 +22,8 @@ def sample_project(tmp_path):
 
     # Create a sample XML document
     doc = project / "sample.xml"
-    doc.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    doc.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document>
   <meta>
     <title>Sample Document</title>
@@ -40,7 +41,8 @@ def sample_project(tmp_path):
     <status>complete</status>
   </summary>
 </document>
-""")
+"""
+    )
 
     return project
 

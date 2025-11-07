@@ -17,7 +17,8 @@ def differ():
 def xml_files(tmp_path):
     """Create sample XML files for diffing."""
     file1 = tmp_path / "file1.xml"
-    file1.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file1.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document id="doc-1" timestamp="2025-01-15T10:00:00Z">
   <meta>
     <title>Original Document</title>
@@ -28,10 +29,12 @@ def xml_files(tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     file2 = tmp_path / "file2.xml"
-    file2.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file2.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document id="doc-1" timestamp="2025-01-15T11:00:00Z">
   <meta>
     <title>Modified Document</title>
@@ -45,7 +48,8 @@ def xml_files(tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     return file1, file2
 
@@ -53,7 +57,8 @@ def xml_files(tmp_path):
 def test_diff_identical_files(differ, tmp_path):
     """Test diffing identical files."""
     file1 = tmp_path / "file1.xml"
-    file1.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+    file1.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
 <document>
   <phases>
     <phase name="begin">
@@ -61,7 +66,8 @@ def test_diff_identical_files(differ, tmp_path):
     </phase>
   </phases>
 </document>
-""")
+"""
+    )
 
     file2 = tmp_path / "file2.xml"
     file2.write_text(file1.read_text())
@@ -82,10 +88,7 @@ def test_diff_detects_modifications(differ, xml_files):
     assert len(result.differences) > 0
 
     # Should detect timestamp change
-    timestamp_diffs = [
-        d for d in result.differences
-        if "timestamp" in d.path.lower()
-    ]
+    timestamp_diffs = [d for d in result.differences if "timestamp" in d.path.lower()]
     assert len(timestamp_diffs) > 0
 
 
@@ -111,10 +114,7 @@ def test_diff_with_explanations(differ, xml_files):
     result = differ.diff(file1, file2, explain=True)
 
     # Explanations should be present
-    explained_diffs = [
-        d for d in result.differences
-        if d.explanation is not None
-    ]
+    explained_diffs = [d for d in result.differences if d.explanation is not None]
     assert len(explained_diffs) > 0
 
 

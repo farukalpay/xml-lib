@@ -162,7 +162,9 @@ class Publisher:
 </xsl:stylesheet>
 """
 
-    def publish(self, project_path: Path, output_dir: Path) -> PublishResult:
+    def publish(
+        self, project_path: Path, output_dir: Path, strict: bool = False
+    ) -> PublishResult:
         """Publish XML documents to HTML.
 
         Args:
@@ -221,8 +223,13 @@ class Publisher:
                 except etree.XMLSyntaxError as e:
                     # Skip files with invalid XML (e.g., mathematical operators in tags)
                     # These are pre-existing files in lib/engine with special content
-                    print(f"Warning: Skipping {xml_file} - XML parse error: {e}")
-                    continue
+                    if strict:
+                        result.success = False
+                        result.error = f"XML parse error in {xml_file}: {e}"
+                        break
+                    else:
+                        print(f"Warning: Skipping {xml_file} - XML parse error: {e}")
+                        continue
 
                 except Exception as e:
                     result.success = False

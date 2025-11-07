@@ -103,12 +103,14 @@ def validate(
 @click.option(
     "--xslt-dir", default="schemas/xslt", help="Directory containing XSLT templates"
 )
+@click.option("--strict", is_flag=True, help="Fail fast on XML parse errors")
 @click.pass_context
 def publish(
     ctx: click.Context,
     project_path: str,
     output_dir: str,
     xslt_dir: str,
+    strict: bool,
 ) -> None:
     """Publish XML documents to HTML using XSLT 3.0.
 
@@ -121,7 +123,7 @@ def publish(
         telemetry=ctx.obj.get("telemetry"),
     )
 
-    result = publisher.publish(Path(project_path), Path(output_dir))
+    result = publisher.publish(Path(project_path), Path(output_dir), strict=strict)
 
     if result.success:
         click.echo(f"✅ Published to {output_dir}")

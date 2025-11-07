@@ -4,16 +4,44 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional, Any
 from lxml import etree
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.backends import default_backend
 
 from xml_lib.types import ValidationError
 
 if TYPE_CHECKING:
     from xml_lib.validator import ValidationResult
+
+# Lazy import for cryptography to avoid import-time failures
+CRYPTO_AVAILABLE = False
+_crypto_modules: Optional[dict] = None
+
+
+def _get_crypto():
+    """Lazy load cryptography modules."""
+    global CRYPTO_AVAILABLE, _crypto_modules
+    if _crypto_modules is not None:
+        return _crypto_modules
+
+    try:
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import padding, rsa
+        from cryptography.hazmat.backends import default_backend
+
+        _crypto_modules = {
+            "hashes": hashes,
+            "serialization": serialization,
+            "padding": padding,
+            "rsa": rsa,
+            "default_backend": default_backend,
+        }
+        CRYPTO_AVAILABLE = True
+        return _crypto_modules
+    except Exception:
+        # Catch ImportError or any other exception (e.g., PanicException, cffi issues)
+        _crypto_modules = {}
+        CRYPTO_AVAILABLE = False
+        return _crypto_modules
 
 
 class AssertionLedger:
@@ -22,10 +50,15 @@ class AssertionLedger:
     def __init__(self):
         self.assertions: List["ValidationResult"] = []
         self.private_key = self._generate_key()
-        self.public_key = self.private_key.public_key()
+        self.public_key = self.private_key.public_key() if self.private_key else None
 
-    def _generate_key(self) -> rsa.RSAPrivateKey:
+    def _generate_key(self) -> Optional[Any]:
         """Generate RSA key pair for signing."""
+        crypto = _get_crypto()
+        if not crypto:
+            return None
+        rsa = crypto["rsa"]
+        default_backend = crypto["default_backend"]
         return rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048,
@@ -36,8 +69,13 @@ class AssertionLedger:
         """Add a validation result to the ledger."""
         self.assertions.append(result)
 
-    def _sign_data(self, data: bytes) -> bytes:
+    def _sign_data(self, data: bytes) -> Optional[bytes]:
         """Sign data with private key."""
+        crypto = _get_crypto()
+        if not crypto or not self.private_key:
+            return None
+        padding = crypto["padding"]
+        hashes = crypto["hashes"]
         signature = self.private_key.sign(
             data,
             padding.PSS(
@@ -56,13 +94,19 @@ class AssertionLedger:
         root.set("version", "1.0")
         root.set("timestamp", datetime.now().isoformat())
 
-        # Add public key
-        public_pem = self.public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-        key_elem = etree.SubElement(root, "public-key")
-        key_elem.text = public_pem.decode("utf-8")
+        crypto = _get_crypto()
+        if not crypto:
+            root.set("signed", "false")
+
+        # Add public key if crypto is available
+        if crypto and self.public_key:
+            serialization = crypto["serialization"]
+            public_pem = self.public_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
+            key_elem = etree.SubElement(root, "public-key")
+            key_elem.text = public_pem.decode("utf-8")
 
         # Add assertions
         assertions_elem = etree.SubElement(root, "assertions")
@@ -101,15 +145,17 @@ class AssertionLedger:
                 for warning in result.warnings:
                     self._add_validation_error(warnings_elem, "warning", warning)
 
-        # Sign the assertions
+        # Sign the assertions if crypto is available
         xml_bytes = etree.tostring(assertions_elem, encoding="utf-8")
         checksum = hashlib.sha256(xml_bytes).hexdigest()
-        signature = self._sign_data(xml_bytes)
 
-        sig_elem = etree.SubElement(root, "signature")
-        sig_elem.set("algorithm", "RSA-PSS-SHA256")
-        sig_elem.set("checksum", checksum)
-        sig_elem.text = signature.hex()
+        if crypto:
+            signature = self._sign_data(xml_bytes)
+            if signature:
+                sig_elem = etree.SubElement(root, "signature")
+                sig_elem.set("algorithm", "RSA-PSS-SHA256")
+                sig_elem.set("checksum", checksum)
+                sig_elem.text = signature.hex()
 
         # Write to file
         tree = etree.ElementTree(root)

@@ -44,11 +44,13 @@ diff: ## Show diff between example documents
 lint: ## Lint code with ruff
 	ruff check cli/
 
-format: ## Format code with black
+format: ## Format code with black and fix with ruff
 	black cli/ tests/
+	ruff check cli/ --fix
 
 format-check: ## Check code formatting
 	black --check cli/ tests/
+	ruff check cli/
 
 typecheck: ## Type check with mypy
 	mypy cli/ --ignore-missing-imports
@@ -72,12 +74,14 @@ clean-all: clean ## Clean everything including virtual environments
 	rm -rf venv/ .venv/
 
 benchmark: ## Run performance benchmarks
-	@echo "Running validation benchmark on 1k documents..."
-	@python tests/benchmark.py
+	pytest tests/benchmark/ -v --benchmark-only --benchmark-min-rounds=5
 
-ci: lint typecheck test ## Run all CI checks locally
+benchmark-compare: ## Run benchmarks with comparison
+	pytest tests/benchmark/ -v --benchmark-only --benchmark-autosave
 
-pre-commit: format lint typecheck test ## Run pre-commit checks
+ci: format-check lint typecheck test ## Run all CI checks locally
+
+pre-commit: format lint test ## Run pre-commit checks
 
 # Docker targets
 docker-build: ## Build Docker image
