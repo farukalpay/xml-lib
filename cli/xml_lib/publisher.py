@@ -5,8 +5,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 from lxml import etree
+import tempfile
 
 from xml_lib.telemetry import TelemetrySink
+from xml_lib.sanitize import Sanitizer, MathPolicy
 
 
 @dataclass
@@ -163,19 +165,28 @@ class Publisher:
 """
 
     def publish(
-        self, project_path: Path, output_dir: Path, strict: bool = False
+        self,
+        project_path: Path,
+        output_dir: Path,
+        strict: bool = False,
+        math_policy: MathPolicy = MathPolicy.SANITIZE,
     ) -> PublishResult:
         """Publish XML documents to HTML.
 
         Args:
             project_path: Path to project containing XML files
             output_dir: Output directory for HTML files
+            strict: Fail fast on errors
+            math_policy: Policy for handling mathy XML (default: sanitize)
 
         Returns:
             PublishResult
         """
         start_time = datetime.now()
         result = PublishResult(success=True)
+        sanitizer = (
+            Sanitizer(output_dir) if math_policy == MathPolicy.SANITIZE else None
+        )
 
         try:
             # Check if project path exists
@@ -208,7 +219,58 @@ class Publisher:
             # Transform each file
             for xml_file in xml_files:
                 try:
-                    doc = etree.parse(str(xml_file))
+                    doc = None
+
+                    # Try to parse file, with sanitization if needed
+                    try:
+                        doc = etree.parse(str(xml_file))
+                    except etree.XMLSyntaxError as parse_error:
+                        # Handle based on policy
+                        if math_policy == MathPolicy.ERROR:
+                            raise
+                        elif math_policy == MathPolicy.SKIP:
+                            if strict:
+                                result.success = False
+                                result.error = (
+                                    f"XML parse error in {xml_file}: {parse_error}"
+                                )
+                                break
+                            else:
+                                print(
+                                    f"Warning: Skipping {xml_file} - XML parse error: {parse_error}"
+                                )
+                                continue
+                        elif math_policy == MathPolicy.SANITIZE and sanitizer:
+                            # Try sanitizing
+                            sanitize_result = sanitizer.sanitize_for_parse(xml_file)
+                            if sanitize_result.has_surrogates:
+                                # Write mapping
+                                rel_path = xml_file.relative_to(project_path)
+                                sanitizer.write_mapping(
+                                    rel_path, sanitize_result.mappings
+                                )
+
+                                # Parse sanitized content
+                                with tempfile.NamedTemporaryFile(
+                                    mode="wb", suffix=".xml", delete=False
+                                ) as tmp:
+                                    tmp.write(sanitize_result.content)
+                                    tmp_path = Path(tmp.name)
+
+                                try:
+                                    doc = etree.parse(str(tmp_path))
+                                    print(
+                                        f"Info: Sanitized {xml_file} ({len(sanitize_result.mappings)} surrogates)"
+                                    )
+                                finally:
+                                    tmp_path.unlink()
+                            else:
+                                # Still failed, re-raise
+                                raise parse_error
+
+                    if doc is None:
+                        continue
+
                     html = transform(doc)
 
                     # Generate output filename
@@ -221,9 +283,8 @@ class Publisher:
                     result.files.append(str(output_file))
 
                 except etree.XMLSyntaxError as e:
-                    # Skip files with invalid XML (e.g., mathematical operators in tags)
-                    # These are pre-existing files in lib/engine with special content
-                    if strict:
+                    # Final fallback for XMLSyntaxError
+                    if strict or math_policy == MathPolicy.ERROR:
                         result.success = False
                         result.error = f"XML parse error in {xml_file}: {e}"
                         break

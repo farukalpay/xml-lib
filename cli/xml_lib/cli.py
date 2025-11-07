@@ -10,6 +10,7 @@ from xml_lib.publisher import Publisher
 from xml_lib.pptx_composer import PPTXComposer
 from xml_lib.differ import Differ
 from xml_lib.telemetry import TelemetrySink
+from xml_lib.sanitize import MathPolicy, Sanitizer
 
 
 @click.group()
@@ -104,6 +105,12 @@ def validate(
     "--xslt-dir", default="schemas/xslt", help="Directory containing XSLT templates"
 )
 @click.option("--strict", is_flag=True, help="Fail fast on XML parse errors")
+@click.option(
+    "--math-policy",
+    type=click.Choice(["sanitize", "mathml", "skip", "error"]),
+    default="sanitize",
+    help="Policy for handling mathy XML (default: sanitize)",
+)
 @click.pass_context
 def publish(
     ctx: click.Context,
@@ -111,6 +118,7 @@ def publish(
     output_dir: str,
     xslt_dir: str,
     strict: bool,
+    math_policy: str,
 ) -> None:
     """Publish XML documents to HTML using XSLT 3.0.
 
@@ -123,7 +131,10 @@ def publish(
         telemetry=ctx.obj.get("telemetry"),
     )
 
-    result = publisher.publish(Path(project_path), Path(output_dir), strict=strict)
+    policy = MathPolicy(math_policy)
+    result = publisher.publish(
+        Path(project_path), Path(output_dir), strict=strict, math_policy=policy
+    )
 
     if result.success:
         click.echo(f"✅ Published to {output_dir}")
@@ -200,6 +211,45 @@ def diff(
         click.echo(f"📋 Found {len(result.differences)} differences:")
         for diff in result.differences:
             click.echo(f"\n{diff.format(explain=explain)}")
+        sys.exit(1)
+
+
+@main.command()
+@click.option("--restore", required=True, help="Sanitized XML file to restore")
+@click.option("--mapping", help="Mapping file (auto-detected if not provided)")
+@click.option("--output", "-o", required=True, help="Output file for restored XML")
+@click.pass_context
+def roundtrip(
+    ctx: click.Context,
+    restore: str,
+    mapping: Optional[str],
+    output: str,
+) -> None:
+    """Restore original mathy markup from sanitized XML.
+
+    Reconstructs the original XML with mathematical symbols in element names
+    using the mapping file generated during sanitization.
+    """
+    click.echo(f"🔄 Restoring: {restore}")
+
+    sanitizer = Sanitizer(Path("out"))
+
+    # Auto-detect mapping file if not provided
+    if not mapping:
+        restore_path = Path(restore)
+        mapping_path = Path("out/mappings") / f"{restore_path.name}.mathmap.jsonl"
+        if not mapping_path.exists():
+            click.echo(f"❌ Mapping file not found: {mapping_path}")
+            sys.exit(1)
+    else:
+        mapping_path = Path(mapping)
+
+    try:
+        sanitizer.restore(Path(restore), mapping_path, Path(output))
+        click.echo(f"✅ Restored to {output}")
+        sys.exit(0)
+    except Exception as e:
+        click.echo(f"❌ Restoration failed: {e}")
         sys.exit(1)
 
 
