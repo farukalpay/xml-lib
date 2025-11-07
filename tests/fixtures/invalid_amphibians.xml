@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Invalid: phases out of order, missing timestamps, bad checksum -->
+<document id="amphib-001" checksum="invalid">
+  <meta>
+    <title>Amphibian Dossier</title>
+    <description>Deliberately broken for testing</description>
+  </meta>
+  <phases>
+    <!-- ERROR: 'start' before 'begin' -->
+    <phase name="start" timestamp="2025-01-15T09:00:00Z">
+      <use path="lib/start.xml">Start without begin</use>
+    </phase>
+    <phase name="begin">
+      <!-- ERROR: Missing timestamp -->
+      <use path="lib/begin.xml">Late begin</use>
+    </phase>
+    <!-- ERROR: Duplicate ID -->
+    <phase name="iteration" id="dup-id" timestamp="2025-01-15T09:05:00Z">
+      <use path="lib/iteration.xml">First iteration</use>
+    </phase>
+    <phase name="iteration" id="dup-id" timestamp="2025-01-15T09:10:00Z">
+      <use path="lib/iteration.xml">Duplicate ID iteration</use>
+    </phase>
+    <!-- ERROR: Timestamp goes backwards -->
+    <phase name="end" timestamp="2025-01-15T08:00:00Z">
+      <use path="lib/end.xml">End in the past</use>
+    </phase>
+  </phases>
+  <summary>
+    <status>failed</status>
+  </summary>
+</document>

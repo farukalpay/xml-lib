@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<guardrails>
+  <guardrail id="gr-001" priority="critical">
+    <name>Phase Ordering Integrity</name>
+    <description>
+      Ensures that lifecycle phases appear in the canonical order:
+      begin → start → iteration → end → continuum
+    </description>
+    <provenance>
+      <author>XML-Lib Team</author>
+      <created>2025-01-15T10:00:00Z</created>
+      <rationale>
+        Phase ordering is fundamental to lifecycle semantics.
+        Out-of-order phases indicate corrupted or malformed documents.
+      </rationale>
+    </provenance>
+    <constraint type="xpath">
+      count(//phase[@name='begin']) = 0 or
+      count(//phase[@name='start']) = 0 or
+      (//phase[@name='begin']/position() &lt; //phase[@name='start']/position())
+    </constraint>
+    <message>Phase 'begin' must appear before 'start' in the document</message>
+  </guardrail>
+
+  <guardrail id="gr-002" priority="high">
+    <name>Temporal Monotonicity</name>
+    <description>
+      Validates that timestamps increase monotonically through the lifecycle
+    </description>
+    <provenance>
+      <author>XML-Lib Team</author>
+      <created>2025-01-15T10:05:00Z</created>
+      <rationale>
+        Temporal monotonicity ensures that phases occur in chronological order,
+        which is essential for audit trails and versioning.
+      </rationale>
+    </provenance>
+    <constraint type="temporal">
+      timestamps must increase: begin &lt;= start &lt;= iteration &lt;= end &lt;= continuum
+    </constraint>
+    <message>Timestamps must increase monotonically through lifecycle phases</message>
+  </guardrail>
+
+  <guardrail id="gr-003" priority="critical">
+    <name>ID Uniqueness</name>
+    <description>
+      Ensures all IDs are unique across the entire document set
+    </description>
+    <provenance>
+      <author>XML-Lib Team</author>
+      <created>2025-01-15T10:10:00Z</created>
+      <rationale>
+        Unique IDs are required for cross-referencing and content addressing.
+        Duplicate IDs would break referential integrity.
+      </rationale>
+    </provenance>
+    <constraint type="cross-file">
+      all @id attributes must be unique across all documents
+    </constraint>
+    <message>Duplicate ID detected - all IDs must be unique</message>
+  </guardrail>
+
+  <guardrail id="gr-004" priority="medium">
+    <name>Checksum Format</name>
+    <description>
+      Validates that checksums are properly formatted SHA-256 hashes
+    </description>
+    <provenance>
+      <author>XML-Lib Team</author>
+      <created>2025-01-15T10:15:00Z</created>
+      <rationale>
+        Checksums enable content verification and deduplication.
+        Invalid checksums prevent proper content addressing.
+      </rationale>
+    </provenance>
+    <constraint type="regex">^[a-f0-9]{64}$</constraint>
+    <message>Checksum must be a valid SHA-256 hash (64 hexadecimal characters)</message>
+  </guardrail>
+
+  <guardrail id="gr-005" priority="high">
+    <name>Reference Integrity</name>
+    <description>
+      Ensures all phase references point to existing phases
+    </description>
+    <provenance>
+      <author>XML-Lib Team</author>
+      <created>2025-01-15T10:20:00Z</created>
+      <rationale>
+        Phase references establish dependencies and flow.
+        Dangling references indicate incomplete or corrupted documents.
+      </rationale>
+    </provenance>
+    <constraint type="xpath">
+      not(//*[@ref-begin]) or
+      //*[@ref-begin]/@ref-begin = //phase[@name='begin']/@id or
+      //*[@ref-begin]/@ref-begin = //begin/@id
+    </constraint>
+    <message>Reference to 'begin' phase points to non-existent ID</message>
+  </guardrail>
+
+  <guardrail id="gr-006" priority="medium">
+    <name>Minimum Phase Requirement</name>
+    <description>
+      Validates that documents contain at least a 'begin' phase
+    </description>
+    <provenance>
+      <author>XML-Lib Team</author>
+      <created>2025-01-15T10:25:00Z</created>
+      <rationale>
+        Every lifecycle must start with a 'begin' phase.
+        Missing 'begin' indicates an incomplete initialization.
+      </rationale>
+    </provenance>
+    <constraint type="xpath">
+      count(//document) = 0 or count(//phase[@name='begin']) &gt;= 1
+    </constraint>
+    <message>Document must contain at least a 'begin' phase</message>
+  </guardrail>
+</guardrails>

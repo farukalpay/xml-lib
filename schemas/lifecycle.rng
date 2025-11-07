@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <!-- Root document structure -->
+  <start>
+    <choice>
+      <ref name="Document"/>
+      <ref name="SanitizedDocument"/>
+      <ref name="Begin"/>
+      <ref name="Start"/>
+      <ref name="Iteration"/>
+      <ref name="End"/>
+      <ref name="Continuum"/>
+    </choice>
+  </start>
+
+  <!-- Sanitized document with surrogate elements -->
+  <define name="SanitizedDocument">
+    <element name="document">
+      <attribute name="sanitized">
+        <value>true</value>
+      </attribute>
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="checksum">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="AnyElement"/>
+          <ref name="OpSurrogate"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <!-- Full document with lifecycle phases -->
+  <define name="Document">
+    <element name="document">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="checksum">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <optional>
+        <element name="meta">
+          <optional>
+            <element name="title">
+              <text/>
+            </element>
+          </optional>
+          <optional>
+            <element name="description">
+              <text/>
+            </element>
+          </optional>
+          <optional>
+            <element name="author">
+              <text/>
+            </element>
+          </optional>
+          <optional>
+            <element name="created">
+              <data type="dateTime"/>
+            </element>
+          </optional>
+        </element>
+      </optional>
+      <element name="phases">
+        <ref name="PhaseList"/>
+      </element>
+      <optional>
+        <element name="summary">
+          <optional>
+            <element name="status">
+              <choice>
+                <value>complete</value>
+                <value>pending</value>
+                <value>failed</value>
+              </choice>
+            </element>
+          </optional>
+          <optional>
+            <element name="next-action">
+              <text/>
+            </element>
+          </optional>
+        </element>
+      </optional>
+    </element>
+  </define>
+
+  <!-- Phase list must follow lifecycle order -->
+  <define name="PhaseList">
+    <interleave>
+      <optional>
+        <element name="phase">
+          <attribute name="name">
+            <value>begin</value>
+          </attribute>
+          <ref name="PhaseContent"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="phase">
+          <attribute name="name">
+            <value>start</value>
+          </attribute>
+          <ref name="PhaseContent"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="phase">
+          <attribute name="name">
+            <value>iteration</value>
+          </attribute>
+          <ref name="PhaseContent"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="phase">
+          <attribute name="name">
+            <value>end</value>
+          </attribute>
+          <ref name="PhaseContent"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="phase">
+          <attribute name="name">
+            <value>continuum</value>
+          </attribute>
+          <ref name="PhaseContent"/>
+        </element>
+      </optional>
+    </interleave>
+  </define>
+
+  <define name="PhaseContent">
+    <optional>
+      <element name="use">
+        <attribute name="path">
+          <data type="string"/>
+        </attribute>
+        <text/>
+      </element>
+    </optional>
+    <optional>
+      <element name="payload">
+        <zeroOrMore>
+          <choice>
+            <ref name="AnyElement"/>
+            <text/>
+          </choice>
+        </zeroOrMore>
+      </element>
+    </optional>
+  </define>
+
+  <!-- Individual lifecycle phase elements -->
+  <define name="Begin">
+    <element name="begin">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="Start">
+    <element name="start">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="ref-begin">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="Iteration">
+    <element name="iteration">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="ref-start">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="cycle">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="End">
+    <element name="end">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="ref-iteration">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="checksum">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="Continuum">
+    <element name="continuum">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="timestamp">
+          <data type="dateTime"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="ref-end">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <!-- Generic element for extensibility -->
+  <define name="AnyElement">
+    <element>
+      <anyName/>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <text/>
+          <ref name="AnyElement"/>
+          <ref name="OpSurrogate"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <!-- Surrogate element for sanitized mathy XML -->
+  <define name="OpSurrogate">
+    <element name="op">
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <optional>
+        <attribute name="xml:orig">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="xml:uid">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <text/>
+          <ref name="AnyElement"/>
+          <ref name="OpSurrogate"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+</grammar>

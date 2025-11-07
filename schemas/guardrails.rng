@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <start>
+    <choice>
+      <ref name="GuardrailsBegin"/>
+      <ref name="GuardrailsMiddle"/>
+      <ref name="GuardrailsEnd"/>
+      <ref name="GuardrailRule"/>
+    </choice>
+  </start>
+
+  <define name="GuardrailsBegin">
+    <element name="guardrails-begin">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <element name="commenet">
+          <text/>
+        </element>
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="reference">
+          <attribute name="path">
+            <data type="string"/>
+          </attribute>
+          <text/>
+        </element>
+      </zeroOrMore>
+      <optional>
+        <element name="scope">
+          <zeroOrMore>
+            <choice>
+              <element name="boundary">
+                <text/>
+              </element>
+              <element name="stakeholder">
+                <text/>
+              </element>
+            </choice>
+          </zeroOrMore>
+        </element>
+      </optional>
+      <optional>
+        <element name="invariants">
+          <zeroOrMore>
+            <element name="invariant">
+              <attribute name="id">
+                <data type="string"/>
+              </attribute>
+              <text/>
+            </element>
+          </zeroOrMore>
+        </element>
+      </optional>
+    </element>
+  </define>
+
+  <define name="GuardrailsMiddle">
+    <element name="guardrails-middle">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="GuardrailsEnd">
+    <element name="guardrails-end">
+      <optional>
+        <attribute name="id">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="checksum">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="AnyElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <!-- Guardrail rules with provenance -->
+  <define name="GuardrailRule">
+    <element name="guardrail">
+      <attribute name="id">
+        <data type="ID"/>
+      </attribute>
+      <optional>
+        <attribute name="priority">
+          <choice>
+            <value>critical</value>
+            <value>high</value>
+            <value>medium</value>
+            <value>low</value>
+          </choice>
+        </attribute>
+      </optional>
+      <element name="name">
+        <text/>
+      </element>
+      <element name="description">
+        <text/>
+      </element>
+      <element name="provenance">
+        <element name="author">
+          <text/>
+        </element>
+        <element name="created">
+          <data type="dateTime"/>
+        </element>
+        <optional>
+          <element name="modified">
+            <data type="dateTime"/>
+          </element>
+        </optional>
+        <element name="rationale">
+          <text/>
+        </element>
+      </element>
+      <element name="constraint">
+        <attribute name="type">
+          <choice>
+            <value>xpath</value>
+            <value>schematron</value>
+            <value>regex</value>
+            <value>checksum</value>
+            <value>temporal</value>
+            <value>cross-file</value>
+          </choice>
+        </attribute>
+        <text/>
+      </element>
+      <optional>
+        <element name="message">
+          <text/>
+        </element>
+      </optional>
+    </element>
+  </define>
+
+  <define name="AnyElement">
+    <element>
+      <anyName/>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <text/>
+          <ref name="AnyElement"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+</grammar>

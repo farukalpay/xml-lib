@@ -6,3 +6,4 @@
   <guideline>Validate any new elements in start.xml against the rules documented in begin.xml.</guideline>
   <guideline>Document interface edges to make downstream XML transformations predictable.</guideline>
 </xml-engineering>
+</start>
