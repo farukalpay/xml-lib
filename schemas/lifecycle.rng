@@ -305,9 +305,6 @@
       <anyName/>
       <zeroOrMore>
         <choice>
-          <attribute>
-            <anyName/>
-          </attribute>
           <text/>
           <ref name="AnyElement"/>
           <ref name="OpSurrogate"/>
@@ -319,30 +316,42 @@
   <!-- Surrogate element for sanitized mathy XML -->
   <define name="OpSurrogate">
     <element name="op">
-      <attribute name="name">
-        <data type="string"/>
-      </attribute>
-      <optional>
-        <attribute name="xml:orig">
-          <data type="string"/>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="xml:uid">
-          <data type="string"/>
-        </attribute>
-      </optional>
+      <interleave>
+        <optional>
+          <attribute name="name">
+            <text/>
+          </attribute>
+        </optional>
+        <optional>
+          <attribute name="xml:orig">
+            <text/>
+          </attribute>
+        </optional>
+        <optional>
+          <attribute name="xml:uid">
+            <text/>
+          </attribute>
+        </optional>
+      </interleave>
       <zeroOrMore>
         <choice>
-          <attribute>
-            <anyName/>
-          </attribute>
-          <text/>
           <ref name="AnyElement"/>
-          <ref name="OpSurrogate"/>
+          <text/>
+          <element name="op">
+            <ref name="OpSurrogateContent"/>
+          </element>
         </choice>
       </zeroOrMore>
     </element>
+  </define>
+
+  <define name="OpSurrogateContent">
+    <zeroOrMore>
+      <choice>
+        <ref name="AnyElement"/>
+        <text/>
+      </choice>
+    </zeroOrMore>
   </define>
 
 </grammar>

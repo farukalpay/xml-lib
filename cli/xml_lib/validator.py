@@ -35,12 +35,15 @@ class Validator:
         schemas_dir: Path,
         guardrails_dir: Path,
         telemetry: Optional[TelemetrySink] = None,
+        math_policy: MathPolicy = MathPolicy.SANITIZE,
     ):
         self.schemas_dir = schemas_dir
         self.guardrails_dir = guardrails_dir
         self.telemetry = telemetry
         self.content_store = ContentStore(Path("store"))
         self.guardrail_engine = GuardrailEngine(guardrails_dir)
+        self.math_policy = math_policy
+        self._last_result: Optional[ValidationResult] = None
 
         # Load schemas
         self.relaxng_lifecycle = self._load_relaxng("lifecycle.rng")
@@ -74,14 +77,15 @@ class Validator:
             return None
 
     def validate_project(
-        self, project_path: Path, math_policy: MathPolicy = MathPolicy.SANITIZE
+        self,
+        project_path: Path,
+        math_policy: Optional[MathPolicy] = None,
     ) -> ValidationResult:
         """Validate all XML files in a project."""
         start_time = datetime.now()
         result = ValidationResult(is_valid=True)
-        sanitizer = (
-            Sanitizer(Path("out")) if math_policy == MathPolicy.SANITIZE else None
-        )
+        policy = math_policy or self.math_policy
+        sanitizer = Sanitizer(Path("out")) if policy == MathPolicy.SANITIZE else None
 
         # Find all XML files
         xml_files = list(project_path.rglob("*.xml"))
@@ -101,9 +105,9 @@ class Validator:
                 try:
                     doc = etree.parse(str(xml_file))
                 except etree.XMLSyntaxError as parse_error:
-                    if math_policy == MathPolicy.ERROR:
+                    if policy == MathPolicy.ERROR:
                         raise
-                    elif math_policy == MathPolicy.SKIP:
+                    elif policy == MathPolicy.SKIP:
                         result.warnings.append(
                             ValidationError(
                                 file=str(xml_file),
@@ -115,7 +119,7 @@ class Validator:
                             )
                         )
                         continue
-                    elif math_policy == MathPolicy.SANITIZE and sanitizer:
+                    elif policy == MathPolicy.SANITIZE and sanitizer:
                         # Try sanitizing
                         sanitize_result = sanitizer.sanitize_for_parse(xml_file)
                         if sanitize_result.has_surrogates:
@@ -197,7 +201,116 @@ class Validator:
                 warning_count=len(result.warnings),
             )
 
+        self._last_result = result
+
         return result
+
+    def _validate_file(self, path: Path) -> None:
+        """Validate a single XML file following the project validation flow."""
+        start_time = datetime.now()
+        policy = self.math_policy
+        sanitizer = Sanitizer(Path("out")) if policy == MathPolicy.SANITIZE else None
+        result = ValidationResult(is_valid=True)
+
+        try:
+            raw_content = path.read_bytes()
+        except FileNotFoundError:
+            raise
+
+        try:
+            try:
+                doc = etree.parse(io.BytesIO(raw_content))
+            except etree.XMLSyntaxError as parse_error:
+                if policy == MathPolicy.ERROR:
+                    raise
+                if policy == MathPolicy.SKIP:
+                    result.warnings.append(
+                        ValidationError(
+                            file=str(path),
+                            line=parse_error.lineno,
+                            column=None,
+                            message=f"Skipping: {parse_error}",
+                            type="warning",
+                            rule="xml-syntax",
+                        )
+                    )
+                    duration = (datetime.now() - start_time).total_seconds()
+                    if self.telemetry:
+                        self.telemetry.log_validation(
+                            project=str(path),
+                            success=True,
+                            duration=duration,
+                            file_count=0,
+                            error_count=0,
+                            warning_count=len(result.warnings),
+                        )
+                    self._last_result = result
+                    return
+                if policy == MathPolicy.SANITIZE and sanitizer:
+                    sanitize_result = sanitizer.sanitize_for_parse(
+                        path, policy=self.math_policy
+                    )
+                    if sanitize_result.has_surrogates:
+                        doc = etree.parse(io.BytesIO(sanitize_result.content))
+                        rel_path = Path(path.name)
+                        sanitizer.write_mapping(rel_path, sanitize_result.mappings)
+                    else:
+                        raise
+                else:
+                    raise
+
+            checksum = hashlib.sha256(raw_content).hexdigest()
+            result.checksums[str(path)] = checksum
+            self.content_store.store(raw_content, checksum)
+
+            self._validate_relaxng(doc, path, result)
+            self._validate_schematron(doc, path, result)
+            self._check_cross_file_ids(doc, path, set(), {}, result)
+            self._validate_temporal_order(doc, path, result)
+            result.validated_files.append(str(path))
+
+        except etree.XMLSyntaxError as error:
+            result.errors.append(
+                ValidationError(
+                    file=str(path),
+                    line=error.lineno,
+                    column=error.position[0] if hasattr(error, "position") else None,
+                    message=str(error),
+                    type="error",
+                    rule="xml-syntax",
+                )
+            )
+        except Exception as error:
+            result.errors.append(
+                ValidationError(
+                    file=str(path),
+                    line=None,
+                    column=None,
+                    message=f"Unexpected error: {error}",
+                    type="error",
+                    rule="internal",
+                )
+            )
+
+        guardrail_result = self.guardrail_engine.validate(path.parent)
+        result.errors.extend(guardrail_result.errors)
+        result.warnings.extend(guardrail_result.warnings)
+
+        if result.errors:
+            result.is_valid = False
+
+        duration = (datetime.now() - start_time).total_seconds()
+        if self.telemetry:
+            self.telemetry.log_validation(
+                project=str(path),
+                success=result.is_valid,
+                duration=duration,
+                file_count=len(result.validated_files),
+                error_count=len(result.errors),
+                warning_count=len(result.warnings),
+            )
+
+        self._last_result = result
 
     def _validate_relaxng(
         self,

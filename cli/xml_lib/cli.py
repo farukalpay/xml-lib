@@ -77,13 +77,13 @@ def validate(
     """
     click.echo(f"🔍 Validating project: {project_path}")
 
+    policy = MathPolicy(math_policy)
     validator = Validator(
         schemas_dir=Path(schemas_dir),
         guardrails_dir=Path(guardrails_dir),
         telemetry=ctx.obj.get("telemetry"),
+        math_policy=policy,
     )
-
-    policy = MathPolicy(math_policy)
     result = validator.validate_project(Path(project_path), math_policy=policy)
 
     # Write assertions

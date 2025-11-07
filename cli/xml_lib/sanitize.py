@@ -112,7 +112,9 @@ class Sanitizer:
             return f'<op name="{orig}" xml:orig="{orig}" xml:uid="{uid}"/>'
         return f'<op name="{orig}" xml:orig="{orig}" xml:uid="{uid}">'
 
-    def sanitize_for_parse(self, path: Path) -> SanitizeResult:
+    def sanitize_for_parse(
+        self, path: Path, policy: MathPolicy = MathPolicy.SANITIZE
+    ) -> SanitizeResult:
         """Sanitize an XML file for parsing.
 
         Reads raw bytes and rewrites invalid element/attribute names into
@@ -120,6 +122,7 @@ class Sanitizer:
 
         Args:
             path: Path to XML file
+            policy: Math policy for compatibility with validator flows
 
         Returns:
             SanitizeResult with sanitized content and mappings
