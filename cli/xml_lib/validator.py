@@ -1,6 +1,7 @@
 """XML Lifecycle Validator with Relax NG and Schematron support."""
 
 import hashlib
+import io
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -11,6 +12,7 @@ from xml_lib.storage import ContentStore
 from xml_lib.types import ValidationError
 from xml_lib.guardrails import GuardrailEngine
 from xml_lib.telemetry import TelemetrySink
+from xml_lib.sanitize import Sanitizer, MathPolicy
 
 
 @dataclass
@@ -71,10 +73,15 @@ class Validator:
             print(f"Warning: Failed to load Schematron schema {filename}: {e}")
             return None
 
-    def validate_project(self, project_path: Path) -> ValidationResult:
+    def validate_project(
+        self, project_path: Path, math_policy: MathPolicy = MathPolicy.SANITIZE
+    ) -> ValidationResult:
         """Validate all XML files in a project."""
         start_time = datetime.now()
         result = ValidationResult(is_valid=True)
+        sanitizer = (
+            Sanitizer(Path("out")) if math_policy == MathPolicy.SANITIZE else None
+        )
 
         # Find all XML files
         xml_files = list(project_path.rglob("*.xml"))
@@ -89,8 +96,39 @@ class Validator:
                 continue
 
             try:
-                # Parse XML
-                doc = etree.parse(str(xml_file))
+                # Parse XML with optional sanitization
+                doc = None
+                try:
+                    doc = etree.parse(str(xml_file))
+                except etree.XMLSyntaxError as parse_error:
+                    if math_policy == MathPolicy.ERROR:
+                        raise
+                    elif math_policy == MathPolicy.SKIP:
+                        result.warnings.append(
+                            ValidationError(
+                                file=str(xml_file),
+                                line=parse_error.lineno,
+                                column=None,
+                                message=f"Skipping: {parse_error}",
+                                type="warning",
+                                rule="xml-syntax",
+                            )
+                        )
+                        continue
+                    elif math_policy == MathPolicy.SANITIZE and sanitizer:
+                        # Try sanitizing
+                        sanitize_result = sanitizer.sanitize_for_parse(xml_file)
+                        if sanitize_result.has_surrogates:
+                            # Parse sanitized content
+                            doc = etree.parse(io.BytesIO(sanitize_result.content))
+                            # Write mapping
+                            rel_path = xml_file.relative_to(project_path)
+                            sanitizer.write_mapping(rel_path, sanitize_result.mappings)
+                        else:
+                            raise parse_error
+
+                if doc is None:
+                    continue
 
                 # Calculate checksum
                 content = xml_file.read_bytes()

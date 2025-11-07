@@ -116,13 +116,20 @@ jobs:
 
       - name: Publish documentation
         run: |
-          xml-lib publish . --output-dir out/site
+          xml-lib publish . --output-dir out/site --math-policy sanitize
 
       - name: Upload published site
         uses: actions/upload-artifact@v4
         with:
           name: documentation-site
           path: out/site/
+
+      - name: Upload mapping artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mathmap-artifacts
+          path: out/mappings/
+        if: always()
 
   benchmark:
     runs-on: ubuntu-latest

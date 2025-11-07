@@ -53,6 +53,12 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: Optional[str]) ->
     "--jsonl", default="out/assertions.jsonl", help="JSON Lines output for CI"
 )
 @click.option("--strict", is_flag=True, help="Fail on warnings")
+@click.option(
+    "--math-policy",
+    type=click.Choice(["sanitize", "mathml", "skip", "error"]),
+    default="sanitize",
+    help="Policy for handling mathy XML (default: sanitize)",
+)
 @click.pass_context
 def validate(
     ctx: click.Context,
@@ -62,6 +68,7 @@ def validate(
     output: str,
     jsonl: str,
     strict: bool,
+    math_policy: str,
 ) -> None:
     """Validate XML documents against lifecycle schemas and guardrails.
 
@@ -76,7 +83,8 @@ def validate(
         telemetry=ctx.obj.get("telemetry"),
     )
 
-    result = validator.validate_project(Path(project_path))
+    policy = MathPolicy(math_policy)
+    result = validator.validate_project(Path(project_path), math_policy=policy)
 
     # Write assertions
     validator.write_assertions(result, Path(output), Path(jsonl))
