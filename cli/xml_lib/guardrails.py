@@ -2,7 +2,6 @@
 
 import re
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from lxml import etree
@@ -127,7 +126,7 @@ class GuardrailEngine:
                     violations = self._check_rule(doc, xml_file, rule)
                     result.errors.extend(violations)
 
-                except Exception as e:
+                except Exception:
                     # Skip files that can't be parsed
                     continue
 
@@ -155,7 +154,7 @@ class GuardrailEngine:
                 # Cross-file checks require multiple documents - skip for now
                 pass
 
-        except Exception as e:
+        except Exception:
             # Rule execution failed - log but don't fail validation
             pass
 
@@ -195,7 +194,7 @@ class GuardrailEngine:
                     )
                 )
 
-        except Exception as e:
+        except Exception:
             # XPath evaluation failed
             pass
 

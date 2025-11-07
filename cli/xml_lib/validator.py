@@ -172,7 +172,7 @@ class Validator:
 
         try:
             self.relaxng_lifecycle.assertValid(doc)
-        except etree.DocumentInvalid as e:
+        except etree.DocumentInvalid:
             # Try guardrails schema if lifecycle fails
             if self.relaxng_guardrails:
                 try:

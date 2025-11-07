@@ -1,13 +1,11 @@
 """OOXML composer that maps XML guidance to PowerPoint presentations."""
 
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 from lxml import etree
 from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN
+from pptx.util import Pt
 
 from xml_lib.telemetry import TelemetrySink
 
@@ -193,7 +191,7 @@ class PPTXComposer:
         next_action = summary.find("next-action")
         if next_action is not None and next_action.text:
             content_lines.append("")
-            content_lines.append(f"Next Action:")
+            content_lines.append("Next Action:")
             content_lines.append(f"  {next_action.text}")
 
         # Set body text

@@ -4,7 +4,7 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 from lxml import etree
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
