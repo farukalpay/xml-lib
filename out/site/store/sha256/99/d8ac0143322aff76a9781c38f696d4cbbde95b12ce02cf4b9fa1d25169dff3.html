@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>guardrail-proof:</strong> 
+<div style="margin-left: 1em;">
+<strong>goal:</strong> Prove that every guarded state emitted from guardrails-middle remains compliant through guardrails-end.</div>
+<div style="margin-left: 1em;">
+<strong>references:</strong> 
+  <div style="margin-left: 1em;">
+<strong>axioms:</strong> A1-A5</div>
+  <div style="margin-left: 1em;">
+<strong>charter:</strong> Invariants + stakeholders.</div>
+  <div style="margin-left: 1em;">
+<strong>engineering:</strong> Fixed-point + validation matrix.</div>
+  <div style="margin-left: 1em;">
+<strong>closure:</strong> Handshake + artifacts.</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>lemma:</strong> 
+  <div style="margin-left: 1em;">
+<strong>statement:</strong> FORALL state s, IF invariants hold at s THEN guardrails-middle produces enforcement e such that e(s) also satisfies the invariants.</div>
+  <div style="margin-left: 1em;">
+<strong>proof:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> From A1 obtain constraint c with c(s)=true.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Apply A2 to derive enforcement e preserving c for every iteration.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Therefore invariants remain true after guardrails-middle transformations.</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>lemma:</strong> 
+  <div style="margin-left: 1em;">
+<strong>statement:</strong> FORALL enforcement e emitted by guardrails-middle, checksum and telemetry bindings persist through guardrails-end.</div>
+  <div style="margin-left: 1em;">
+<strong>proof:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> By construction guardrails-middle attaches control-plane hashes from continuum.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> A4 guarantees any downstream consumer observing identical hashes receives identical states.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Invoke A3 to conclude guardrails-end preserves checksums iff telemetry hooks exist; telemetry hooks exist by guardrails-middle telem router definition.</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>lemma:</strong> 
+  <div style="margin-left: 1em;">
+<strong>statement:</strong> The validation matrix prevents uncovered scope,failure-mode combinations.</div>
+  <div style="margin-left: 1em;">
+<strong>proof:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> A5 asserts completeness over the matrix dimensions.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Therefore FORALL (scope,failure-mode) there exists enforcement e covering the pair.</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>theorem:</strong> 
+  <div style="margin-left: 1em;">
+<strong>statement:</strong> FORALL state s satisfying guardrails-begin invariants, guardrails-end exports artifacts that keep s compliant.</div>
+  <div style="margin-left: 1em;">
+<strong>proof:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Assume arbitrary state s with invariants true.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Apply L1 to obtain enforcement e preserving invariants during guardrails-middle processing.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Use L3 to ensure scope/failure-mode for s is covered by e.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Invoke L2 so e remains valid once guardrails-end archives it.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Therefore exported state maintains invariants, concluding the proof.</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>corollary:</strong> 
+  <div style="margin-left: 1em;">
+<strong>statement:</strong> Guardrail enforcement is a fixed point: applying guardrails-middle after guardrails-end yields no change.</div>
+  <div style="margin-left: 1em;">
+<strong>proof:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> From T1 the exported state satisfies invariants and references existing checksums.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Feeding this state into guardrails-middle reuses the same hashes; by A4 the observable state is equal.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> No transformations occur, hence fixed point established.</div>
+  </div>
+</div>
+</div></body>
+</html>

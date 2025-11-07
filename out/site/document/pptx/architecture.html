@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>pptx-architecture:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Engineering-focused reference for presentation operations</div>
+<div style="margin-left: 1em;">
+<strong>scope:</strong> 
+  <div style="margin-left: 1em;">
+<strong>boundary:</strong> Only reuse mechanics from existing XML-Lib artifacts; wording is freshly authored.</div>
+  <div style="margin-left: 1em;">
+<strong>folder:</strong> document/pptx</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>modules:</strong> 
+  <div style="margin-left: 1em;">
+<strong>module:</strong> 
+    <div style="margin-left: 1em;">
+<strong>objective:</strong> Extract and inspect slide data without mutating the binary packages.</div>
+    <div style="margin-left: 1em;">
+<strong>tools:</strong> 
+      <div style="margin-left: 1em;">
+<strong>tool:</strong> python -m markitdown path/to/file.pptx &gt; notes.md</div>
+      <div style="margin-left: 1em;">
+<strong>tool:</strong> python skills/pptx/ooxml/scripts/unpack.py deck.pptx tmp/unpacked</div>
+    </div>
+    <div style="margin-left: 1em;">
+<strong>outputs:</strong> Markdown transcripts, raw XML snapshots (ppt/slides/*.xml, theme files, media index).</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>module:</strong> 
+    <div style="margin-left: 1em;">
+<strong>objective:</strong> Generate decks from scratch using html2pptx conversion.</div>
+    <div style="margin-left: 1em;">
+<strong>inputs:</strong> Slide outlines, shared CSS variables, HTML fragments per slide, js driver.</div>
+    <div style="margin-left: 1em;">
+<strong>guards:</strong> Must read html2pptx.md entirely before invoking any builder.</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>module:</strong> 
+    <div style="margin-left: 1em;">
+<strong>objective:</strong> Modify existing decks by manipulating unpacked XML.</div>
+    <div style="margin-left: 1em;">
+<strong>requirement:</strong> Always run validate.py before re-packaging to avoid corrupt files.</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>module:</strong> 
+    <div style="margin-left: 1em;">
+<strong>objective:</strong> Reuse template decks by rearranging, inventorying, and replacing text content.</div>
+    <div style="margin-left: 1em;">
+<strong>pipeline:</strong> thumbnail analysis → template inventory → outline mapping → rearrange.py → inventory.py → replacement-text.json → replace.py</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>dependencies:</strong> 
+  <div style="margin-left: 1em;">
+<strong>dependency:</strong> skills/pptx/html2pptx.tgz for html conversion.</div>
+  <div style="margin-left: 1em;">
+<strong>dependency:</strong> pptxgenjs global install for script driver.</div>
+  <div style="margin-left: 1em;">
+<strong>dependency:</strong> LibreOffice + Poppler for PDF/thumbnail workflows.</div>
+</div>
+</div></body>
+</html>

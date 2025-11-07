@@ -5,11 +5,12 @@ This document provides comprehensive specifications for XML-Lib schemas, guardra
 ## Table of Contents
 
 1. [Schemas](#schemas)
-2. [Guardrail Operators](#guardrail-operators)
-3. [CLI Contracts](#cli-contracts)
-4. [Storage & Content Addressing](#storage--content-addressing)
-5. [Telemetry](#telemetry)
-6. [Benchmarks](#benchmarks)
+2. [Example Documents](#example-documents)
+3. [Guardrail Operators](#guardrail-operators)
+4. [CLI Contracts](#cli-contracts)
+5. [Storage & Content Addressing](#storage--content-addressing)
+6. [Telemetry](#telemetry)
+7. [Benchmarks](#benchmarks)
 
 ---
 
@@ -107,6 +108,65 @@ Implements business logic and cross-file constraints:
 **Assertion Levels:**
 - `error` — Validation failure (blocks processing)
 - `warning` — Advisory notice (non-blocking unless --strict)
+
+---
+
+## Example Documents
+
+### `example_research_pitch.xml`
+
+A comprehensive research pitch demonstrating all lifecycle phases with realistic content for an AI-powered research synthesis platform.
+
+**Key Features:**
+- Complete lifecycle with all five phases (begin, start, iteration, end, continuum)
+- Monotonically increasing ISO-8601 timestamps across phases
+- Globally unique IDs with proper cross-references
+- SHA-256 checksums for document and end phase
+- Realistic guardrail rules embedded in begin phase
+- Detailed sprint planning and iteration tracking
+- Production-ready governance and monitoring configuration
+
+**Lifecycle Flow:**
+1. **begin** (2025-01-15T09:00:00Z) — Project charter with $2.5M funding target, 18-month timeline, embedded guardrail rules for budget, test coverage, and data retention
+2. **start** (2025-01-15T10:30:00Z) — Sprint schedule (3 sprints), KPIs (throughput, latency, accuracy), risk register
+3. **iteration** (2025-02-14T17:00:00Z) — Three development sprints with deliverables, metrics, and velocity tracking
+4. **end** (2025-03-15T16:00:00Z) — MVP delivery summary with QA sign-offs, budget status ($425K spent), next-phase recommendations
+5. **continuum** (2025-03-16T09:00:00Z) — Production monitoring (telemetry, alerting), governance (SOC2, data retention), Q2 roadmap, A/B experiments
+
+**Generated Artifacts:**
+- `out/research_pitch.pptx` — 8-slide PowerPoint presentation with 11 citations
+- `out/diff.txt` — Structural diff vs. example_document.xml with 59 changes
+- `out/site/` — HTML documentation site
+- `out/assertions.xml` — Cryptographically signed validation results
+- `out/assertions.jsonl` — Machine-readable validation output
+
+**Validation:**
+```bash
+xml-lib validate example_research_pitch.xml --strict
+```
+
+**Publishing:**
+```bash
+xml-lib publish . --output-dir out/site
+```
+
+**PowerPoint Rendering:**
+```bash
+xml-lib render-pptx example_research_pitch.xml --output out/research_pitch.pptx
+```
+
+**Diff Analysis:**
+```bash
+xml-lib diff example_document.xml example_research_pitch.xml --explain > out/diff.txt
+```
+
+### `example_document.xml`
+
+A minimal lifecycle document demonstrating basic structure with simple notes in each phase.
+
+### `example_amphibians.xml`
+
+A lifecycle document used for testing edge cases and validation errors.
 
 ---
 

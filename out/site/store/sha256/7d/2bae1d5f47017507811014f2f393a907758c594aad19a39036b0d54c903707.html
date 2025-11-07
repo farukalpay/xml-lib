@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body>
+<h1>XML Lifecycle Document</h1>
+<div class="checksum">Checksum: invalid</div>
+<div class="meta">
+<h2>Metadata</h2>
+<p><strong>Title:</strong>Amphibian Dossier</p>
+<p><strong>Description:</strong>Deliberately broken for testing</p>
+</div>
+<h2>Lifecycle Phases</h2>
+<div class="phase">
+<div class="phase-name">Phase: start</div>
+<div class="timestamp">Timestamp: 2025-01-15T09:00:00Z</div>
+<p><em>Using template: lib/start.xml</em></p>
+<p>Start without begin</p>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: begin</div>
+<p><em>Using template: lib/begin.xml</em></p>
+<p>Late begin</p>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: iteration</div>
+<div class="timestamp">Timestamp: 2025-01-15T09:05:00Z</div>
+<p><em>Using template: lib/iteration.xml</em></p>
+<p>First iteration</p>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: iteration</div>
+<div class="timestamp">Timestamp: 2025-01-15T09:10:00Z</div>
+<p><em>Using template: lib/iteration.xml</em></p>
+<p>Duplicate ID iteration</p>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: end</div>
+<div class="timestamp">Timestamp: 2025-01-15T08:00:00Z</div>
+<p><em>Using template: lib/end.xml</em></p>
+<p>End in the past</p>
+</div>
+<div class="meta">
+<h2>Summary</h2>
+<p><strong>Status:</strong>failed</p>
+</div>
+</body>
+</html>

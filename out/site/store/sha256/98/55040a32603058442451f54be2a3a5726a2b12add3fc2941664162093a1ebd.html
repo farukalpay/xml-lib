@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body>
+<h1>XML Lifecycle Document</h1>
+<div class="meta">
+<h2>Metadata</h2>
+<p><strong>Title:</strong>Sample XML lifecycle</p>
+<p><strong>Description:</strong>Demonstrates how to walk through XML-Lib artifacts.</p>
+</div>
+<h2>Lifecycle Phases</h2>
+<div class="phase">
+<div class="phase-name">Phase: begin</div>
+<p><em>Using template: lib/begin.xml</em></p>
+<p>Load canonical bootstrap directives.</p>
+<div class="payload">
+<strong>Payload:</strong>
+      <div style="margin-left: 1em;">
+<strong>note:</strong> Custom header content injected after begin.xml template.</div>
+    </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: start</div>
+<p><em>Using template: lib/start.xml</em></p>
+<p>Apply start-phase engineering constraints.</p>
+<div class="payload">
+<strong>Payload:</strong>
+      <div style="margin-left: 1em;">
+<strong>note:</strong> Set iteration envelope to 3 cycles.</div>
+    </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: iteration</div>
+<p><em>Using template: lib/iteration.xml</em></p>
+<p>Execute per-cycle workflow.</p>
+<div class="payload">
+<strong>Payload:</strong>
+      <div style="margin-left: 1em;">
+<strong>iteration:</strong> Transform dataset A.</div>
+      <div style="margin-left: 1em;">
+<strong>iteration:</strong> Transform dataset B.</div>
+    </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: end</div>
+<p><em>Using template: lib/end.xml</em></p>
+<p>Finalize the archive and validations.</p>
+<div class="payload">
+<strong>Payload:</strong>
+      <div style="margin-left: 1em;">
+<strong>note:</strong> Attach QA sign-off ticket #42.</div>
+    </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: continuum</div>
+<p><em>Using template: lib/continuum.xml</em></p>
+<p>Extend lifecycle into governance plane.</p>
+<div class="payload">
+<strong>Payload:</strong>
+      <div style="margin-left: 1em;">
+<strong>telemetry:</strong> Enable latency and throughput streams.</div>
+      <div style="margin-left: 1em;">
+<strong>simulation-mode:</strong> stress</div>
+    </div>
+</div>
+<div class="meta">
+<h2>Summary</h2>
+<p><strong>Status:</strong>complete</p>
+<p><strong>Next Action:</strong>Monitor telemetry for 24h before public release.</p>
+</div>
+</body>
+</html>

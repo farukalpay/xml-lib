@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>pptx-workflows:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Detailed middle-focused procedures for PPTX engineering</div>
+
+<div style="margin-left: 1em;">
+<strong>workflow:</strong> 
+  <div style="margin-left: 1em;">
+<strong>goal:</strong> Read presentation content without altering it.</div>
+  <div style="margin-left: 1em;">
+<strong>steps:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Convert deck text to markdown using markitdown for quick triage.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Unzip with skills/pptx/ooxml/scripts/unpack.py into a scratch directory.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Inspect ppt/presentation.xml for slide ordering and metadata.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Check ppt/slides/slideN.xml plus notesSlides, comments, layouts, masters, and theme files for styling intel.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Use grep/rg to search for color nodes (&lt;a:solidFill&gt;, &lt;a:srgbClr&gt;) or font nodes (&lt;a:fontScheme&gt;).</div>
+  </div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>workflow:</strong> 
+  <div style="margin-left: 1em;">
+<strong>goal:</strong> Create a brand-new presentation without templates.</div>
+  <div style="margin-left: 1em;">
+<strong>prechecks:</strong> 
+    <div style="margin-left: 1em;">
+<strong>check:</strong> Read html2pptx.md from start to finish—no skipping.</div>
+    <div style="margin-left: 1em;">
+<strong>check:</strong> Ensure npm global install: npm list -g @ant/html2pptx || npm install -g skills/pptx/html2pptx.tgz.</div>
+    <div style="margin-left: 1em;">
+<strong>check:</strong> Confirm pptxgenjs, playwright, and markitdown are present.</div>
+  </div>
+  <h2>Lifecycle Phases</h2>
+<div class="phase"><div class="phase-name">Phase: planning</div></div>
+<div class="phase"><div class="phase-name">Phase: css</div></div>
+<div class="phase"><div class="phase-name">Phase: html</div></div>
+<div class="phase"><div class="phase-name">Phase: conversion</div></div>
+<div class="phase"><div class="phase-name">Phase: validation</div></div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>workflow:</strong> 
+  <div style="margin-left: 1em;">
+<strong>goal:</strong> Modify an existing deck at the XML layer.</div>
+  <div style="margin-left: 1em;">
+<strong>steps:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Read ooxml.md completely.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Unpack: python skills/pptx/ooxml/scripts/unpack.py deck.pptx work/unpacked.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Edit ppt/slides/slideN.xml, layouts, masters, theme, etc., as needed.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Validate after each logical chunk: python skills/pptx/ooxml/scripts/validate.py work/unpacked --original deck.pptx.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Repack when clean: python skills/pptx/ooxml/scripts/pack.py work/unpacked deck-new.pptx.</div>
+  </div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>workflow:</strong> 
+  <div style="margin-left: 1em;">
+<strong>goal:</strong> Build a new deck from a template while preserving design intent.</div>
+  <div style="margin-left: 1em;">
+<strong>steps:</strong> 
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Extract template text via python -m markitdown template.pptx &gt; template-content.md and read fully.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Generate thumbnail grids: python scripts/thumbnail.py template.pptx analysis --cols 4.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Author template-inventory.md enumerating every slide (index, layout, purpose).</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Write outline.md mapping your new content sections to template slide indices (0-based).</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Use scripts/rearrange.py template.pptx working.pptx idx0,idx1,... to duplicate/reorder slides.</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Extract text inventory: python scripts/inventory.py working.pptx text-inventory.json and study the full JSON (no slicing).</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Prepare replacement-text.json referencing actual slide/shape ids, copying necessary paragraph properties (bullets, alignment, fonts, colors, spacing).</div>
+    <div style="margin-left: 1em;">
+<strong>step:</strong> Apply replacements: python scripts/replace.py working.pptx replacement-text.json output.pptx; fix any validation overflow errors reported.</div>
+  </div>
+</div>
+
+</div></body>
+</html>

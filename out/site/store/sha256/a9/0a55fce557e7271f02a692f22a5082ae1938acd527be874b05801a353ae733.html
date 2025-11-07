@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>hilbert:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Over-engineered Hilbert machinery for guardrails</div>
+<div style="margin-left: 1em;">
+<strong>reference:</strong> Defines H, C, and projections.</div>
+<div style="margin-left: 1em;">
+<strong>reference:</strong> Middle-phase maps into H via embeddings.</div>
+
+<div style="margin-left: 1em;">
+<strong>structure:</strong> 
+  <div style="margin-left: 1em;">
+<strong>vector-space:</strong> H over ℝ with inner product ⟨x,y⟩.</div>
+  <div style="margin-left: 1em;">
+<strong>axioms:</strong> 
+    <div style="margin-left: 1em;">
+<strong>axiom:</strong> ⟨x, y⟩ = ⟨y, x⟩</div>
+    <div style="margin-left: 1em;">
+<strong>axiom:</strong> ⟨ax + bz, y⟩ = a⟨x, y⟩ + b⟨z, y⟩</div>
+    <div style="margin-left: 1em;">
+<strong>axiom:</strong> ⟨x, x⟩ ≥ 0 and = 0 iff x=0</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>derived:</strong> ‖x‖ = sqrt(⟨x, x⟩), d(x,y) = ‖x−y‖.</div>
+  <div style="margin-left: 1em;">
+<strong>completeness:</strong> (H, d) complete.</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>theorems:</strong> 
+  <div style="margin-left: 1em;">
+<strong>cauchy-schwarz:</strong> ∀x,y, |⟨x,y⟩| ≤ ‖x‖‖y‖.</div>
+  <div style="margin-left: 1em;">
+<strong>projection-thm:</strong> 
+    <div style="margin-left: 1em;">
+<strong>statement:</strong> For nonempty closed convex C⊆H, ∀x∈H ∃! P_C(x)∈C s.t. ‖x−P_C(x)‖ = inf_{z∈C} ‖x−z‖.</div>
+    <div style="margin-left: 1em;">
+<strong>engineering:</strong> Model enforcement feasibility as projection onto C.</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>riesz:</strong> 
+    <div style="margin-left: 1em;">
+<strong>statement:</strong> For every continuous linear functional f on H, ∃! u∈H: f(x)=⟨x,u⟩.</div>
+    <div style="margin-left: 1em;">
+<strong>engineering:</strong> Expectations of telemetry become vectors in H.</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>gram-schmidt:</strong> 
+    <div style="margin-left: 1em;">
+<strong>statement:</strong> Any finite independent set admits an orthonormal basis.</div>
+    <div style="margin-left: 1em;">
+<strong>engineering:</strong> Build minimal orthonormal feature sets for detectors.</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>parseval:</strong> 
+    <div style="margin-left: 1em;">
+<strong>statement:</strong> For ONB {e_k}, ∑ |⟨x,e_k⟩|^2 = ‖x‖^2.</div>
+  </div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>operators:</strong> 
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> T is nonexpansive if ‖T(x)−T(y)‖ ≤ ‖x−y‖.</div>
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> T is contraction if ∃q∈[0,1): ‖T(x)−T(y)‖ ≤ q‖x−y‖.</div>
+  <div style="margin-left: 1em;">
+<strong>firmly-nonexpansive:</strong> J_A = (I + A)^{-1} is firmly nonexpansive for monotone A.</div>
+  <div style="margin-left: 1em;">
+<strong>projection-fne:</strong> P_C is firmly nonexpansive; used for feasibility enforcement.</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>guardrails-model:</strong> 
+  <div style="margin-left: 1em;">
+<strong>embedding:</strong> E: U → H encodes states as vectors.</div>
+  <div style="margin-left: 1em;">
+<strong>feasible-set:</strong> C = {x∈H : invariants hold} is closed convex.</div>
+  <div style="margin-left: 1em;">
+<strong>middle-operator:</strong> G = P_C ∘ T with T nonexpansive; choose parameters so G is a contraction on C.</div>
+</div>
+
+</div></body>
+</html>
