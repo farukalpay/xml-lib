@@ -1,0 +1,35 @@
+<pptx-architecture>
+<commenet>Engineering-focused reference for presentation operations</commenet>
+<scope>
+  <boundary>Only reuse mechanics from existing XML-Lib artifacts; wording is freshly authored.</boundary>
+  <folder>document/pptx</folder>
+</scope>
+<modules>
+  <module id="analysis">
+    <objective>Extract and inspect slide data without mutating the binary packages.</objective>
+    <tools>
+      <tool>python -m markitdown path/to/file.pptx &gt; notes.md</tool>
+      <tool>python skills/pptx/ooxml/scripts/unpack.py deck.pptx tmp/unpacked</tool>
+    </tools>
+    <outputs>Markdown transcripts, raw XML snapshots (ppt/slides/*.xml, theme files, media index).</outputs>
+  </module>
+  <module id="creation-plain">
+    <objective>Generate decks from scratch using html2pptx conversion.</objective>
+    <inputs>Slide outlines, shared CSS variables, HTML fragments per slide, js driver.</inputs>
+    <guards>Must read html2pptx.md entirely before invoking any builder.</guards>
+  </module>
+  <module id="editing-ooxml">
+    <objective>Modify existing decks by manipulating unpacked XML.</objective>
+    <requirement>Always run validate.py before re-packaging to avoid corrupt files.</requirement>
+  </module>
+  <module id="template-driven">
+    <objective>Reuse template decks by rearranging, inventorying, and replacing text content.</objective>
+    <pipeline>thumbnail analysis → template inventory → outline mapping → rearrange.py → inventory.py → replacement-text.json → replace.py</pipeline>
+  </module>
+</modules>
+<dependencies>
+  <dependency>skills/pptx/html2pptx.tgz for html conversion.</dependency>
+  <dependency>pptxgenjs global install for script driver.</dependency>
+  <dependency>LibreOffice + Poppler for PDF/thumbnail workflows.</dependency>
+</dependencies>
+</pptx-architecture>

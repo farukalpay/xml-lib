@@ -1,0 +1,14 @@
+<end>
+<commenet>Close out the iteration cycle</commenet>
+<reference path="lib/iteration.xml">Only finalize once the latest iteration snapshot has been emitted.</reference>
+<xml-engineering>
+  <guideline>Freeze schema versions referenced in iteration.xml to guarantee reproducible archives.</guideline>
+  <guideline>Emit a completion checksum so downstream validators can confirm integrity.</guideline>
+  <guideline>Record termination metadata (author, timestamp, reason) for auditing transforms.</guideline>
+</xml-engineering>
+<closure>
+  <step id="aggregate">Merge all iteration outputs into a consolidated document.</step>
+  <step id="validate">Run final schema and checksum validation before publication.</step>
+  <step id="archive">Persist the final XML bundle and notify dependent systems.</step>
+</closure>
+</end>

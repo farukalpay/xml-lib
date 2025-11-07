@@ -1,0 +1,19 @@
+<guardrails-end>
+<commenet>Seal and publish guardrail assets</commenet>
+<reference path="../guardrails/middle.xml">Require validated engineering artifacts.</reference>
+<reference path="../end.xml">Align with global archive process.</reference>
+<handshake>
+  <step order="1">Import fixed-point anchors from guardrails-middle.</step>
+  <step order="2">Run checksum audit vs continuum.xml control-plane.</step>
+  <step order="3">Notify downstream release orchestrators.</step>
+</handshake>
+<artifacts>
+  <artifact type="policy">dist/guardrails/policy-pack.xml</artifact>
+  <artifact type="telemetry">dist/guardrails/telemetry-profile.xml</artifact>
+</artifacts>
+<signoff>
+  <role>Reliability Guild</role>
+  <role>Security Engineering</role>
+  <role>Data Operations</role>
+</signoff>
+</guardrails-end>

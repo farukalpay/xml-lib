@@ -1,0 +1,50 @@
+<guardrail-proof>
+<goal>Prove that every guarded state emitted from guardrails-middle remains compliant through guardrails-end.</goal>
+<references>
+  <axioms path="lib/engine/axioms.xml">A1-A5</axioms>
+  <charter path="../guardrails/begin.xml">Invariants + stakeholders.</charter>
+  <engineering path="../guardrails/middle.xml">Fixed-point + validation matrix.</engineering>
+  <closure path="../guardrails/end.xml">Handshake + artifacts.</closure>
+</references>
+<lemma id="L1">
+  <statement>FORALL state s, IF invariants hold at s THEN guardrails-middle produces enforcement e such that e(s) also satisfies the invariants.</statement>
+  <proof>
+    <step>From A1 obtain constraint c with c(s)=true.</step>
+    <step>Apply A2 to derive enforcement e preserving c for every iteration.</step>
+    <step>Therefore invariants remain true after guardrails-middle transformations.</step>
+  </proof>
+</lemma>
+<lemma id="L2">
+  <statement>FORALL enforcement e emitted by guardrails-middle, checksum and telemetry bindings persist through guardrails-end.</statement>
+  <proof>
+    <step>By construction guardrails-middle attaches control-plane hashes from continuum.</step>
+    <step>A4 guarantees any downstream consumer observing identical hashes receives identical states.</step>
+    <step>Invoke A3 to conclude guardrails-end preserves checksums iff telemetry hooks exist; telemetry hooks exist by guardrails-middle telem router definition.</step>
+  </proof>
+</lemma>
+<lemma id="L3">
+  <statement>The validation matrix prevents uncovered scope,failure-mode combinations.</statement>
+  <proof>
+    <step>A5 asserts completeness over the matrix dimensions.</step>
+    <step>Therefore FORALL (scope,failure-mode) there exists enforcement e covering the pair.</step>
+  </proof>
+</lemma>
+<theorem id="T1">
+  <statement>FORALL state s satisfying guardrails-begin invariants, guardrails-end exports artifacts that keep s compliant.</statement>
+  <proof>
+    <step>Assume arbitrary state s with invariants true.</step>
+    <step>Apply L1 to obtain enforcement e preserving invariants during guardrails-middle processing.</step>
+    <step>Use L3 to ensure scope/failure-mode for s is covered by e.</step>
+    <step>Invoke L2 so e remains valid once guardrails-end archives it.</step>
+    <step>Therefore exported state maintains invariants, concluding the proof.</step>
+  </proof>
+</theorem>
+<corollary id="C1">
+  <statement>Guardrail enforcement is a fixed point: applying guardrails-middle after guardrails-end yields no change.</statement>
+  <proof>
+    <step>From T1 the exported state satisfies invariants and references existing checksums.</step>
+    <step>Feeding this state into guardrails-middle reuses the same hashes; by A4 the observable state is equal.</step>
+    <step>No transformations occur, hence fixed point established.</step>
+  </proof>
+</corollary>
+</guardrail-proof>

@@ -1,0 +1,94 @@
+<amphibian-project>
+<meta>
+  <species-focus>Axolotl, Poison Dart Frog, Tiger Salamander</species-focus>
+  <mission>Modeling lifecycle transformations for amphibian habitat dossiers.</mission>
+</meta>
+<lifecycle>
+  <phase id="bootstrap">
+    <template path="lib/begin.xml">Seed dossier headers and taxonomic roots.</template>
+    <taxonomy>
+      <order>Caudata</order>
+      <order>Anura</order>
+    </taxonomy>
+    <controls>
+      <control name="hydration-profile" type="gradient">humid->semi-aquatic</control>
+    </controls>
+  </phase>
+  <phase id="activation">
+    <template path="lib/start.xml">Apply engineering guardrails before iteration.</template>
+    <stack>
+      <layer name="schema-alignment">Enforce shared nodes between begin and start docs.</layer>
+      <layer name="hydration-simulator">Bind rainfall deltas to dataset v2.</layer>
+      <layer name="nutrient-budget">Budget mg/day provisioning.</layer>
+    </stack>
+  </phase>
+  <phase id="iterations">
+    <template path="lib/iteration.xml">Execute multi-pass environmental tuning.</template>
+    <iteration-matrix>
+      <axis name="species">
+        <value>Axolotl</value>
+        <value>PoisonDartFrog</value>
+        <value>TigerSalamander</value>
+      </axis>
+      <axis name="habitat">
+        <value>Wetland</value>
+        <value>CloudForest</value>
+        <value>CaptiveLab</value>
+      </axis>
+      <scenario id="s-phase">
+        <steps>
+          <step path="lib/start.xml">Rehydrate baseline for scenario.</step>
+          <step path="lib/iteration.xml">Run param sweep for micro-climate.</step>
+          <step path="lib/iteration.xml">Persist iteration snapshot for telemetry.</step>
+        </steps>
+      </scenario>
+    </iteration-matrix>
+  </phase>
+  <phase id="termination">
+    <template path="lib/end.xml">Finalize the amphibian dossier bundle.</template>
+    <archival>
+      <artifact type="pdf">dossiers/amphibians.pdf</artifact>
+      <artifact type="dataset">datasets/amphibian-readings.csv</artifact>
+    </archival>
+    <validation>
+      <rule>All specimens have hydration > 75%</rule>
+      <rule>Every iteration snapshot has QA sign-off.</rule>
+    </validation>
+  </phase>
+  <phase id="governance">
+    <template path="lib/continuum.xml">Project future habitat engineering.</template>
+    <control-plane>
+      <policy-ref>lib/continuum.xml/control-plane/policies/policy[@id='quarantine']</policy-ref>
+      <checksum-ref>lib/continuum.xml/control-plane/checksums/checksum[@type='schema']</checksum-ref>
+    </control-plane>
+    <telemetry-overlay>
+      <stream name="salinity-drift" units="ppt">Track deviations per habitat.</stream>
+      <stream name="molt-success" units="percent">Ensure success > 95%.</stream>
+    </telemetry-overlay>
+  </phase>
+</lifecycle>
+<engineering-layers>
+  <layer name="data-vault">
+    <source path="lib/begin.xml">Taxonomic constants.</source>
+    <source path="lib/iteration.xml">Iteration snapshots.</source>
+  </layer>
+  <layer name="policy-engine">
+    <module path="lib/start.xml">Schema contracts.</module>
+    <module path="lib/continuum.xml">Runtime policies.</module>
+  </layer>
+  <layer name="release-orchestrator">
+    <module path="lib/end.xml">Final archive operations.</module>
+    <module path="lib/continuum.xml">Telemetry watchers.</module>
+  </layer>
+</engineering-layers>
+<appendices>
+  <appendix id="A">
+    <title>Hydration Matrix</title>
+    <dataset source="lib/iteration.xml">Normalized hydration results per species.</dataset>
+  </appendix>
+  <appendix id="B">
+    <title>Governance Checklist</title>
+    <checklist source="lib/continuum.xml">Control-plane requirements for amphibian rollouts.</checklist>
+  </appendix>
+</appendices>
+</amphibian-project>

@@ -1,0 +1,44 @@
+<document>
+<meta>
+  <title>Sample XML lifecycle</title>
+  <description>Demonstrates how to walk through XML-Lib artifacts.</description>
+</meta>
+<phases>
+  <phase name="begin">
+    <use path="lib/begin.xml">Load canonical bootstrap directives.</use>
+    <payload>
+      <note>Custom header content injected after begin.xml template.</note>
+    </payload>
+  </phase>
+  <phase name="start">
+    <use path="lib/start.xml">Apply start-phase engineering constraints.</use>
+    <payload>
+      <note>Set iteration envelope to 3 cycles.</note>
+    </payload>
+  </phase>
+  <phase name="iteration">
+    <use path="lib/iteration.xml">Execute per-cycle workflow.</use>
+    <payload>
+      <iteration id="alpha">Transform dataset A.</iteration>
+      <iteration id="beta">Transform dataset B.</iteration>
+    </payload>
+  </phase>
+  <phase name="end">
+    <use path="lib/end.xml">Finalize the archive and validations.</use>
+    <payload>
+      <note>Attach QA sign-off ticket #42.</note>
+    </payload>
+  </phase>
+  <phase name="continuum">
+    <use path="lib/continuum.xml">Extend lifecycle into governance plane.</use>
+    <payload>
+      <telemetry override="true">Enable latency and throughput streams.</telemetry>
+      <simulation-mode>stress</simulation-mode>
+    </payload>
+  </phase>
+</phases>
+<summary>
+  <status>complete</status>
+  <next-action>Monitor telemetry for 24h before public release.</next-action>
+</summary>
+</document>

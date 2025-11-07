@@ -1,0 +1,16 @@
+<guardrail-axioms>
+<commenet>Logic skeleton that all guardrail proofs depend on</commenet>
+<reference path="../guardrails/begin.xml">Inherit charter invariants.</reference>
+<reference path="../guardrails/middle.xml">Model the engineering fixed point.</reference>
+<reference path="../guardrails/end.xml">Bind archival obligations.</reference>
+<definitions>
+  <definition id="state">Tuple (scope, failure-mode, telemetry-vector).</definition>
+  <definition id="constraint">Predicate over state returning {true,false}.</definition>
+  <definition id="enforcement">Transformation that maps state to state while preserving constraint truth.</definition>
+</definitions>
+<axiom id="A1">FORALL state s: guardrails-begin invariants imply EXISTS constraint c such that c(s)=true.</axiom>
+<axiom id="A2">FORALL constraint c satisfied at s, guardrails-middle fixed-point model ensures EXISTS enforcement e preserving c after any iteration.</axiom>
+<axiom id="A3">FORALL enforcement e produced in guardrails-middle, guardrails-end handshake preserves e checksum if and only if telemetry hooks remain attached.</axiom>
+<axiom id="A4">FORALL states s1,s2 with identical control-plane hashes, continuum bindings guarantee s1=s2 in observable outputs.</axiom>
+<axiom id="A5">The validation-matrix in guardrails-middle is complete: FORALL scope,failure-mode pairs there exists at least one enforcement artifact.</axiom>
+</guardrail-axioms>

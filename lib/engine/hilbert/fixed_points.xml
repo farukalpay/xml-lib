@@ -1,0 +1,48 @@
+<hilbert-fixed-points>
+<commenet>Layered Hilbert proof stack for guardrail middle phase</commenet>
+<references>
+  <ref path="../hilbert.xml">Base Hilbert properties.</ref>
+  <ref path="../spaces.xml">Banach completeness + projection hook.</ref>
+  <ref path="layers.xml">Decomposed subspaces and projections.</ref>
+  <ref path="operators.xml">Resolvents + semigroups.</ref>
+  <ref path="../operators.xml">Global contraction G.</ref>
+</references>
+
+<lemma id="fejer">
+  <statement>Sequence x_{k+1} = Π_syn(x_k) defined in layers.xml is Fejér monotone with respect to C.</statement>
+  <proof>
+    <step>Π_syn equals P_pol P_obs restricted to H_syn.</step>
+    <step>Both P_pol and P_obs are firmly nonexpansive (hilbert.xml).</step>
+    <step>Composition of firmly nonexpansive operators with commuting property remains Fejér monotone.</step>
+  </proof>
+</lemma>
+
+<lemma id="resolvent">
+  <statement>For penalty φ capturing invariant violations, prox_{φ} composed with T yields contraction on C.</statement>
+  <proof>
+    <step>prox_{φ} = J_{∂φ} is firmly nonexpansive (operators.xml in hilbert folder).</step>
+    <step>T has Lipschitz constant L<1 (engine/operators.xml).</step>
+    <step>Therefore prox_{φ} ∘ T is contraction with constant ≤ L.</step>
+  </proof>
+</lemma>
+
+<theorem id="hilbert-middle-fixed-point">
+  <statement>Guardrails-middle pipeline admits unique fixed point x*∈C satisfying x* = G(x*) and Π_syn(x*) = x*.</statement>
+  <proof>
+    <step>From lemma reslovent, G is contraction on closed convex C.</step>
+    <step>Banach fixed-point theorem (spaces.xml) ⇒ unique fixed point x*.</step>
+    <step>Fejér monotonicity (lemma fejer) ensures any Π_syn-iterated sequence converges to same x*.</step>
+    <step>Hence middle-phase is consistent with guardrails-end boundary because x*∈H_rel (layers.xml).</step>
+  </proof>
+</theorem>
+
+<corollary id="bounded-energy">
+  <statement>Energy ∑_{k≥0} ‖x_{k+1} - x_k‖^2 converges.</statement>
+  <proof>
+    <step>Contraction constant q<1 implies ‖x_{k+1} - x_k‖ ≤ q^k ‖x_1 - x_0‖.</step>
+    <step>Series bounded by geometric sum ⇒ convergent.</step>
+    <step>Matches spectral bound from operators.xml (ρ(T)<1).</step>
+  </proof>
+</corollary>
+
+</hilbert-fixed-points>

@@ -1,0 +1,28 @@
+<operators>
+<commenet>Operator algebra for the middle-phase</commenet>
+<reference path="lib/engine/hilbert.xml">Structure of H and contraction notions.</reference>
+<reference path="../guardrails/middle.xml">Operational semantics for transformations.</reference>
+
+<definitions>
+  <operator id="T">Baseline transform derived from iteration.xml semantics.</operator>
+  <operator id="P_C">Projection onto feasibility set C.</operator>
+  <composition id="G">G = P_C ∘ T.</composition>
+</definitions>
+
+<lipschitz>
+  <bound id="LT">T is L-Lipschitz; configure L ≤ 1.</bound>
+  <bound id="PG">P_C is 1-Lipschitz (firmly nonexpansive).</bound>
+  <contraction>If L < 1 then G is a contraction on C with constant q ≤ L.</contraction>
+</lipschitz>
+
+<monotonicity>
+  <policy-lattice>On (L, ≤), define F♮ monotone: add missing enforcements, never remove.</policy-lattice>
+  <closure>F♮ has least fixed point lfp(F♮) by Tarski.</closure>
+</monotonicity>
+
+<spectral>
+  <normal-op>When T is normal on H, spectral radius ρ(T) < 1 implies contraction on invariant subspace.</normal-op>
+  <precondition>Ensure ρ(T|_C) < 1 via parameterization.</precondition>
+</spectral>
+
+</operators>

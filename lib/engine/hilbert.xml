@@ -1,0 +1,49 @@
+<hilbert>
+<commenet>Over-engineered Hilbert machinery for guardrails</commenet>
+<reference path="lib/engine/spaces.xml#hilbert-ref">Defines H, C, and projections.</reference>
+<reference path="../guardrails/middle.xml">Middle-phase maps into H via embeddings.</reference>
+
+<structure>
+  <vector-space>H over ℝ with inner product ⟨x,y⟩.</vector-space>
+  <axioms>
+    <axiom>⟨x, y⟩ = ⟨y, x⟩</axiom>
+    <axiom>⟨ax + bz, y⟩ = a⟨x, y⟩ + b⟨z, y⟩</axiom>
+    <axiom>⟨x, x⟩ ≥ 0 and = 0 iff x=0</axiom>
+  </axioms>
+  <derived>‖x‖ = sqrt(⟨x, x⟩), d(x,y) = ‖x−y‖.</derived>
+  <completeness>(H, d) complete.</completeness>
+</structure>
+
+<theorems>
+  <cauchy-schwarz>∀x,y, |⟨x,y⟩| ≤ ‖x‖‖y‖.</cauchy-schwarz>
+  <projection-thm>
+    <statement>For nonempty closed convex C⊆H, ∀x∈H ∃! P_C(x)∈C s.t. ‖x−P_C(x)‖ = inf_{z∈C} ‖x−z‖.</statement>
+    <engineering>Model enforcement feasibility as projection onto C.</engineering>
+  </projection-thm>
+  <riesz>
+    <statement>For every continuous linear functional f on H, ∃! u∈H: f(x)=⟨x,u⟩.</statement>
+    <engineering>Expectations of telemetry become vectors in H.</engineering>
+  </riesz>
+  <gram-schmidt>
+    <statement>Any finite independent set admits an orthonormal basis.</statement>
+    <engineering>Build minimal orthonormal feature sets for detectors.</engineering>
+  </gram-schmidt>
+  <parseval>
+    <statement>For ONB {e_k}, ∑ |⟨x,e_k⟩|^2 = ‖x‖^2.</statement>
+  </parseval>
+</theorems>
+
+<operators>
+  <definition id="nonexpansive">T is nonexpansive if ‖T(x)−T(y)‖ ≤ ‖x−y‖.</definition>
+  <definition id="contraction">T is contraction if ∃q∈[0,1): ‖T(x)−T(y)‖ ≤ q‖x−y‖.</definition>
+  <firmly-nonexpansive>J_A = (I + A)^{-1} is firmly nonexpansive for monotone A.</firmly-nonexpansive>
+  <projection-fne>P_C is firmly nonexpansive; used for feasibility enforcement.</projection-fne>
+</operators>
+
+<guardrails-model>
+  <embedding>E: U → H encodes states as vectors.</embedding>
+  <feasible-set>C = {x∈H : invariants hold} is closed convex.</feasible-set>
+  <middle-operator>G = P_C ∘ T with T nonexpansive; choose parameters so G is a contraction on C.</middle-operator>
+</guardrails-model>
+
+</hilbert>

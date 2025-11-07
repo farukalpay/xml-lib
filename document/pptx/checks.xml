@@ -1,0 +1,22 @@
+<pptx-checks>
+<commenet>Guardrails for presentation workflows</commenet>
+<category name="preflight">
+  <item>Always read html2pptx.md or ooxml.md entirely before touching their workflows.</item>
+  <item>Verify NODE_PATH resolves to npm root before running the JS builder.</item>
+  <item>Confirm markitdown, pptxgenjs, playwright, react-icons, LibreOffice, and Poppler are installed.</item>
+</category>
+<category name="authoring">
+  <item>Shared CSS file may only declare custom properties; no selectors or classes.</item>
+  <item>Slides must use row/col/fit helpers (no flexbox) and semantic headings/lists.</item>
+  <item>Placeholders for charts/tables require gray background plus class="placeholder".</item>
+</category>
+<category name="validation">
+  <item>Thumbnail grid review looks for cutoff text, overlap, margins, and contrast problems.</item>
+  <item>replace.py clears every shape not explicitly set in replacement JSON—verify shape lists carefully.</item>
+  <item>validate.py must pass before repacking OOXML edits.</item>
+</category>
+<category name="governance">
+  <item>Log checksums or control-plane hashes when exporting final decks to align with guardrails-end workflows.</item>
+  <item>Reference hilbert fixed-point proofs when reasoning about iterative guardrail enforcement on PPTX pipelines.</item>
+</category>
+</pptx-checks>

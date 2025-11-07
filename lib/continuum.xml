@@ -1,0 +1,41 @@
+<continuum>
+<commenet>Extend lifecycle beyond end-state for engineering governance</commenet>
+<reference path="lib/end.xml">Activate only after end.xml archives the canonical bundle.</reference>
+<xml-engineering>
+  <guideline>Snapshot every structural hash from end.xml to `control-plane/checksums/checksum` so drift becomes observable.</guideline>
+  <guideline>Promote interface contracts into the service mesh registry below to orchestrate downstream consumers.</guideline>
+  <guideline>Keep heuristics deterministic by binding all random seeds in `simulation/parameters`.</guideline>
+</xml-engineering>
+<control-plane>
+  <checksums>
+    <checksum type="schema" algorithm="sha256">TODO:inject-schema-digest</checksum>
+    <checksum type="payload" algorithm="blake3">TODO:inject-payload-digest</checksum>
+  </checksums>
+  <policies>
+    <policy id="retry">Cap mutation retries at 3 to avoid oscillating handoffs.</policy>
+    <policy id="quarantine">Route inconsistent nodes to the quarantine topic for manual inspection.</policy>
+  </policies>
+</control-plane>
+<simulation>
+  <parameters>
+    <param name="seed">0xDEADBEEF</param>
+    <param name="iterations">500</param>
+    <param name="noise-floor">0.0001</param>
+  </parameters>
+  <scenarios>
+    <scenario id="stress">Replay 10x load using archived snapshots.</scenario>
+    <scenario id="rollback">Validate recovery by rewinding to begin.xml state.</scenario>
+    <scenario id="forward">Project schema evolution for two future releases.</scenario>
+  </scenarios>
+</simulation>
+<telemetry>
+  <stream name="latency" units="ms" aggregation="p95">Ensure transform latency stays under 40ms.</stream>
+  <stream name="throughput" units="docs/s" aggregation="avg">Maintain 25 docs/s across shards.</stream>
+  <stream name="compliance" units="percent" aggregation="min">Keep policy adherence at 100%.</stream>
+</telemetry>
+<handoff>
+  <step order="1" type="freeze">Lock configuration hashes and publish them to the registry.</step>
+  <step order="2" type="broadcast">Emit release notification to dependent pipelines.</step>
+  <step order="3" type="watch">Run telemetry watchers for 24h to validate stability.</step>
+</handoff>
+</continuum>

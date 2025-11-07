@@ -1,0 +1,36 @@
+<hilbert-operators>
+<commenet>Over-engineered operator kit for middle-phase guardrails</commenet>
+<reference path="../operators.xml">Global contraction + lattice constraints.</reference>
+<reference path="../hilbert.xml">Nonexpansive + contraction definitions.</reference>
+
+<resolvents>
+  <definition id="JA">J_A = (I + λA)^{-1} for maximal monotone A.</definition>
+  <property>J_A firmly nonexpansive ⇒ suitable for guardrail feasibility projections.</property>
+  <usage>Choose A as normal cone operator of C derived from guardrails-begin invariants.</usage>
+</resolvents>
+
+<proximal>
+  <definition>prox_{φ}(x) = argmin_z φ(z) + (1/2λ)‖z - x‖^2.</definition>
+  <mapping>Use φ as penalty counting invariant violations pulled from guardrails-middle validation matrix.</mapping>
+  <relation>prox_{φ} = J_{∂φ} (Moreau identity) = layered onto G in operators.xml.</relation>
+</proximal>
+
+<semigroup>
+  <definition>Continuous semigroup {S(t)}_{t≥0} with S(0)=I, S(t+s)=S(t)S(s).</definition>
+  <generator>A defined via strong limit: A x = lim_{t→0+} (S(t)x - x)/t.</generator>
+  <engineering>Encode gradual guardrail ramp-ups as S(t); ensure generator dissipative to keep norms bounded.</engineering>
+</semigroup>
+
+<spectral>
+  <decomposition>When T is normal contraction, T = ∫_σ λ dE(λ).</decomposition>
+  <guardrail-view>Partition σ into safe vs corrective bands; adjust policies via spectral projectors.</guardrail-view>
+  <bound>ρ(T)<1 ensures ∑_{k≥0} T^k converges ⇒ finite energy for enforcement sequences.</bound>
+</spectral>
+
+<commutators>
+  <definition>[P_obs, P_pol] = P_obs P_pol - P_pol P_obs.</definition>
+  <property>‖[P_obs, P_pol]‖ controls divergence between observability/policy layers (see layers.xml).</property>
+  <engineering>Enforce norm ≤ ε derived from continuum telemetry budgets.</engineering>
+</commutators>
+
+</hilbert-operators>

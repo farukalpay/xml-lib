@@ -1,0 +1,83 @@
+<pptx-workflows>
+<commenet>Detailed middle-focused procedures for PPTX engineering</commenet>
+
+<workflow id="analysis">
+  <goal>Read presentation content without altering it.</goal>
+  <steps>
+    <step order="1">Convert deck text to markdown using markitdown for quick triage.</step>
+    <step order="2">Unzip with skills/pptx/ooxml/scripts/unpack.py into a scratch directory.</step>
+    <step order="3">Inspect ppt/presentation.xml for slide ordering and metadata.</step>
+    <step order="4">Check ppt/slides/slideN.xml plus notesSlides, comments, layouts, masters, and theme files for styling intel.</step>
+    <step order="5">Use grep/rg to search for color nodes (&lt;a:solidFill&gt;, &lt;a:srgbClr&gt;) or font nodes (&lt;a:fontScheme&gt;).</step>
+  </steps>
+</workflow>
+
+<workflow id="build-from-html">
+  <goal>Create a brand-new presentation without templates.</goal>
+  <prechecks>
+    <check>Read html2pptx.md from start to finish—no skipping.</check>
+    <check>Ensure npm global install: npm list -g @ant/html2pptx || npm install -g skills/pptx/html2pptx.tgz.</check>
+    <check>Confirm pptxgenjs, playwright, and markitdown are present.</check>
+  </prechecks>
+  <phases>
+    <phase name="planning">
+      <action>Define deck tone, palette, typography, and slide-by-slide outline with layout + speaker note descriptions.</action>
+    </phase>
+    <phase name="css">
+      <action>Create shared CSS file containing only custom property declarations for colors, fonts, spacing.</action>
+    </phase>
+    <phase name="html">
+      <action>Author one HTML file per slide (e.g., 960×540 body) embedding the shared CSS via &lt;style&gt;, using row/col/fit helpers, semantic headings/lists, placeholders for charts/tables, and CSS variables for every color/font.</action>
+    </phase>
+    <phase name="conversion">
+      <action>Run NODE_PATH=\"$(npm root -g)\" node scripts/build-deck.js 2&gt;&amp;1 to convert HTML via html2pptx.</action>
+      <code language="javascript"><![CDATA[
+const PptxGen = require("pptxgenjs");
+const { html2pptx } = require("@ant/html2pptx");
+
+async function build() {
+  const deck = new PptxGen();
+  deck.layout = "LAYOUT_16x9";
+
+  await html2pptx("slides/slide1.html", deck);
+  const { slide, placeholders } = await html2pptx("slides/slide2.html", deck);
+  slide.addChart(deck.charts.LINE, chartData, placeholders[0]);
+
+  await deck.writeFile("output.pptx");
+}
+
+build().catch(console.error);
+      ]]></code>
+    </phase>
+    <phase name="validation">
+      <action>Generate thumbnails via python scripts/thumbnail.py output.pptx thumbs --cols 4 and inspect for clipping/contrast/spacing; iterate until clean.</action>
+    </phase>
+  </phases>
+</workflow>
+
+<workflow id="edit-ooxml">
+  <goal>Modify an existing deck at the XML layer.</goal>
+  <steps>
+    <step order="1">Read ooxml.md completely.</step>
+    <step order="2">Unpack: python skills/pptx/ooxml/scripts/unpack.py deck.pptx work/unpacked.</step>
+    <step order="3">Edit ppt/slides/slideN.xml, layouts, masters, theme, etc., as needed.</step>
+    <step order="4">Validate after each logical chunk: python skills/pptx/ooxml/scripts/validate.py work/unpacked --original deck.pptx.</step>
+    <step order="5">Repack when clean: python skills/pptx/ooxml/scripts/pack.py work/unpacked deck-new.pptx.</step>
+  </steps>
+</workflow>
+
+<workflow id="template-remix">
+  <goal>Build a new deck from a template while preserving design intent.</goal>
+  <steps>
+    <step order="1">Extract template text via python -m markitdown template.pptx &gt; template-content.md and read fully.</step>
+    <step order="2">Generate thumbnail grids: python scripts/thumbnail.py template.pptx analysis --cols 4.</step>
+    <step order="3">Author template-inventory.md enumerating every slide (index, layout, purpose).</step>
+    <step order="4">Write outline.md mapping your new content sections to template slide indices (0-based).</step>
+    <step order="5">Use scripts/rearrange.py template.pptx working.pptx idx0,idx1,... to duplicate/reorder slides.</step>
+    <step order="6">Extract text inventory: python scripts/inventory.py working.pptx text-inventory.json and study the full JSON (no slicing).</step>
+    <step order="7">Prepare replacement-text.json referencing actual slide/shape ids, copying necessary paragraph properties (bullets, alignment, fonts, colors, spacing).</step>
+    <step order="8">Apply replacements: python scripts/replace.py working.pptx replacement-text.json output.pptx; fix any validation overflow errors reported.</step>
+  </steps>
+</workflow>
+
+</pptx-workflows>

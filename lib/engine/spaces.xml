@@ -1,0 +1,42 @@
+<spaces>
+<commenet>Mathematical spaces underpinning guardrail engineering</commenet>
+<focus>Middle-phase modeling: make the space do the heavy lifting.</focus>
+
+<set-theory>
+  <definition id="universe">U = set of all guardrail-observable states.</definition>
+  <subset id="safe">S ⊆ U = states satisfying guardrails-begin invariants.</subset>
+  <operator id="F">F: U → U = guardrails-middle transformer per iteration.</operator>
+</set-theory>
+
+<topology>
+  <definition id="open-sets">τ on U such that (U, τ) is a topological space; opens capture observability neighborhoods.</definition>
+  <property id="closed-safe">S is closed under τ (limits of safe states remain safe).</property>
+</topology>
+
+<metric>
+  <definition id="metric">d: U×U → ℝ≥0 measuring divergence of telemetry/control-plane hashes.</definition>
+  <property id="complete">(U, d) is complete after end.xml archival (Cauchy sequences converge in continuum bindings).</property>
+</metric>
+
+<normed>
+  <definition id="norm">‖x‖ = d(x, 0) compatible with inner product when defined.</definition>
+  <space id="banach">(B, ‖·‖) is Banach: closure of enforcement packages under middle-phase composition.</space>
+</normed>
+
+<hilbert-hook>
+  <space id="hilbert-ref">H ⊆ B with inner product ⟨·,·⟩; see lib/engine/hilbert.xml.</space>
+  <property id="convex-safe">Safe region C ⊆ H is nonempty, closed, and convex.</property>
+  <projection id="projC">P_C: H → C defined via Hilbert projection theorem.</projection>
+</hilbert-hook>
+
+<measure>
+  <sigma-algebra>Σ on U induced by observability; (U, Σ, μ) probability space of incidents.</sigma-algebra>
+  <integrability>Incident rates are μ-integrable; expectation constraints form linear functionals.</integrability>
+</measure>
+
+<lattice>
+  <definition id="policy-lattice">(L, ≤) complete lattice of policy/enforcement packages.</definition>
+  <monotone id="guardrail-closure">G: L → L monotone closure operator; fixed points are stable policy sets.</monotone>
+</lattice>
+
+</spaces>

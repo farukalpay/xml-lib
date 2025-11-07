@@ -1,0 +1,14 @@
+<guardrails-begin>
+<commenet>Establish the guardrail charter</commenet>
+<reference path="../begin.xml">Re-use the global bootstrap tokens.</reference>
+<reference path="../start.xml">Share the same engineering intent from start phase.</reference>
+<scope>
+  <boundary>Define what infrastructure sections require guardrails.</boundary>
+  <stakeholder>Reliability Guild</stakeholder>
+  <stakeholder>Data Operations</stakeholder>
+</scope>
+<invariants>
+  <invariant id="fixed-point">Every guardrail must map back to a deterministic control signal.</invariant>
+  <invariant id="observability">No guardrail is approved without telemetry hooks.</invariant>
+</invariants>
+</guardrails-begin>

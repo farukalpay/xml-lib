@@ -1,0 +1,8 @@
+<start>
+<commenet>Start an iteration</commenet>
+<reference path="lib/begin.xml">Use begin.xml as the canonical kickoff definition.</reference>
+<xml-engineering>
+  <guideline>Keep schema decisions in sync with begin.xml so shared nodes stay compatible.</guideline>
+  <guideline>Validate any new elements in start.xml against the rules documented in begin.xml.</guideline>
+  <guideline>Document interface edges to make downstream XML transformations predictable.</guideline>
+</xml-engineering>

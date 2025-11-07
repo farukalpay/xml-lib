@@ -1,0 +1,19 @@
+<hilbert-blueprint>
+<commenet>Scope + layering for hilbert folder (engineering stays in the middle)</commenet>
+<references>
+  <ref path="../../engine/spaces.xml">Global spaces + Banach/Hilbert linkage.</ref>
+  <ref path="../../guardrails/middle.xml">Operational middle-phase semantics.</ref>
+  <ref path="../../engine/hilbert.xml">Top-level Hilbert description.</ref>
+</references>
+<layers>
+  <layer id="foundation">Re-state H, C, projections, embeddings.</layer>
+  <layer id="spectral">Track operators, eigen-structure, resolvents.</layer>
+  <layer id="proximal">Capture projections, resolvents, Fejér monotone sequences.</layer>
+  <layer id="proof">Assemble lemmas/theorems connecting guardrails invariants.</layer>
+</layers>
+<constraints>
+  <constraint>Do not introduce references outside existing XML artifacts.</constraint>
+  <constraint>All claims must trace back to guardrails middle-phase invariants or continuum telemetry.</constraint>
+  <constraint>Maintain emphasis on middle-phase engineering; begin/end only boundary anchors.</constraint>
+</constraints>
+</hilbert-blueprint>

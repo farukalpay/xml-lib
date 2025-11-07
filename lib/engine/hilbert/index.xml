@@ -1,0 +1,14 @@
+<hilbert-index>
+<commenet>Index of Hilbert folder artifacts</commenet>
+<entries>
+  <entry file="blueprint.xml">Scope + constraints for hilbert stack.</entry>
+  <entry file="layers.xml">Decomposed subspaces (observability, policy, incident, synthesis, release).</entry>
+  <entry file="operators.xml">Resolvents, proximal maps, semigroups, spectral controls.</entry>
+  <entry file="fixed_points.xml">Fejér monotonicity + Banach fixed-point proof specialized for guardrails.</entry>
+</entries>
+<integration>
+  <dependency>Relies on lib/engine/spaces.xml for Banach/Hilbert properties.</dependency>
+  <dependency>Relies on lib/engine/operators.xml for contraction constants.</dependency>
+  <bridge>Feeds proofs back into lib/engine/proof.xml to keep global reasoning aligned.</bridge>
+</integration>
+</hilbert-index>

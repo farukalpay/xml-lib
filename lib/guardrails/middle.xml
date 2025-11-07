@@ -1,0 +1,53 @@
+<guardrails-middle>
+<commenet>Engineer the living guardrail fabric</commenet>
+<reference path="../guardrails/begin.xml">Consume charter + invariants.</reference>
+<reference path="../iteration.xml">Embed iteration discipline inside guardrails.</reference>
+<reference path="../continuum.xml">Publish telemetry + governance bindings.</reference>
+<fixed-point-model>
+  <anchor name="input">Charter statements from guardrails-begin.</anchor>
+  <anchor name="output">Validated enforcement packages consumed by guardrails-end.</anchor>
+  <constraint>All transformations must be reversible and auditable.</constraint>
+</fixed-point-model>
+<engineering-layers>
+  <layer name="policy-transpiler">
+    <source>human-readable guardrail specs</source>
+    <compiler>transpile to XML schema snippets referencing start.xml contracts</compiler>
+    <artifact>build/guardrails/policies/*.xml</artifact>
+  </layer>
+  <layer name="simulator">
+    <seed path="../continuum.xml/simulation/parameters">Reuse deterministic seeds.</seed>
+    <scenario>Dark launch guardrail enforcement on mirrored traffic.</scenario>
+    <scenario>Back-test violations against archived snapshots from iteration.xml.</scenario>
+  </layer>
+  <layer name="telemetry-router">
+    <input>control-plane streams defined in continuum.xml</input>
+    <output>dedicated guardrail dashboards + alert topics</output>
+  </layer>
+</engineering-layers>
+<validation-matrix>
+  <dimension name="scope">
+    <value>API</value>
+    <value>Database</value>
+    <value>Workflow</value>
+  </dimension>
+  <dimension name="failure-mode">
+    <value>Latency</value>
+    <value>Data Drift</value>
+    <value>Policy Evasion</value>
+  </dimension>
+  <rule id="r1">Each (scope,failure-mode) cell must cite at least one enforcement file.</rule>
+  <rule id="r2">All enforcement files must reference guardrails-middle metadata mark.</rule>
+</validation-matrix>
+<control-loops>
+  <loop id="detect">
+    <input>telemetry streams</input>
+    <processor>anomaly detector w/ static threshold</processor>
+    <output>incident tickets</output>
+  </loop>
+  <loop id="respond">
+    <input>incident tickets</input>
+    <processor>playbook referencing guardrails-end actions</processor>
+    <output>patched guardrail packages</output>
+  </loop>
+</control-loops>
+</guardrails-middle>

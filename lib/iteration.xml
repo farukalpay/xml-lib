@@ -1,0 +1,14 @@
+<iteration>
+<commenet>Iterate over document states</commenet>
+<reference path="lib/start.xml">Enter the loop only after start.xml establishes the baseline.</reference>
+<xml-engineering>
+  <guideline>Carry forward the schema contract emitted from start.xml so downstream nodes remain stable.</guideline>
+  <guideline>Annotate each iteration with a stage attribute to enable deterministic diffing.</guideline>
+  <guideline>Persist iteration outputs atomically to keep incremental parsers consistent.</guideline>
+</xml-engineering>
+<steps>
+  <step id="prepare">Load the context emitted by start.xml.</step>
+  <step id="loop">Apply the transformation defined for this iteration.</step>
+  <step id="handoff">Emit the iteration snapshot for the next XML stage.</step>
+</steps>
+</iteration>
