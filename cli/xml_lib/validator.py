@@ -97,7 +97,7 @@ class Validator:
                 result.checksums[str(xml_file)] = checksum
 
                 # Store in content-addressed storage
-                stored_path = self.content_store.store(content, checksum)
+                self.content_store.store(content, checksum)
 
                 # Validate with Relax NG
                 self._validate_relaxng(doc, xml_file, result)
