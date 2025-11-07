@@ -7,6 +7,7 @@ from typing import Optional
 @dataclass
 class ValidationError:
     """A validation error or warning."""
+
     file: str
     line: Optional[int]
     column: Optional[int]

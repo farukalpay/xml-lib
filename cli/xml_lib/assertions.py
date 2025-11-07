@@ -74,7 +74,9 @@ class AssertionLedger:
 
             # Summary
             summary = etree.SubElement(assertion, "summary")
-            etree.SubElement(summary, "files-validated").text = str(len(result.validated_files))
+            etree.SubElement(summary, "files-validated").text = str(
+                len(result.validated_files)
+            )
             etree.SubElement(summary, "errors").text = str(len(result.errors))
             etree.SubElement(summary, "warnings").text = str(len(result.warnings))
 

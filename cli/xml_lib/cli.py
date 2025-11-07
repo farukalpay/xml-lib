@@ -33,8 +33,7 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: Optional[str]) ->
     # Initialize telemetry
     if telemetry != "none":
         ctx.obj["telemetry"] = TelemetrySink.create(
-            backend=telemetry,
-            target=telemetry_target or f"out/telemetry.{telemetry}"
+            backend=telemetry, target=telemetry_target or f"out/telemetry.{telemetry}"
         )
     else:
         ctx.obj["telemetry"] = None
@@ -43,9 +42,15 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: Optional[str]) ->
 @main.command()
 @click.argument("project_path", type=click.Path(exists=True))
 @click.option("--schemas-dir", default="schemas", help="Directory containing schemas")
-@click.option("--guardrails-dir", default="guardrails", help="Directory containing guardrails")
-@click.option("--output", "-o", default="out/assertions.xml", help="Output assertions file")
-@click.option("--jsonl", default="out/assertions.jsonl", help="JSON Lines output for CI")
+@click.option(
+    "--guardrails-dir", default="guardrails", help="Directory containing guardrails"
+)
+@click.option(
+    "--output", "-o", default="out/assertions.xml", help="Output assertions file"
+)
+@click.option(
+    "--jsonl", default="out/assertions.jsonl", help="JSON Lines output for CI"
+)
 @click.option("--strict", is_flag=True, help="Fail on warnings")
 @click.pass_context
 def validate(
@@ -79,7 +84,9 @@ def validate(
         click.echo("✅ Validation passed")
         sys.exit(0)
     else:
-        click.echo(f"❌ Validation failed: {len(result.errors)} errors, {len(result.warnings)} warnings")
+        click.echo(
+            f"❌ Validation failed: {len(result.errors)} errors, {len(result.warnings)} warnings"
+        )
         for error in result.errors[:10]:  # Show first 10
             click.echo(f"  ERROR: {error}")
         if strict and result.warnings:
@@ -90,8 +97,12 @@ def validate(
 
 @main.command()
 @click.argument("project_path", type=click.Path(exists=True))
-@click.option("--output-dir", "-o", default="out/site", help="Output directory for HTML")
-@click.option("--xslt-dir", default="schemas/xslt", help="Directory containing XSLT templates")
+@click.option(
+    "--output-dir", "-o", default="out/site", help="Output directory for HTML"
+)
+@click.option(
+    "--xslt-dir", default="schemas/xslt", help="Directory containing XSLT templates"
+)
 @click.pass_context
 def publish(
     ctx: click.Context,

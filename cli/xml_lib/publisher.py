@@ -12,6 +12,7 @@ from xml_lib.telemetry import TelemetrySink
 @dataclass
 class PublishResult:
     """Result of publishing operation."""
+
     success: bool
     files: List[str] = field(default_factory=list)
     error: Optional[str] = None
@@ -175,6 +176,12 @@ class Publisher:
         result = PublishResult(success=True)
 
         try:
+            # Check if project path exists
+            if not project_path.exists():
+                result.success = False
+                result.error = f"Project path does not exist: {project_path}"
+                return result
+
             # Create output directory
             output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -185,9 +192,16 @@ class Publisher:
 
             # Find all XML files
             xml_files = [
-                f for f in project_path.rglob("*.xml")
+                f
+                for f in project_path.rglob("*.xml")
                 if "schema" not in str(f) and f.parent.name != "guardrails"
             ]
+
+            # Check if there are any files to publish
+            if not xml_files:
+                result.success = False
+                result.error = f"No XML files found in {project_path}"
+                return result
 
             # Transform each file
             for xml_file in xml_files:
@@ -231,7 +245,8 @@ class Publisher:
 
     def _create_index(self, output_dir: Path, files: List[str]) -> None:
         """Create an index.html page."""
-        html = """<!DOCTYPE html>
+        html = (
+            """<!DOCTYPE html>
 <html>
 <head>
     <title>XML-Lib Documentation</title>
@@ -246,10 +261,13 @@ class Publisher:
 </head>
 <body>
     <h1>XML-Lib Documentation</h1>
-    <p>Generated on """ + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + """</p>
+    <p>Generated on """
+            + datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            + """</p>
     <h2>Documents</h2>
     <ul>
 """
+        )
         for file in sorted(files):
             rel_path = Path(file).relative_to(output_dir)
             name = rel_path.stem.replace("_", " ").title()

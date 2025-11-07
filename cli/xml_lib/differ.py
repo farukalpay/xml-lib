@@ -11,6 +11,7 @@ from xml_lib.telemetry import TelemetrySink
 
 class DiffType(Enum):
     """Type of difference."""
+
     ADDED = "added"
     REMOVED = "removed"
     MODIFIED = "modified"
@@ -20,6 +21,7 @@ class DiffType(Enum):
 @dataclass
 class Difference:
     """A structural difference between documents."""
+
     type: DiffType
     path: str
     old_value: Optional[str] = None
@@ -56,12 +58,13 @@ class Difference:
         """Truncate long text."""
         if len(text) <= max_len:
             return text
-        return text[:max_len-3] + "..."
+        return text[: max_len - 3] + "..."
 
 
 @dataclass
 class DiffResult:
     """Result of diff operation."""
+
     identical: bool
     differences: List[Difference]
 
@@ -116,7 +119,8 @@ class Differ:
             # Compare
             differences = []
             self._compare_elements(
-                root1, root2,
+                root1,
+                root2,
                 path=root1.tag,
                 differences=differences,
                 explain=explain,

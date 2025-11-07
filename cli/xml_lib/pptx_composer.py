@@ -13,6 +13,7 @@ from xml_lib.telemetry import TelemetrySink
 @dataclass
 class RenderResult:
     """Result of PowerPoint rendering."""
+
     success: bool
     slide_count: int = 0
     citation_count: int = 0
@@ -139,7 +140,9 @@ class PPTXComposer:
 
         # Add timestamp citation
         if phase.get("timestamp"):
-            citations.append(f"Phase '{phase_name}' timestamp: {phase.get('timestamp')}")
+            citations.append(
+                f"Phase '{phase_name}' timestamp: {phase.get('timestamp')}"
+            )
 
         # Build content
         content_lines = []

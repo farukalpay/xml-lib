@@ -95,10 +95,11 @@ def test_diff_detects_additions(differ, xml_files):
 
     result = differ.diff(file1, file2)
 
-    # Should detect new phase
+    # Should detect new phase (will be detected as document/phases/phase[2])
     added_diffs = [
-        d for d in result.differences
-        if d.type == DiffType.ADDED and "start" in str(d.path)
+        d
+        for d in result.differences
+        if d.type == DiffType.ADDED and "phase" in str(d.path).lower()
     ]
     assert len(added_diffs) > 0
 

@@ -10,6 +10,7 @@ from typing import Any, Dict
 
 try:
     import psycopg2
+
     POSTGRES_AVAILABLE = True
 except ImportError:
     POSTGRES_AVAILABLE = False
@@ -18,6 +19,7 @@ except ImportError:
 @dataclass
 class TelemetryEvent:
     """A telemetry event."""
+
     timestamp: datetime
     event_type: str
     data: Dict[str, Any]
@@ -127,14 +129,16 @@ class SQLiteTelemetrySink(TelemetrySink):
 
     def _init_schema(self) -> None:
         """Initialize database schema."""
-        self.conn.execute("""
+        self.conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS telemetry_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp TEXT NOT NULL,
                 event_type TEXT NOT NULL,
                 data TEXT NOT NULL
             )
-        """)
+        """
+        )
         self.conn.commit()
 
     def log_event(self, event_type: str, **kwargs: Any) -> None:
@@ -167,14 +171,16 @@ class PostgresTelemetrySink(TelemetrySink):
     def _init_schema(self) -> None:
         """Initialize database schema."""
         with self.conn.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 CREATE TABLE IF NOT EXISTS telemetry_events (
                     id SERIAL PRIMARY KEY,
                     timestamp TIMESTAMPTZ NOT NULL,
                     event_type TEXT NOT NULL,
                     data JSONB NOT NULL
                 )
-            """)
+            """
+            )
             self.conn.commit()
 
     def log_event(self, event_type: str, **kwargs: Any) -> None:

@@ -12,6 +12,7 @@ from xml_lib.types import ValidationError
 @dataclass
 class GuardrailRule:
     """A compiled guardrail rule."""
+
     id: str
     name: str
     description: str
@@ -25,6 +26,7 @@ class GuardrailRule:
 @dataclass
 class GuardrailResult:
     """Result of guardrail validation."""
+
     errors: List[ValidationError] = field(default_factory=list)
     warnings: List[ValidationError] = field(default_factory=list)
     rules_checked: int = 0
@@ -112,7 +114,8 @@ class GuardrailEngine:
 
         # Find all XML files in project
         xml_files = [
-            f for f in project_path.rglob("*.xml")
+            f
+            for f in project_path.rglob("*.xml")
             if "schema" not in str(f) and f.parent.name != "guardrails"
         ]
 
@@ -189,7 +192,11 @@ class GuardrailEngine:
                         line=None,
                         column=None,
                         message=f"{rule.name}: {message}",
-                        type="error" if rule.priority in ["critical", "high"] else "warning",
+                        type=(
+                            "error"
+                            if rule.priority in ["critical", "high"]
+                            else "warning"
+                        ),
                         rule=rule.id,
                     )
                 )
@@ -227,7 +234,11 @@ class GuardrailEngine:
                         line=None,
                         column=None,
                         message=f"{rule.name}: {message}",
-                        type="error" if rule.priority in ["critical", "high"] else "warning",
+                        type=(
+                            "error"
+                            if rule.priority in ["critical", "high"]
+                            else "warning"
+                        ),
                         rule=rule.id,
                     )
                 )

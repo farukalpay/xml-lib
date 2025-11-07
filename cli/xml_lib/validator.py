@@ -16,6 +16,7 @@ from xml_lib.telemetry import TelemetrySink
 @dataclass
 class ValidationResult:
     """Result of validation."""
+
     is_valid: bool
     errors: List[ValidationError] = field(default_factory=list)
     warnings: List[ValidationError] = field(default_factory=list)
@@ -118,7 +119,7 @@ class Validator:
                     ValidationError(
                         file=str(xml_file),
                         line=e.lineno,
-                        column=e.position[0] if hasattr(e, 'position') else None,
+                        column=e.position[0] if hasattr(e, "position") else None,
                         message=str(e),
                         type="error",
                         rule="xml-syntax",
@@ -208,7 +209,9 @@ class Validator:
             self.schematron_lifecycle.assertValid(doc)
         except etree.DocumentInvalid:
             for error in self.schematron_lifecycle.error_log:
-                error_type = "warning" if "warning" in error.message.lower() else "error"
+                error_type = (
+                    "warning" if "warning" in error.message.lower() else "error"
+                )
                 validation_error = ValidationError(
                     file=str(xml_file),
                     line=error.line,
@@ -279,7 +282,9 @@ class Validator:
 
             if timestamp_str:
                 try:
-                    timestamps[phase_name] = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                    timestamps[phase_name] = datetime.fromisoformat(
+                        timestamp_str.replace("Z", "+00:00")
+                    )
                 except ValueError:
                     result.warnings.append(
                         ValidationError(
