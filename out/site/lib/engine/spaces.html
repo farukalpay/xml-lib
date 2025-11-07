@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>spaces:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Mathematical spaces underpinning guardrail engineering</div>
+<div style="margin-left: 1em;">
+<strong>focus:</strong> Middle-phase modeling: make the space do the heavy lifting.</div>
+
+<div style="margin-left: 1em;">
+<strong>set-theory:</strong> 
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> U = set of all guardrail-observable states.</div>
+  <div style="margin-left: 1em;">
+<strong>subset:</strong> S ⊆ U = states satisfying guardrails-begin invariants.</div>
+  <div style="margin-left: 1em;">
+<strong>operator:</strong> F: U → U = guardrails-middle transformer per iteration.</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>topology:</strong> 
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> τ on U such that (U, τ) is a topological space; opens capture observability neighborhoods.</div>
+  <div style="margin-left: 1em;">
+<strong>property:</strong> S is closed under τ (limits of safe states remain safe).</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>metric:</strong> 
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> d: U×U → ℝ≥0 measuring divergence of telemetry/control-plane hashes.</div>
+  <div style="margin-left: 1em;">
+<strong>property:</strong> (U, d) is complete after end.xml archival (Cauchy sequences converge in continuum bindings).</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>normed:</strong> 
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> ‖x‖ = d(x, 0) compatible with inner product when defined.</div>
+  <div style="margin-left: 1em;">
+<strong>space:</strong> (B, ‖·‖) is Banach: closure of enforcement packages under middle-phase composition.</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>hilbert-hook:</strong> 
+  <div style="margin-left: 1em;">
+<strong>space:</strong> H ⊆ B with inner product ⟨·,·⟩; see lib/engine/hilbert.xml.</div>
+  <div style="margin-left: 1em;">
+<strong>property:</strong> Safe region C ⊆ H is nonempty, closed, and convex.</div>
+  <div style="margin-left: 1em;">
+<strong>projection:</strong> P_C: H → C defined via Hilbert projection theorem.</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>measure:</strong> 
+  <div style="margin-left: 1em;">
+<strong>sigma-algebra:</strong> Σ on U induced by observability; (U, Σ, μ) probability space of incidents.</div>
+  <div style="margin-left: 1em;">
+<strong>integrability:</strong> Incident rates are μ-integrable; expectation constraints form linear functionals.</div>
+</div>
+
+<div style="margin-left: 1em;">
+<strong>lattice:</strong> 
+  <div style="margin-left: 1em;">
+<strong>definition:</strong> (L, ≤) complete lattice of policy/enforcement packages.</div>
+  <div style="margin-left: 1em;">
+<strong>monotone:</strong> G: L → L monotone closure operator; fixed points are stable policy sets.</div>
+</div>
+
+</div></body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>continuum:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Extend lifecycle beyond end-state for engineering governance</div>
+<div style="margin-left: 1em;">
+<strong>reference:</strong> Activate only after end.xml archives the canonical bundle.</div>
+<div style="margin-left: 1em;">
+<strong>xml-engineering:</strong> 
+  <div style="margin-left: 1em;">
+<strong>guideline:</strong> Snapshot every structural hash from end.xml to `control-plane/checksums/checksum` so drift becomes observable.</div>
+  <div style="margin-left: 1em;">
+<strong>guideline:</strong> Promote interface contracts into the service mesh registry below to orchestrate downstream consumers.</div>
+  <div style="margin-left: 1em;">
+<strong>guideline:</strong> Keep heuristics deterministic by binding all random seeds in `simulation/parameters`.</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>control-plane:</strong> 
+  <div style="margin-left: 1em;">
+<strong>checksums:</strong> 
+    <div style="margin-left: 1em;">
+<strong>checksum:</strong> TODO:inject-schema-digest</div>
+    <div style="margin-left: 1em;">
+<strong>checksum:</strong> TODO:inject-payload-digest</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>policies:</strong> 
+    <div style="margin-left: 1em;">
+<strong>policy:</strong> Cap mutation retries at 3 to avoid oscillating handoffs.</div>
+    <div style="margin-left: 1em;">
+<strong>policy:</strong> Route inconsistent nodes to the quarantine topic for manual inspection.</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>simulation:</strong> 
+  <div style="margin-left: 1em;">
+<strong>parameters:</strong> 
+    <div style="margin-left: 1em;">
+<strong>param:</strong> 0xDEADBEEF</div>
+    <div style="margin-left: 1em;">
+<strong>param:</strong> 500</div>
+    <div style="margin-left: 1em;">
+<strong>param:</strong> 0.0001</div>
+  </div>
+  <div style="margin-left: 1em;">
+<strong>scenarios:</strong> 
+    <div style="margin-left: 1em;">
+<strong>scenario:</strong> Replay 10x load using archived snapshots.</div>
+    <div style="margin-left: 1em;">
+<strong>scenario:</strong> Validate recovery by rewinding to begin.xml state.</div>
+    <div style="margin-left: 1em;">
+<strong>scenario:</strong> Project schema evolution for two future releases.</div>
+  </div>
+</div>
+<div style="margin-left: 1em;">
+<strong>telemetry:</strong> 
+  <div style="margin-left: 1em;">
+<strong>stream:</strong> Ensure transform latency stays under 40ms.</div>
+  <div style="margin-left: 1em;">
+<strong>stream:</strong> Maintain 25 docs/s across shards.</div>
+  <div style="margin-left: 1em;">
+<strong>stream:</strong> Keep policy adherence at 100%.</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>handoff:</strong> 
+  <div style="margin-left: 1em;">
+<strong>step:</strong> Lock configuration hashes and publish them to the registry.</div>
+  <div style="margin-left: 1em;">
+<strong>step:</strong> Emit release notification to dependent pipelines.</div>
+  <div style="margin-left: 1em;">
+<strong>step:</strong> Run telemetry watchers for 24h to validate stability.</div>
+</div>
+</div></body>
+</html>

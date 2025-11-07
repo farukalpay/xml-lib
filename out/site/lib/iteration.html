@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>iteration:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Iterate over document states</div>
+<div style="margin-left: 1em;">
+<strong>reference:</strong> Enter the loop only after start.xml establishes the baseline.</div>
+<div style="margin-left: 1em;">
+<strong>xml-engineering:</strong> 
+  <div style="margin-left: 1em;">
+<strong>guideline:</strong> Carry forward the schema contract emitted from start.xml so downstream nodes remain stable.</div>
+  <div style="margin-left: 1em;">
+<strong>guideline:</strong> Annotate each iteration with a stage attribute to enable deterministic diffing.</div>
+  <div style="margin-left: 1em;">
+<strong>guideline:</strong> Persist iteration outputs atomically to keep incremental parsers consistent.</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>steps:</strong> 
+  <div style="margin-left: 1em;">
+<strong>step:</strong> Load the context emitted by start.xml.</div>
+  <div style="margin-left: 1em;">
+<strong>step:</strong> Apply the transformation defined for this iteration.</div>
+  <div style="margin-left: 1em;">
+<strong>step:</strong> Emit the iteration snapshot for the next XML stage.</div>
+</div>
+</div></body>
+</html>

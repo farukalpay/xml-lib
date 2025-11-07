@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body>
+<h1>XML Lifecycle Document</h1>
+<div class="timestamp">Timestamp: 2025-01-15T10:00:00Z</div>
+<div class="checksum">Checksum: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
+<div class="meta">
+<h2>Metadata</h2>
+<p><strong>Title:</strong>Valid Lifecycle Test</p>
+<p><strong>Description:</strong>A valid lifecycle document for testing</p>
+<p><strong>Author:</strong>Test Suite</p>
+</div>
+<h2>Lifecycle Phases</h2>
+<div class="phase">
+<div class="phase-name">Phase: begin</div>
+<div class="timestamp">Timestamp: 2025-01-15T10:00:00Z</div>
+<p><em>Using template: lib/begin.xml</em></p>
+<p>Initialize the document</p>
+<div class="payload">
+<strong>Payload:</strong>
+        <div style="margin-left: 1em;">
+<strong>note:</strong> Starting fresh</div>
+      </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: start</div>
+<div class="timestamp">Timestamp: 2025-01-15T10:05:00Z</div>
+<p><em>Using template: lib/start.xml</em></p>
+<p>Set up engineering constraints</p>
+<div class="payload">
+<strong>Payload:</strong>
+        <div style="margin-left: 1em;">
+<strong>iterations:</strong> 3</div>
+      </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: iteration</div>
+<div class="timestamp">Timestamp: 2025-01-15T10:10:00Z</div>
+<p><em>Using template: lib/iteration.xml</em></p>
+<p>Execute cycles</p>
+<div class="payload">
+<strong>Payload:</strong>
+        <div style="margin-left: 1em;">
+<strong>iteration:</strong> Process A</div>
+        <div style="margin-left: 1em;">
+<strong>iteration:</strong> Process B</div>
+      </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: end</div>
+<div class="timestamp">Timestamp: 2025-01-15T10:15:00Z</div>
+<p><em>Using template: lib/end.xml</em></p>
+<p>Finalize</p>
+<div class="payload">
+<strong>Payload:</strong>
+        <div style="margin-left: 1em;">
+<strong>status:</strong> completed</div>
+      </div>
+</div>
+<div class="phase">
+<div class="phase-name">Phase: continuum</div>
+<div class="timestamp">Timestamp: 2025-01-15T10:20:00Z</div>
+<p><em>Using template: lib/continuum.xml</em></p>
+<p>Extend to governance</p>
+<div class="payload">
+<strong>Payload:</strong>
+        <div style="margin-left: 1em;">
+<strong>telemetry:</strong> enabled</div>
+      </div>
+</div>
+<div class="meta">
+<h2>Summary</h2>
+<p><strong>Status:</strong>complete</p>
+<p><strong>Next Action:</strong>Monitor telemetry</p>
+</div>
+</body>
+</html>

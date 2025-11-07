@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>XML Document</title>
+<style>
+          body { font-family: Arial, sans-serif; margin: 2em; }
+          h1 { color: #333; }
+          .phase { margin: 2em 0; padding: 1em; border: 1px solid #ccc; }
+          .phase-name { font-weight: bold; color: #0066cc; }
+          .meta { background: #f5f5f5; padding: 1em; margin: 1em 0; }
+          .payload { margin: 1em 0; }
+          .timestamp { color: #666; font-size: 0.9em; }
+          .checksum { font-family: monospace; font-size: 0.8em; color: #666; }
+          pre { background: #f5f5f5; padding: 1em; overflow-x: auto; }
+        </style>
+</head>
+<body><div style="margin-left: 1em;">
+<strong>pptx-checks:</strong> 
+<div style="margin-left: 1em;">
+<strong>commenet:</strong> Guardrails for presentation workflows</div>
+<div style="margin-left: 1em;">
+<strong>category:</strong> 
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Always read html2pptx.md or ooxml.md entirely before touching their workflows.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Verify NODE_PATH resolves to npm root before running the JS builder.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Confirm markitdown, pptxgenjs, playwright, react-icons, LibreOffice, and Poppler are installed.</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>category:</strong> 
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Shared CSS file may only declare custom properties; no selectors or classes.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Slides must use row/col/fit helpers (no flexbox) and semantic headings/lists.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Placeholders for charts/tables require gray background plus class="placeholder".</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>category:</strong> 
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Thumbnail grid review looks for cutoff text, overlap, margins, and contrast problems.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> replace.py clears every shape not explicitly set in replacement JSON—verify shape lists carefully.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> validate.py must pass before repacking OOXML edits.</div>
+</div>
+<div style="margin-left: 1em;">
+<strong>category:</strong> 
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Log checksums or control-plane hashes when exporting final decks to align with guardrails-end workflows.</div>
+  <div style="margin-left: 1em;">
+<strong>item:</strong> Reference hilbert fixed-point proofs when reasoning about iterative guardrail enforcement on PPTX pipelines.</div>
+</div>
+</div></body>
+</html>
