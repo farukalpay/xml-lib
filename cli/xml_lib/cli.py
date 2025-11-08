@@ -11,6 +11,9 @@ from xml_lib.pptx_composer import PPTXComposer
 from xml_lib.differ import Differ
 from xml_lib.telemetry import TelemetrySink
 from xml_lib.sanitize import MathPolicy, Sanitizer
+from xml_lib.php.parser import SecureXMLParser, ParseConfig
+from xml_lib.php.ir import IRBuilder
+from xml_lib.php.generator import PHPGenerator, GeneratorConfig
 
 
 @click.group()
@@ -258,6 +261,169 @@ def roundtrip(
         sys.exit(0)
     except Exception as e:
         click.echo(f"❌ Restoration failed: {e}")
+        sys.exit(1)
+
+
+@main.command()
+@click.argument("xml_file", type=click.Path(exists=True))
+@click.option("--output", "-o", help="Output PHP file (default: <input-basename>.php)")
+@click.option(
+    "--template",
+    type=click.Choice(["default", "minimal"]),
+    default="default",
+    help="Template to use",
+)
+@click.option("--title", help="Override document title")
+@click.option("--favicon", help="Favicon URL or path")
+@click.option("--assets-dir", default="assets", help="Assets directory for CSS/images")
+@click.option("--no-toc", is_flag=True, help="Disable table of contents")
+@click.option("--no-css", is_flag=True, help="Disable CSS generation")
+@click.option("--css-path", help="Custom CSS file path")
+@click.option("--strict", is_flag=True, help="Strict mode (fail on warnings)")
+@click.option(
+    "--max-size",
+    type=int,
+    default=10 * 1024 * 1024,
+    help="Maximum XML file size in bytes",
+)
+@click.option(
+    "--schema",
+    type=click.Path(exists=True),
+    help="Optional Relax NG or Schematron schema for validation",
+)
+@click.pass_context
+def phpify(
+    ctx: click.Context,
+    xml_file: str,
+    output: Optional[str],
+    template: str,
+    title: Optional[str],
+    favicon: Optional[str],
+    assets_dir: str,
+    no_toc: bool,
+    no_css: bool,
+    css_path: Optional[str],
+    strict: bool,
+    max_size: int,
+    schema: Optional[str],
+) -> None:
+    """Generate production-ready PHP page from XML document.
+
+    Implements a secure XML→IR→PHP pipeline with:
+    - XXE protection and size/time limits
+    - Schema validation (Relax NG/Schematron)
+    - Context-aware escaping
+    - Semantic HTML5 with accessibility
+    - Responsive layout
+    """
+    click.echo(f"🔧 Generating PHP from: {xml_file}")
+
+    xml_path = Path(xml_file)
+
+    # Determine output path
+    if not output:
+        output = str(xml_path.stem) + ".php"
+    output_path = Path(output)
+
+    # Create output directory if needed
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # Configure secure parser
+        parse_config = ParseConfig(
+            max_size_bytes=max_size,
+            validate_schema=schema is not None,
+            schema_path=Path(schema) if schema else None,
+        )
+
+        # Parse XML securely
+        click.echo("  Parsing XML...")
+        parser = SecureXMLParser(parse_config)
+        root = parser.parse(xml_path)
+
+        # Build intermediate representation
+        click.echo("  Building intermediate representation...")
+        ir_builder = IRBuilder(strict=strict)
+        ir = ir_builder.build(root)
+
+        # Configure generator
+        gen_config = GeneratorConfig(
+            template=template,
+            title=title,
+            favicon=favicon,
+            assets_dir=assets_dir,
+            no_toc=no_toc,
+            no_css=no_css,
+            css_path=css_path,
+        )
+
+        # Generate PHP
+        click.echo("  Generating PHP...")
+        # Find templates directory (handles both installed and dev modes)
+        cli_file = Path(__file__).resolve()
+        # Try relative to package first
+        templates_dir = cli_file.parent.parent.parent.parent / "templates"
+        if not templates_dir.exists():
+            # Try from working directory
+            templates_dir = Path.cwd() / "templates"
+        if not templates_dir.exists():
+            raise FileNotFoundError(f"Templates directory not found. Tried: {templates_dir}")
+
+        generator = PHPGenerator(templates_dir, gen_config)
+        files = generator.generate(ir, output_basename=xml_path.stem)
+
+        # Write output files
+        for file_path, content in files.items():
+            # Main PHP file goes to output_path, others go relative to it
+            if file_path == f"{xml_path.stem}.php":
+                full_path = output_path
+            else:
+                full_path = output_path.parent / file_path
+
+            full_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            click.echo(f"  ✅ Generated: {full_path}")
+
+        # Lint PHP if php is available
+        try:
+            import subprocess
+
+            result = subprocess.run(
+                ["php", "-l", str(output_path)],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+
+            if result.returncode == 0:
+                click.echo("  ✅ PHP syntax valid")
+            else:
+                click.echo(f"  ⚠️  PHP lint warning: {result.stderr}")
+                if strict:
+                    sys.exit(1)
+
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            click.echo("  ℹ️  PHP not available for linting")
+
+        click.echo(f"\n✅ PHP generation complete!")
+        click.echo(f"   Main file: {output_path}")
+        click.echo(f"   Title: {ir.metadata.title}")
+        click.echo(f"   Content elements: {len(ir.content)}")
+
+        if ir.citations:
+            click.echo(f"   Citations: {len(ir.citations)}")
+
+        sys.exit(0)
+
+    except Exception as e:
+        click.echo(f"\n❌ Generation failed: {e}")
+        if strict:
+            import traceback
+
+            click.echo(traceback.format_exc())
         sys.exit(1)
 
 
