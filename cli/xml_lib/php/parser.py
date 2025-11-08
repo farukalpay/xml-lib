@@ -19,6 +19,7 @@ class ParseConfig:
 
 class ParseError(Exception):
     """Exception raised during XML parsing."""
+
     pass
 
 
@@ -100,7 +101,7 @@ class SecureXMLParser:
             ParseError: If parsing fails or security checks fail
         """
         # Check size
-        size_bytes = len(xml_string.encode('utf-8'))
+        size_bytes = len(xml_string.encode("utf-8"))
         if size_bytes > self.config.max_size_bytes:
             raise ParseError(
                 f"XML too large: {size_bytes} bytes "
@@ -113,7 +114,7 @@ class SecureXMLParser:
         # Parse with timeout
         start_time = time.time()
         try:
-            root = etree.fromstring(xml_string.encode('utf-8'), parser)
+            root = etree.fromstring(xml_string.encode("utf-8"), parser)
         except etree.XMLSyntaxError as e:
             raise ParseError(f"XML syntax error: {e}") from e
         except Exception as e:
@@ -137,12 +138,12 @@ class SecureXMLParser:
         # Disable external entity resolution to prevent XXE attacks
         parser = etree.XMLParser(
             resolve_entities=False,  # Disable external entities
-            no_network=True,          # Disable network access
-            dtd_validation=False,     # Disable DTD validation
-            load_dtd=False,           # Don't load DTD
-            huge_tree=False,          # Prevent billion laughs attack
+            no_network=True,  # Disable network access
+            dtd_validation=False,  # Disable DTD validation
+            load_dtd=False,  # Don't load DTD
+            huge_tree=False,  # Prevent billion laughs attack
             remove_blank_text=False,  # Preserve formatting
-            remove_comments=False,    # Keep comments
+            remove_comments=False,  # Keep comments
         )
         return parser
 
@@ -161,10 +162,10 @@ class SecureXMLParser:
 
         try:
             # Determine schema type by extension
-            if schema_path.suffix == '.rng':
+            if schema_path.suffix == ".rng":
                 schema_doc = etree.parse(str(schema_path))
                 schema = etree.RelaxNG(schema_doc)
-            elif schema_path.suffix == '.sch':
+            elif schema_path.suffix == ".sch":
                 schema_doc = etree.parse(str(schema_path))
                 schema = etree.Schematron(schema_doc)
             else:

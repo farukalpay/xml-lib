@@ -11,6 +11,7 @@ from lxml import etree
 
 class ContentType(Enum):
     """Types of content elements."""
+
     HEADING = "heading"
     PARAGRAPH = "paragraph"
     LIST = "list"
@@ -26,6 +27,7 @@ class ContentType(Enum):
 @dataclass
 class Link:
     """Represents a link (internal or external)."""
+
     href: str
     text: str
     is_external: bool
@@ -35,6 +37,7 @@ class Link:
 @dataclass
 class Figure:
     """Represents an image or figure."""
+
     src: str
     alt: str
     caption: Optional[str] = None
@@ -45,6 +48,7 @@ class Figure:
 @dataclass
 class TableCell:
     """Represents a table cell."""
+
     content: str
     is_header: bool = False
     colspan: int = 1
@@ -54,12 +58,14 @@ class TableCell:
 @dataclass
 class TableRow:
     """Represents a table row."""
+
     cells: List[TableCell] = field(default_factory=list)
 
 
 @dataclass
 class Table:
     """Represents a table."""
+
     headers: List[TableRow] = field(default_factory=list)
     rows: List[TableRow] = field(default_factory=list)
     caption: Optional[str] = None
@@ -68,6 +74,7 @@ class Table:
 @dataclass
 class CodeBlock:
     """Represents a code block."""
+
     code: str
     language: Optional[str] = None
     line_numbers: bool = False
@@ -76,13 +83,15 @@ class CodeBlock:
 @dataclass
 class ListItem:
     """Represents a list item."""
+
     content: str
-    children: List['ListItem'] = field(default_factory=list)
+    children: List["ListItem"] = field(default_factory=list)
 
 
 @dataclass
 class List:
     """Represents a list (ordered or unordered)."""
+
     items: List[ListItem] = field(default_factory=list)
     ordered: bool = False
 
@@ -90,6 +99,7 @@ class List:
 @dataclass
 class Heading:
     """Represents a heading."""
+
     text: str
     level: int  # 1-6
     id: Optional[str] = None
@@ -98,6 +108,7 @@ class Heading:
 @dataclass
 class Paragraph:
     """Represents a paragraph."""
+
     content: str
     style: Optional[str] = None
 
@@ -105,6 +116,7 @@ class Paragraph:
 @dataclass
 class Citation:
     """Represents a citation or footnote."""
+
     id: str
     content: str
     ref_count: int = 0
@@ -113,14 +125,16 @@ class Citation:
 @dataclass
 class Section:
     """Represents a document section."""
+
     title: Optional[str] = None
     id: Optional[str] = None
-    content: List['ContentElement'] = field(default_factory=list)
+    content: List["ContentElement"] = field(default_factory=list)
 
 
 @dataclass
 class Metadata:
     """Document metadata."""
+
     title: str = "Untitled Document"
     description: Optional[str] = None
     author: Optional[str] = None
@@ -129,7 +143,9 @@ class Metadata:
     custom: Dict[str, str] = field(default_factory=dict)
 
 
-ContentElement = Union[Heading, Paragraph, List, Table, CodeBlock, Figure, Link, Citation, Section]
+ContentElement = Union[
+    Heading, Paragraph, List, Table, CodeBlock, Figure, Link, Citation, Section
+]
 
 
 @dataclass
@@ -186,32 +202,38 @@ class IRBuilder:
         meta = Metadata()
 
         # Look for <meta> element
-        meta_elem = root.find('.//meta')
+        meta_elem = root.find(".//meta")
         if meta_elem is not None:
-            title_elem = meta_elem.find('title')
+            title_elem = meta_elem.find("title")
             if title_elem is not None and title_elem.text:
                 meta.title = title_elem.text.strip()
 
-            desc_elem = meta_elem.find('description')
+            desc_elem = meta_elem.find("description")
             if desc_elem is not None and desc_elem.text:
                 meta.description = desc_elem.text.strip()
 
-            author_elem = meta_elem.find('author')
+            author_elem = meta_elem.find("author")
             if author_elem is not None and author_elem.text:
                 meta.author = author_elem.text.strip()
 
-            date_elem = meta_elem.find('date')
+            date_elem = meta_elem.find("date")
             if date_elem is not None and date_elem.text:
                 meta.date = date_elem.text.strip()
 
             # Extract keywords
-            for kw_elem in meta_elem.findall('keyword'):
+            for kw_elem in meta_elem.findall("keyword"):
                 if kw_elem.text:
                     meta.keywords.append(kw_elem.text.strip())
 
             # Extract custom metadata
             for child in meta_elem:
-                if child.tag not in ['title', 'description', 'author', 'date', 'keyword']:
+                if child.tag not in [
+                    "title",
+                    "description",
+                    "author",
+                    "date",
+                    "keyword",
+                ]:
                     if child.text:
                         meta.custom[child.tag] = child.text.strip()
 
@@ -219,7 +241,7 @@ class IRBuilder:
         if meta.title == "Untitled Document":
             # Try to find first heading or title
             for elem in root.iter():
-                if elem.tag in ['title', 'h1', 'heading'] and elem.text:
+                if elem.tag in ["title", "h1", "heading"] and elem.text:
                     meta.title = elem.text.strip()
                     break
 
@@ -229,7 +251,7 @@ class IRBuilder:
         self,
         elem: etree._Element,
         ir: IntermediateRepresentation,
-        parent_context: Optional[str] = None
+        parent_context: Optional[str] = None,
     ) -> List[ContentElement]:
         """Process XML element and convert to content elements.
 
@@ -247,53 +269,61 @@ class IRBuilder:
             tag = child.tag.lower()
 
             # Skip metadata elements
-            if tag == 'meta':
+            if tag == "meta":
                 continue
 
             # Headings
-            if tag in ['heading', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+            if tag in ["heading", "h1", "h2", "h3", "h4", "h5", "h6"]:
                 heading = self._extract_heading(child)
                 if heading:
                     content.append(heading)
 
             # Paragraphs and notes
-            elif tag in ['paragraph', 'p', 'note', 'description', 'summary', 'payload']:
+            elif tag in ["paragraph", "p", "note", "description", "summary", "payload"]:
                 para = self._extract_paragraph(child)
                 if para:
                     content.append(para)
 
             # Lists
-            elif tag in ['list', 'ul', 'ol', 'items']:
+            elif tag in ["list", "ul", "ol", "items"]:
                 lst = self._extract_list(child)
                 if lst:
                     content.append(lst)
 
             # Tables
-            elif tag in ['table', 'matrix', 'iteration-matrix']:
+            elif tag in ["table", "matrix", "iteration-matrix"]:
                 table = self._extract_table(child)
                 if table:
                     content.append(table)
 
             # Code blocks
-            elif tag in ['code', 'pre', 'script']:
+            elif tag in ["code", "pre", "script"]:
                 code = self._extract_code(child)
                 if code:
                     content.append(code)
 
             # Figures/Images
-            elif tag in ['figure', 'img', 'image']:
+            elif tag in ["figure", "img", "image"]:
                 figure = self._extract_figure(child)
                 if figure:
                     content.append(figure)
 
             # Sections
-            elif tag in ['section', 'phase', 'phases', 'lifecycle', 'layer', 'appendix', 'appendices']:
+            elif tag in [
+                "section",
+                "phase",
+                "phases",
+                "lifecycle",
+                "layer",
+                "appendix",
+                "appendices",
+            ]:
                 section = self._extract_section(child, ir)
                 if section:
                     content.append(section)
 
             # Citations and references
-            elif tag in ['citation', 'ref', 'footnote']:
+            elif tag in ["citation", "ref", "footnote"]:
                 citation = self._extract_citation(child, ir)
                 if citation:
                     content.append(citation)
@@ -318,27 +348,27 @@ class IRBuilder:
 
         # Determine level
         level = 2  # Default
-        if elem.tag == 'h1':
+        if elem.tag == "h1":
             level = 1
-        elif elem.tag == 'h2':
+        elif elem.tag == "h2":
             level = 2
-        elif elem.tag == 'h3':
+        elif elem.tag == "h3":
             level = 3
-        elif elem.tag == 'h4':
+        elif elem.tag == "h4":
             level = 4
-        elif elem.tag == 'h5':
+        elif elem.tag == "h5":
             level = 5
-        elif elem.tag == 'h6':
+        elif elem.tag == "h6":
             level = 6
-        elif 'level' in elem.attrib:
+        elif "level" in elem.attrib:
             try:
-                level = int(elem.attrib['level'])
+                level = int(elem.attrib["level"])
                 level = max(1, min(6, level))
             except ValueError:
                 pass
 
         # Get or generate ID
-        elem_id = elem.get('id') or self._slugify(text)
+        elem_id = elem.get("id") or self._slugify(text)
         elem_id = self._ensure_unique_id(elem_id)
 
         return Heading(text=text, level=level, id=elem_id)
@@ -349,22 +379,33 @@ class IRBuilder:
         if not text:
             return None
 
-        style = elem.get('style')
+        style = elem.get("style")
         return Paragraph(content=text, style=style)
 
     def _extract_list(self, elem: etree._Element) -> Optional[List]:
         """Extract list from element."""
         items = []
-        ordered = elem.tag.lower() in ['ol'] or elem.get('type') == 'ordered'
+        ordered = elem.tag.lower() in ["ol"] or elem.get("type") == "ordered"
 
         for item in elem:
-            if item.tag.lower() in ['item', 'li', 'iteration', 'step', 'value', 'rule', 'control', 'layer', 'module', 'artifact']:
+            if item.tag.lower() in [
+                "item",
+                "li",
+                "iteration",
+                "step",
+                "value",
+                "rule",
+                "control",
+                "layer",
+                "module",
+                "artifact",
+            ]:
                 text = self._get_text_content(item)
                 if text:
                     list_item = ListItem(content=text)
                     # Check for nested lists
                     for nested in item:
-                        if nested.tag.lower() in ['list', 'ul', 'ol', 'items', 'steps']:
+                        if nested.tag.lower() in ["list", "ul", "ol", "items", "steps"]:
                             nested_list = self._extract_list(nested)
                             if nested_list:
                                 # Convert nested list items
@@ -384,32 +425,32 @@ class IRBuilder:
         caption = None
 
         # Look for caption
-        caption_elem = elem.find('.//caption')
+        caption_elem = elem.find(".//caption")
         if caption_elem is not None and caption_elem.text:
             caption = caption_elem.text.strip()
 
         # Look for thead
-        thead = elem.find('.//thead')
+        thead = elem.find(".//thead")
         if thead is not None:
-            for tr in thead.findall('.//tr'):
+            for tr in thead.findall(".//tr"):
                 row = TableRow()
                 for cell in tr:
-                    if cell.tag.lower() in ['th', 'td']:
+                    if cell.tag.lower() in ["th", "td"]:
                         text = self._get_text_content(cell)
                         row.cells.append(TableCell(content=text, is_header=True))
                 if row.cells:
                     headers.append(row)
 
         # Look for tbody or direct rows
-        tbody = elem.find('.//tbody')
+        tbody = elem.find(".//tbody")
         row_container = tbody if tbody is not None else elem
 
-        for tr in row_container.findall('.//tr'):
+        for tr in row_container.findall(".//tr"):
             row = TableRow()
             for cell in tr:
-                if cell.tag.lower() in ['td', 'th']:
+                if cell.tag.lower() in ["td", "th"]:
                     text = self._get_text_content(cell)
-                    is_header = cell.tag.lower() == 'th'
+                    is_header = cell.tag.lower() == "th"
                     row.cells.append(TableCell(content=text, is_header=is_header))
             if row.cells:
                 rows.append(row)
@@ -418,9 +459,9 @@ class IRBuilder:
         if not headers and not rows:
             # Try to extract from iteration-matrix or similar structures
             for child in elem:
-                if child.tag.lower() in ['axis', 'row']:
+                if child.tag.lower() in ["axis", "row"]:
                     row = TableRow()
-                    name = child.get('name', '')
+                    name = child.get("name", "")
                     if name:
                         row.cells.append(TableCell(content=name, is_header=True))
                     for value in child:
@@ -441,41 +482,39 @@ class IRBuilder:
         if not code:
             return None
 
-        language = elem.get('language') or elem.get('lang')
-        line_numbers = elem.get('line-numbers') == 'true'
+        language = elem.get("language") or elem.get("lang")
+        line_numbers = elem.get("line-numbers") == "true"
 
         return CodeBlock(code=code, language=language, line_numbers=line_numbers)
 
     def _extract_figure(self, elem: etree._Element) -> Optional[Figure]:
         """Extract figure/image from element."""
-        src = elem.get('src') or elem.get('path', '')
+        src = elem.get("src") or elem.get("path", "")
         if not src:
             return None
 
-        alt = elem.get('alt', '')
+        alt = elem.get("alt", "")
         caption = None
 
-        caption_elem = elem.find('.//caption')
+        caption_elem = elem.find(".//caption")
         if caption_elem is not None and caption_elem.text:
             caption = caption_elem.text.strip()
 
-        width = elem.get('width')
-        height = elem.get('height')
+        width = elem.get("width")
+        height = elem.get("height")
 
         return Figure(src=src, alt=alt, caption=caption, width=width, height=height)
 
     def _extract_section(
-        self,
-        elem: etree._Element,
-        ir: IntermediateRepresentation
+        self, elem: etree._Element, ir: IntermediateRepresentation
     ) -> Optional[Section]:
         """Extract section from element."""
-        title = elem.get('name') or elem.get('title')
-        section_id = elem.get('id')
+        title = elem.get("name") or elem.get("title")
+        section_id = elem.get("id")
 
         # Try to find title in child elements
         if not title:
-            title_elem = elem.find('.//title')
+            title_elem = elem.find(".//title")
             if title_elem is not None and title_elem.text:
                 title = title_elem.text.strip()
 
@@ -492,12 +531,10 @@ class IRBuilder:
         return Section(title=title, id=section_id, content=content)
 
     def _extract_citation(
-        self,
-        elem: etree._Element,
-        ir: IntermediateRepresentation
+        self, elem: etree._Element, ir: IntermediateRepresentation
     ) -> Optional[Citation]:
         """Extract citation from element."""
-        citation_id = elem.get('id') or f"cite-{len(ir.citations) + 1}"
+        citation_id = elem.get("id") or f"cite-{len(ir.citations) + 1}"
         content = self._get_text_content(elem)
 
         if not content:
@@ -509,9 +546,7 @@ class IRBuilder:
         return citation
 
     def _get_text_content(
-        self,
-        elem: etree._Element,
-        preserve_whitespace: bool = False
+        self, elem: etree._Element, preserve_whitespace: bool = False
     ) -> str:
         """Get text content from element and its children.
 
@@ -534,13 +569,13 @@ class IRBuilder:
             if child.tail:
                 parts.append(child.tail)
 
-        text = ''.join(parts)
+        text = "".join(parts)
 
         if preserve_whitespace:
             return text
         else:
             # Normalize whitespace
-            return ' '.join(text.split())
+            return " ".join(text.split())
 
     def _slugify(self, text: str) -> str:
         """Convert text to URL-safe slug.
@@ -554,10 +589,10 @@ class IRBuilder:
         # Convert to lowercase
         slug = text.lower()
         # Replace spaces and special chars with hyphens
-        slug = re.sub(r'[^\w\s-]', '', slug)
-        slug = re.sub(r'[-\s]+', '-', slug)
+        slug = re.sub(r"[^\w\s-]", "", slug)
+        slug = re.sub(r"[-\s]+", "-", slug)
         # Trim hyphens
-        slug = slug.strip('-')
+        slug = slug.strip("-")
         # Limit length
         slug = slug[:50]
         return slug or f"section-{self.id_counter}"

@@ -367,7 +367,9 @@ def phpify(
             # Try from working directory
             templates_dir = Path.cwd() / "templates"
         if not templates_dir.exists():
-            raise FileNotFoundError(f"Templates directory not found. Tried: {templates_dir}")
+            raise FileNotFoundError(
+                f"Templates directory not found. Tried: {templates_dir}"
+            )
 
         generator = PHPGenerator(templates_dir, gen_config)
         files = generator.generate(ir, output_basename=xml_path.stem)

@@ -46,11 +46,7 @@ class PHPGenerator:
     - Responsive layout
     """
 
-    def __init__(
-        self,
-        templates_dir: Path,
-        config: Optional[GeneratorConfig] = None
-    ):
+    def __init__(self, templates_dir: Path, config: Optional[GeneratorConfig] = None):
         """Initialize PHP generator.
 
         Args:
@@ -63,15 +59,17 @@ class PHPGenerator:
         # Setup Jinja2 environment
         self.env = Environment(
             loader=FileSystemLoader(str(templates_dir)),
-            autoescape=select_autoescape(['html', 'xml']),
+            autoescape=select_autoescape(["html", "xml"]),
             trim_blocks=True,
             lstrip_blocks=True,
         )
 
         # Add custom filters
-        self.env.filters['tojson'] = self._json_encode
+        self.env.filters["tojson"] = self._json_encode
 
-    def generate(self, ir: IntermediateRepresentation, output_basename: str = "page") -> Dict[str, str]:
+    def generate(
+        self, ir: IntermediateRepresentation, output_basename: str = "page"
+    ) -> Dict[str, str]:
         """Generate PHP files from IR.
 
         Args:
@@ -85,7 +83,7 @@ class PHPGenerator:
 
         # Generate main PHP page
         php_content = self._generate_page(ir)
-        files[f'{output_basename}.php'] = php_content
+        files[f"{output_basename}.php"] = php_content
 
         # Generate CSS if not disabled
         if not self.config.no_css:
@@ -117,32 +115,32 @@ class PHPGenerator:
 
         # Prepare template variables
         template_vars = {
-            'title': title,
-            'description': ir.metadata.description,
-            'author': ir.metadata.author,
-            'date': ir.metadata.date,
-            'keywords': ir.metadata.keywords,
-            'favicon': self.config.favicon,
-            'no_css': self.config.no_css,
-            'css_path': self.config.css_path or f"{self.config.assets_dir}/style.css",
-            'no_toc': self.config.no_toc,
-            'toc_items': toc_items,
-            'content': content_html,
-            'citations': {k: v.content for k, v in ir.citations.items()},
+            "title": title,
+            "description": ir.metadata.description,
+            "author": ir.metadata.author,
+            "date": ir.metadata.date,
+            "keywords": ir.metadata.keywords,
+            "favicon": self.config.favicon,
+            "no_css": self.config.no_css,
+            "css_path": self.config.css_path or f"{self.config.assets_dir}/style.css",
+            "no_toc": self.config.no_toc,
+            "toc_items": toc_items,
+            "content": content_html,
+            "citations": {k: v.content for k, v in ir.citations.items()},
         }
 
         # Select template
         template_name = (
-            'php/minimal_page.php.j2'
-            if self.config.template == 'minimal'
-            else 'php/page.php.j2'
+            "php/minimal_page.php.j2"
+            if self.config.template == "minimal"
+            else "php/page.php.j2"
         )
 
         # Render template
         template = self.env.get_template(template_name)
 
         # First, render the functions.php template
-        functions_template = self.env.get_template('php/functions.php.j2')
+        functions_template = self.env.get_template("php/functions.php.j2")
         functions_php = functions_template.render()
 
         # Render the page
@@ -157,7 +155,7 @@ class PHPGenerator:
         Returns:
             CSS content
         """
-        template = self.env.get_template('php/style.css.j2')
+        template = self.env.get_template("php/style.css.j2")
         return template.render()
 
     def _build_toc(self, content: List[ContentElement]) -> List[Dict[str, str]]:
@@ -174,18 +172,22 @@ class PHPGenerator:
         for element in content:
             if isinstance(element, Heading):
                 if element.level <= 3:  # Only include h1-h3 in TOC
-                    toc.append({
-                        'id': element.id,
-                        'text': element.text,
-                        'level': element.level,
-                    })
+                    toc.append(
+                        {
+                            "id": element.id,
+                            "text": element.text,
+                            "level": element.level,
+                        }
+                    )
             elif isinstance(element, Section):
                 if element.title and element.id:
-                    toc.append({
-                        'id': element.id,
-                        'text': element.title,
-                        'level': 2,
-                    })
+                    toc.append(
+                        {
+                            "id": element.id,
+                            "text": element.title,
+                            "level": 2,
+                        }
+                    )
                 # Recurse into section content
                 section_toc = self._build_toc(element.content)
                 toc.extend(section_toc)
@@ -221,7 +223,7 @@ class PHPGenerator:
             elif isinstance(element, Citation):
                 html_parts.append(self._render_citation(element))
 
-        return '\n'.join(html_parts)
+        return "\n".join(html_parts)
 
     def _render_heading(self, heading: Heading) -> str:
         """Render heading to HTML.
@@ -233,10 +235,14 @@ class PHPGenerator:
             HTML string
         """
         level = heading.level
-        id_attr = f' id="<?php echo escape_attr({self._json_encode(heading.id)}); ?>"' if heading.id else ''
-        text = f'<?php echo escape_html({self._json_encode(heading.text)}); ?>'
+        id_attr = (
+            f' id="<?php echo escape_attr({self._json_encode(heading.id)}); ?>"'
+            if heading.id
+            else ""
+        )
+        text = f"<?php echo escape_html({self._json_encode(heading.text)}); ?>"
 
-        return f'                <h{level}{id_attr}>{text}</h{level}>'
+        return f"                <h{level}{id_attr}>{text}</h{level}>"
 
     def _render_paragraph(self, para: Paragraph) -> str:
         """Render paragraph to HTML.
@@ -247,10 +253,10 @@ class PHPGenerator:
         Returns:
             HTML string
         """
-        style_attr = f' class="{para.style}"' if para.style else ''
-        text = f'<?php echo escape_html({self._json_encode(para.content)}); ?>'
+        style_attr = f' class="{para.style}"' if para.style else ""
+        text = f"<?php echo escape_html({self._json_encode(para.content)}); ?>"
 
-        return f'                <p{style_attr}>{text}</p>'
+        return f"                <p{style_attr}>{text}</p>"
 
     def _render_list(self, lst: IRList) -> str:
         """Render list to HTML.
@@ -261,14 +267,14 @@ class PHPGenerator:
         Returns:
             HTML string
         """
-        tag = 'ol' if lst.ordered else 'ul'
+        tag = "ol" if lst.ordered else "ul"
         items_html = []
 
         for item in lst.items:
             items_html.append(self._render_list_item(item, lst.ordered))
 
-        items = '\n'.join(items_html)
-        return f'                <{tag}>\n{items}\n                </{tag}>'
+        items = "\n".join(items_html)
+        return f"                <{tag}>\n{items}\n                </{tag}>"
 
     def _render_list_item(self, item: ListItem, ordered: bool = False) -> str:
         """Render list item to HTML.
@@ -280,19 +286,19 @@ class PHPGenerator:
         Returns:
             HTML string
         """
-        text = f'<?php echo escape_html({self._json_encode(item.content)}); ?>'
-        html = f'                    <li>{text}'
+        text = f"<?php echo escape_html({self._json_encode(item.content)}); ?>"
+        html = f"                    <li>{text}"
 
         # Render nested items
         if item.children:
-            tag = 'ol' if ordered else 'ul'
+            tag = "ol" if ordered else "ul"
             nested_html = []
             for child in item.children:
                 nested_html.append(self._render_list_item(child, ordered))
-            nested = '\n'.join(nested_html)
-            html += f'\n                        <{tag}>\n{nested}\n                        </{tag}>'
+            nested = "\n".join(nested_html)
+            html += f"\n                        <{tag}>\n{nested}\n                        </{tag}>"
 
-        html += '</li>'
+        html += "</li>"
         return html
 
     def _render_table(self, table: Table) -> str:
@@ -315,11 +321,11 @@ class PHPGenerator:
             data_row = [cell.content for cell in row.cells]
             rows.append(data_row)
 
-        caption = self._json_encode(table.caption) if table.caption else 'null'
+        caption = self._json_encode(table.caption) if table.caption else "null"
         headers_json = self._json_encode(headers)
         rows_json = self._json_encode(rows)
 
-        return f'                <?php echo render_table({headers_json}, {rows_json}, {caption}); ?>'
+        return f"                <?php echo render_table({headers_json}, {rows_json}, {caption}); ?>"
 
     def _render_code(self, code: CodeBlock) -> str:
         """Render code block to HTML.
@@ -330,10 +336,10 @@ class PHPGenerator:
         Returns:
             HTML string
         """
-        lang_class = f' class="language-{code.language}"' if code.language else ''
-        code_text = f'<?php echo escape_html({self._json_encode(code.code)}); ?>'
+        lang_class = f' class="language-{code.language}"' if code.language else ""
+        code_text = f"<?php echo escape_html({self._json_encode(code.code)}); ?>"
 
-        return f'                <pre><code{lang_class}>{code_text}</code></pre>'
+        return f"                <pre><code{lang_class}>{code_text}</code></pre>"
 
     def _render_figure(self, figure: Figure) -> str:
         """Render figure to HTML.
@@ -346,11 +352,11 @@ class PHPGenerator:
         """
         src = self._json_encode(figure.src)
         alt = self._json_encode(figure.alt)
-        caption = self._json_encode(figure.caption) if figure.caption else 'null'
-        width = self._json_encode(figure.width) if figure.width else 'null'
-        height = self._json_encode(figure.height) if figure.height else 'null'
+        caption = self._json_encode(figure.caption) if figure.caption else "null"
+        width = self._json_encode(figure.width) if figure.width else "null"
+        height = self._json_encode(figure.height) if figure.height else "null"
 
-        return f'                <?php echo render_figure({src}, {alt}, {caption}, {width}, {height}); ?>'
+        return f"                <?php echo render_figure({src}, {alt}, {caption}, {width}, {height}); ?>"
 
     def _render_section(self, section: Section) -> str:
         """Render section to HTML.
@@ -361,19 +367,23 @@ class PHPGenerator:
         Returns:
             HTML string
         """
-        id_attr = f' id="<?php echo escape_attr({self._json_encode(section.id)}); ?>"' if section.id else ''
-        html = f'                <section{id_attr}>'
+        id_attr = (
+            f' id="<?php echo escape_attr({self._json_encode(section.id)}); ?>"'
+            if section.id
+            else ""
+        )
+        html = f"                <section{id_attr}>"
 
         if section.title:
-            title = f'<?php echo escape_html({self._json_encode(section.title)}); ?>'
-            html += f'\n                    <h2>{title}</h2>'
+            title = f"<?php echo escape_html({self._json_encode(section.title)}); ?>"
+            html += f"\n                    <h2>{title}</h2>"
 
         # Render section content
         content_html = self._render_content(section.content)
         if content_html:
-            html += f'\n{content_html}'
+            html += f"\n{content_html}"
 
-        html += '\n                </section>'
+        html += "\n                </section>"
         return html
 
     def _render_citation(self, citation: Citation) -> str:
