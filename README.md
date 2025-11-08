@@ -20,6 +20,8 @@
 
 📑 **OOXML Composer** — Generates PowerPoint presentations from XML with slide masters, tables, and citations
 
+🐘 **PHP Page Generator** — Converts XML to production-ready PHP 8.1+ pages with XXE protection, context-aware escaping, and semantic HTML5
+
 📈 **Pluggable Telemetry** — Captures metrics to file, SQLite, or PostgreSQL with run duration and pass/fail heatmaps
 
 🔀 **Schema-Aware Diff** — Structural XML diffs with semantic explanations
@@ -217,6 +219,101 @@ Options:
   --explain               Provide detailed semantic explanations
   --schemas-dir PATH      Directory containing schemas
 ```
+
+### `xml-lib phpify`
+
+Generate production-ready PHP page from XML document.
+
+```bash
+xml-lib phpify XML_FILE [OPTIONS]
+
+Options:
+  --output, -o PATH       Output PHP file (default: <input-basename>.php)
+  --template TYPE         Template to use: default, minimal (default: default)
+  --title TEXT            Override document title
+  --favicon PATH          Favicon URL or path
+  --assets-dir PATH       Assets directory for CSS/images (default: assets)
+  --no-toc                Disable table of contents
+  --no-css                Disable CSS generation
+  --css-path PATH         Custom CSS file path
+  --strict                Strict mode (fail on warnings)
+  --max-size BYTES        Maximum XML file size in bytes (default: 10MB)
+  --schema PATH           Optional Relax NG or Schematron schema for validation
+```
+
+**Features:**
+- ✅ XXE protection and size/time limits
+- ✅ Schema validation (Relax NG/Schematron)
+- ✅ Context-aware escaping (HTML, attributes, URLs)
+- ✅ Semantic HTML5 with accessibility landmarks
+- ✅ Responsive layout with mobile support
+- ✅ Automatic table of contents generation
+- ✅ PSR-12 compliant PHP code
+- ✅ Deterministic output (stable ordering)
+
+**Examples:**
+
+```bash
+# Basic usage
+xml-lib phpify example_document.xml
+
+# Custom output path
+xml-lib phpify example_document.xml -o public/page.php
+
+# Minimal template without TOC
+xml-lib phpify example_document.xml --template minimal --no-toc
+
+# With schema validation
+xml-lib phpify document.xml --schema schemas/lifecycle.rng --strict
+
+# Custom title and favicon
+xml-lib phpify document.xml --title "My Page" --favicon "favicon.ico"
+```
+
+**Security Guarantees:**
+
+The `phpify` command implements defense-in-depth security:
+
+1. **XML Parsing Security**
+   - XXE (XML External Entity) protection - disabled external entity resolution
+   - Size limits - default 10MB, configurable
+   - Parse time limits - 30 seconds max
+   - No network access during parsing
+
+2. **Output Security**
+   - Context-aware escaping:
+     - `htmlspecialchars()` for HTML content (ENT_QUOTES | ENT_HTML5)
+     - `escape_attr()` for HTML attributes
+     - `sanitize_url()` for URLs (blocks javascript:, data:, vbscript:, file:)
+   - Template-based generation prevents code injection
+   - All user content treated as untrusted
+
+3. **PHP Code Quality**
+   - PSR-12 compliant code style
+   - Strict typing in helper functions
+   - Automatic `php -l` syntax validation
+   - No eval() or dynamic code execution
+
+**Generated Files:**
+
+```
+out/
+├── example_document.php    # Main PHP page with embedded functions
+└── assets/
+    └── style.css          # Responsive CSS (if not disabled)
+```
+
+**Template Options:**
+
+- **default**: Full-featured template with header, footer, TOC, and responsive CSS
+- **minimal**: Lightweight template with inline styles, no TOC
+
+**Limitations:**
+
+- Maximum file size: 10MB (configurable with --max-size)
+- Parse timeout: 30 seconds
+- Generated PHP requires PHP 8.1+ (uses `str_starts_with()`)
+- External images are referenced, not embedded
 
 ## Development
 
