@@ -410,7 +410,7 @@ def phpify(
         except (FileNotFoundError, subprocess.TimeoutExpired):
             click.echo("  ℹ️  PHP not available for linting")
 
-        click.echo(f"\n✅ PHP generation complete!")
+        click.echo("\n✅ PHP generation complete!")
         click.echo(f"   Main file: {output_path}")
         click.echo(f"   Title: {ir.metadata.title}")
         click.echo(f"   Content elements: {len(ir.content)}")

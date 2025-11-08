@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 from lxml import etree
 
 
@@ -89,7 +89,7 @@ class ListItem:
 
 
 @dataclass
-class List:
+class IRList:
     """Represents a list (ordered or unordered)."""
 
     items: List[ListItem] = field(default_factory=list)
@@ -144,7 +144,7 @@ class Metadata:
 
 
 ContentElement = Union[
-    Heading, Paragraph, List, Table, CodeBlock, Figure, Link, Citation, Section
+    Heading, Paragraph, IRList, Table, CodeBlock, Figure, Link, Citation, Section
 ]
 
 
@@ -382,7 +382,7 @@ class IRBuilder:
         style = elem.get("style")
         return Paragraph(content=text, style=style)
 
-    def _extract_list(self, elem: etree._Element) -> Optional[List]:
+    def _extract_list(self, elem: etree._Element) -> Optional[IRList]:
         """Extract list from element."""
         items = []
         ordered = elem.tag.lower() in ["ol"] or elem.get("type") == "ordered"
@@ -416,7 +416,7 @@ class IRBuilder:
         if not items:
             return None
 
-        return List(items=items, ordered=ordered)
+        return IRList(items=items, ordered=ordered)
 
     def _extract_table(self, elem: etree._Element) -> Optional[Table]:
         """Extract table from element."""
