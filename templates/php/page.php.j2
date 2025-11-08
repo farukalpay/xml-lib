@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title><?php echo escape_html({{ title|tojson }}); ?></title>
+    {% if description %}
+    <meta name="description" content="<?php echo escape_attr({{ description|tojson }}); ?>">
+    {% endif %}
+    {% if author %}
+    <meta name="author" content="<?php echo escape_attr({{ author|tojson }}); ?>">
+    {% endif %}
+    {% if keywords %}
+    <meta name="keywords" content="<?php echo escape_attr({{ keywords|join(', ')|tojson }}); ?>">
+    {% endif %}
+    {% if favicon %}
+    <link rel="icon" href="<?php echo escape_attr({{ favicon|tojson }}); ?>">
+    {% endif %}
+    {% if not no_css %}
+    <link rel="stylesheet" href="<?php echo escape_attr({{ css_path|default('assets/style.css')|tojson }}); ?>">
+    {% endif %}
+</head>
+<body>
+    <div class="container">
+        {% include 'php/header.php.j2' %}
+
+        <main role="main" class="content">
+            {% if not no_toc and toc_items %}
+            {% include 'php/toc.php.j2' %}
+            {% endif %}
+
+            <article>
+                {{ content }}
+            </article>
+
+            {% if citations %}
+            <?php echo render_footnotes({{ citations|tojson }}); ?>
+            {% endif %}
+        </main>
+
+        {% include 'php/footer.php.j2' %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+            <nav role="navigation" class="table-of-contents" aria-label="Table of Contents">
+                <h2>Table of Contents</h2>
+                <ol>
+                    {% for item in toc_items %}
+                    <li><a href="#<?php echo escape_attr({{ item.id|tojson }}); ?>"><?php echo escape_html({{ item.text|tojson }}); ?></a></li>
+                    {% endfor %}
+                </ol>
+            </nav>

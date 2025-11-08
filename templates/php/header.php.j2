@@ -1,0 +1,16 @@
+        <header role="banner" class="page-header">
+            <h1><?php echo escape_html({{ title|tojson }}); ?></h1>
+            {% if description %}
+            <p class="description"><?php echo escape_html({{ description|tojson }}); ?></p>
+            {% endif %}
+            {% if author or date %}
+            <div class="metadata">
+                {% if author %}
+                <span class="author">By <?php echo escape_html({{ author|tojson }}); ?></span>
+                {% endif %}
+                {% if date %}
+                <span class="date"><?php echo escape_html({{ date|tojson }}); ?></span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </header>
