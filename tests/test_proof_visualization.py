@@ -1,6 +1,7 @@
 """Tests for proof tree visualization."""
 
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -15,6 +16,25 @@ from xml_lib.formal_verification import (
     GuardrailProperty,
 )
 from xml_lib.proof_visualization import ProofTreeVisualizer
+
+
+# Check if Graphviz is available
+def is_graphviz_available():
+    """Check if Graphviz dot executable is available."""
+    try:
+        subprocess.run(
+            ["dot", "-V"], capture_output=True, check=True, timeout=5
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
+graphviz_available = is_graphviz_available()
+skip_if_no_graphviz = pytest.mark.skipif(
+    not graphviz_available,
+    reason="Graphviz not installed (required for rendering tests)"
+)
 
 
 class TestProofTreeVisualizer:
@@ -168,6 +188,7 @@ class TestProofTreeVisualizer:
         assert l1_data["type"] == "lemma"
         assert len(l1_data["proof_steps"]) == 3
 
+    @skip_if_no_graphviz
     def test_render_graphviz_svg(self, simple_proof_tree):
         """Test rendering proof tree as SVG using Graphviz."""
         viz = ProofTreeVisualizer(simple_proof_tree)
@@ -184,6 +205,7 @@ class TestProofTreeVisualizer:
             assert len(content) > 0
             assert "<?xml" in content  # SVG header
 
+    @skip_if_no_graphviz
     def test_render_graphviz_pdf(self, simple_proof_tree):
         """Test rendering proof tree as PDF using Graphviz."""
         viz = ProofTreeVisualizer(simple_proof_tree)
