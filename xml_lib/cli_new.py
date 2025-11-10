@@ -8,6 +8,7 @@ import json
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -55,7 +56,7 @@ console = Console()
 logger = get_logger(__name__)
 
 
-def print_command_result(result: CommandResult, json_output: Path | None = None) -> None:
+def print_command_result(result: CommandResult, json_output: Optional[Path] = None) -> None:
     """Print command result with rich formatting and optional JSON output."""
     # JSON output
     if json_output:
@@ -100,7 +101,7 @@ def print_command_result(result: CommandResult, json_output: Path | None = None)
 @lifecycle_app.command("validate")
 def lifecycle_validate(
     path: Path = typer.Argument(..., help="Path to lifecycle base directory"),
-    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Validate lifecycle DAG and phase invariants.
 
@@ -191,7 +192,7 @@ def lifecycle_visualize(
 @guardrails_app.command("simulate")
 def guardrails_simulate(
     steps: int = typer.Option(5, "--steps", "-n", help="Number of simulation steps"),
-    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Simulate guardrail finite-state machine."""
     start_time = time.time()
@@ -240,7 +241,7 @@ def guardrails_simulate(
 def guardrails_check(
     file: Path = typer.Argument(..., help="File to check"),
     checksum: str = typer.Option(..., "--checksum", "-c", help="Expected checksum"),
-    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Verify file checksum."""
     start_time = time.time()
@@ -310,7 +311,7 @@ def engine_prove(
 @engine_app.command("verify")
 def engine_verify(
     operator_type: str = typer.Option("contraction", "--type", "-t", help="Operator type"),
-    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Verify operator properties (fixed points, Fejér monotonicity)."""
     import numpy as np
@@ -370,7 +371,7 @@ def engine_verify(
 def pptx_build(
     xml_path: Path = typer.Argument(..., help="Path to PPTX build plan XML"),
     output: Path = typer.Option(..., "--output", "-o", help="Output .pptx file"),
-    template: Path | None = typer.Option(None, "--template", "-t", help="Template .pptx file"),
+    template: Optional[Path] = typer.Option(None, "--template", "-t", help="Template .pptx file"),
 ) -> None:
     """Build PowerPoint presentation from XML build plan."""
     start_time = time.time()
@@ -459,7 +460,7 @@ def schema_derive(
 def schema_validate_cmd(
     xml_path: Path = typer.Argument(..., help="XML file to validate"),
     schema_path: Path = typer.Argument(..., help="Schema file"),
-    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Validate XML document against schema."""
     start_time = time.time()

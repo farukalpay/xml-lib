@@ -88,6 +88,7 @@ ignore = [
     "SIM108", # ternary operator (sometimes less readable)
     "SIM110", # return any/all (sometimes clearer as loop)
     "C408",  # dict() calls (sometimes clearer than literals)
+    "UP045",  # Use X | None (not supported by Typer yet, causes runtime error)
 ]
 
 [tool.ruff.lint.per-file-ignores]
