@@ -62,7 +62,7 @@ types-jsonlines = "^4.0.0"
 z3-solver = "^4.12.0"
 
 [tool.poetry.scripts]
-xml-lib = "xml_lib.cli_new:app"
+xml-lib = "xml_lib.cli:cli"
 
 [tool.ruff.lint]
 select = [

@@ -2,6 +2,8 @@
 
 __version__ = "0.1.0"
 
-from xml_lib.cli_new import app
+# Using old Click-based CLI for backward compatibility with existing workflows
+# New Typer CLI available in cli_new.py for future migration
+from xml_lib.cli import cli as app
 
 __all__ = ["app", "__version__"]
