@@ -13,13 +13,11 @@ from .ir import (
     Figure,
     Heading,
     IntermediateRepresentation,
+    IRList,
     ListItem,
     Paragraph,
     Section,
     Table,
-)
-from .ir import (
-    List as IRList,
 )
 
 
