@@ -7,23 +7,15 @@ for all guardrail properties defined in the XML governance platform.
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from lxml import etree
 from z3 import (
     Bool,
     Int,
-    String,
     Solver,
     sat,
     unsat,
-    And,
-    Or,
     Not,
-    Implies,
-    ForAll,
-    Exists,
-    StringVal,
-    IntVal,
 )
 
 
@@ -288,7 +280,6 @@ class FormalVerificationEngine:
         a complete parser for XPath, regex, etc.
         """
         # Create symbolic variables
-        doc = String("document")
         valid = Bool("valid")
 
         if constraint_type == "xpath":

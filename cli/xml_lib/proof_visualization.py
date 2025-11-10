@@ -7,14 +7,13 @@ using multiple rendering backends (Graphviz, Plotly, NetworkX).
 import json
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx
 from graphviz import Digraph
 
 try:
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
 
     PLOTLY_AVAILABLE = True
 except ImportError:
@@ -22,7 +21,6 @@ except ImportError:
 
 from xml_lib.formal_verification import (
     ProofNode,
-    ProofResult,
     ProofStatus,
     ProofTree,
 )
@@ -306,7 +304,6 @@ class ProofTreeVisualizer:
 
         # Assign positions
         pos: Dict[str, Tuple[float, float]] = {}
-        max_level = max(level_groups.keys()) if level_groups else 0
 
         for level, nodes in level_groups.items():
             y = -level  # Negative to go top to bottom
