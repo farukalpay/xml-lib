@@ -8,9 +8,8 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, List
 from enum import Enum
+from pathlib import Path
 
 
 class MathPolicy(Enum):
@@ -39,7 +38,7 @@ class SanitizeResult:
     """Result of sanitizing an XML file."""
 
     content: bytes  # Sanitized XML content
-    mappings: List[SurrogateMapping]  # Transformation mappings
+    mappings: list[SurrogateMapping]  # Transformation mappings
     has_surrogates: bool  # Whether any transformations were made
 
 
@@ -127,7 +126,7 @@ class Sanitizer:
         """
         content = path.read_bytes()
         text = content.decode("utf-8")
-        mappings: List[SurrogateMapping] = []
+        mappings: list[SurrogateMapping] = []
         has_surrogates = False
 
         # Track line/column for better error reporting
@@ -216,7 +215,7 @@ class Sanitizer:
             content=sanitized_content, mappings=mappings, has_surrogates=has_surrogates
         )
 
-    def write_mapping(self, relpath: Path, mappings: List[SurrogateMapping]) -> None:
+    def write_mapping(self, relpath: Path, mappings: list[SurrogateMapping]) -> None:
         """Write mapping file in JSON Lines format.
 
         Args:
@@ -246,7 +245,7 @@ class Sanitizer:
             output_path: Path to write restored XML
         """
         # Read mapping
-        mappings: Dict[str, str] = {}
+        mappings: dict[str, str] = {}
         with open(mapping_path) as f:
             for line in f:
                 entry = json.loads(line)

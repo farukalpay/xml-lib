@@ -6,26 +6,24 @@ guardrails simulation, mathematical engine operations, and documentation generat
 
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.tree import Tree
-from rich import print as rprint
 
 from xml_lib import lifecycle, schema
-from xml_lib.engine.operators import contraction_operator, projection_operator
 from xml_lib.engine.fixed_points import FixedPointIterator
+from xml_lib.engine.operators import contraction_operator, projection_operator
 from xml_lib.engine.proofs import ProofGenerator
-from xml_lib.guardrails.simulator import GuardrailSimulator, State, StateType, Transition
 from xml_lib.guardrails.checksum import ChecksumValidator
-from xml_lib.pptx.parser import PPTXParser
+from xml_lib.guardrails.simulator import GuardrailSimulator, State, StateType, Transition
 from xml_lib.pptx.builder import PPTXBuilder
 from xml_lib.pptx.exporter import HTMLExporter
+from xml_lib.pptx.parser import PPTXParser
 from xml_lib.transforms.normalize import Normalizer
 from xml_lib.types import CommandResult
 from xml_lib.utils.logging import get_logger
@@ -57,7 +55,7 @@ console = Console()
 logger = get_logger(__name__)
 
 
-def print_command_result(result: CommandResult, json_output: Optional[Path] = None) -> None:
+def print_command_result(result: CommandResult, json_output: Path | None = None) -> None:
     """Print command result with rich formatting and optional JSON output."""
     # JSON output
     if json_output:
@@ -102,7 +100,7 @@ def print_command_result(result: CommandResult, json_output: Optional[Path] = No
 @lifecycle_app.command("validate")
 def lifecycle_validate(
     path: Path = typer.Argument(..., help="Path to lifecycle base directory"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Validate lifecycle DAG and phase invariants.
 
@@ -133,7 +131,7 @@ def lifecycle_validate(
 
             result = CommandResult(
                 command="lifecycle validate",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 duration_ms=duration,
                 status="success" if validation.is_valid else "failure",
                 summary={
@@ -193,7 +191,7 @@ def lifecycle_visualize(
 @guardrails_app.command("simulate")
 def guardrails_simulate(
     steps: int = typer.Option(5, "--steps", "-n", help="Number of simulation steps"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Simulate guardrail finite-state machine."""
     start_time = time.time()
@@ -224,7 +222,7 @@ def guardrails_simulate(
 
     cmd_result = CommandResult(
         command="guardrails simulate",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         duration_ms=duration,
         status="success" if result.success else "failure",
         summary={
@@ -242,7 +240,7 @@ def guardrails_simulate(
 def guardrails_check(
     file: Path = typer.Argument(..., help="File to check"),
     checksum: str = typer.Option(..., "--checksum", "-c", help="Expected checksum"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Verify file checksum."""
     start_time = time.time()
@@ -254,7 +252,7 @@ def guardrails_check(
 
     cmd_result = CommandResult(
         command="guardrails check",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         duration_ms=duration,
         status="success" if result.is_valid else "failure",
         summary={
@@ -296,7 +294,7 @@ def engine_prove(
 
     result = CommandResult(
         command="engine prove",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         duration_ms=duration,
         status="success",
         summary={
@@ -312,7 +310,7 @@ def engine_prove(
 @engine_app.command("verify")
 def engine_verify(
     operator_type: str = typer.Option("contraction", "--type", "-t", help="Operator type"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Verify operator properties (fixed points, Fejér monotonicity)."""
     import numpy as np
@@ -354,7 +352,7 @@ def engine_verify(
 
     result = CommandResult(
         command="engine verify",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         duration_ms=duration,
         status="success" if fp_result.converged else "failure",
         summary={
@@ -372,7 +370,7 @@ def engine_verify(
 def pptx_build(
     xml_path: Path = typer.Argument(..., help="Path to PPTX build plan XML"),
     output: Path = typer.Option(..., "--output", "-o", help="Output .pptx file"),
-    template: Optional[Path] = typer.Option(None, "--template", "-t", help="Template .pptx file"),
+    template: Path | None = typer.Option(None, "--template", "-t", help="Template .pptx file"),
 ) -> None:
     """Build PowerPoint presentation from XML build plan."""
     start_time = time.time()
@@ -461,7 +459,7 @@ def schema_derive(
 def schema_validate_cmd(
     xml_path: Path = typer.Argument(..., help="XML file to validate"),
     schema_path: Path = typer.Argument(..., help="Schema file"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="JSON output file"),
+    output: Path | None = typer.Option(None, "--output", "-o", help="JSON output file"),
 ) -> None:
     """Validate XML document against schema."""
     start_time = time.time()
@@ -472,7 +470,7 @@ def schema_validate_cmd(
 
     cmd_result = CommandResult(
         command="schema validate",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         duration_ms=duration,
         status="success" if result.is_valid else "failure",
         summary={
@@ -535,7 +533,7 @@ def examples_run(
 
         duration = (time.time() - start_time) * 1000
 
-    console.print(f"[green]✓[/green] Example processed")
+    console.print("[green]✓[/green] Example processed")
     console.print(f"  Normalized: {normalized_path}")
     console.print(f"  Checksum: {checksum[:16]}...")
     console.print(f"  Duration: {duration:.2f}ms")

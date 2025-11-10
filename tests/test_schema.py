@@ -1,9 +1,7 @@
 """Tests for schema module."""
 
-from pathlib import Path
 
 from xml_lib import schema
-from xml_lib.types import ValidationResult
 
 
 def test_schema_validator_creation():

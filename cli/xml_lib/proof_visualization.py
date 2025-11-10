@@ -7,7 +7,7 @@ using multiple rendering backends (Graphviz, Plotly, NetworkX).
 import json
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import networkx as nx
 from graphviz import Digraph
@@ -42,7 +42,7 @@ class ProofTreeVisualizer:
     def _build_networkx_graph(self) -> None:
         """Build NetworkX graph from proof tree."""
 
-        def add_node_recursive(node: ProofNode, parent_id: Optional[str] = None):
+        def add_node_recursive(node: ProofNode, parent_id: str | None = None):
             """Recursively add nodes to the graph."""
             # Add node with attributes
             self.graph.add_node(
@@ -268,14 +268,14 @@ class ProofTreeVisualizer:
 
         return output_path
 
-    def _hierarchical_layout(self) -> Dict[str, Tuple[float, float]]:
+    def _hierarchical_layout(self) -> dict[str, tuple[float, float]]:
         """Compute hierarchical layout for the graph.
 
         Returns:
             Dictionary mapping node IDs to (x, y) positions
         """
         # Use topological sort to determine levels
-        levels: Dict[str, int] = {}
+        levels: dict[str, int] = {}
 
         def assign_level(node_id: str, level: int = 0):
             """Recursively assign levels to nodes."""
@@ -292,14 +292,14 @@ class ProofTreeVisualizer:
         assign_level(root_id)
 
         # Group nodes by level
-        level_groups: Dict[int, List[str]] = {}
+        level_groups: dict[int, list[str]] = {}
         for node_id, level in levels.items():
             if level not in level_groups:
                 level_groups[level] = []
             level_groups[level].append(node_id)
 
         # Assign positions
-        pos: Dict[str, Tuple[float, float]] = {}
+        pos: dict[str, tuple[float, float]] = {}
 
         for level, nodes in level_groups.items():
             y = -level  # Negative to go top to bottom
@@ -522,7 +522,7 @@ class ProofTreeVisualizer:
                 result_dict["status"] = result_dict["status"].value
             results_data.append(result_dict)
 
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             "nodes": {},
             "edges": [],
             "results": results_data,
@@ -538,7 +538,7 @@ class ProofTreeVisualizer:
                 "proof_steps": node_data.get("proof_steps", []),
             }
 
-        edges_list: List[Dict[str, Any]] = []
+        edges_list: list[dict[str, Any]] = []
         for edge in self.graph.edges():
             edges_list.append({"source": edge[0], "target": edge[1]})
         data["edges"] = edges_list

@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from lxml import etree
 
-from xml_lib.guardrails import GuardrailEngine, GuardrailRule, GuardrailResult
+from xml_lib.guardrails import GuardrailEngine, GuardrailResult, GuardrailRule
 from xml_lib.types import ValidationError
 
 

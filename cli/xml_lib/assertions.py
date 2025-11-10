@@ -4,7 +4,8 @@ import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING, Any
+
 from lxml import etree
 
 from xml_lib.types import ValidationError
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 # Lazy import for cryptography to avoid import-time failures
 CRYPTO_AVAILABLE = False
-_crypto_modules: Optional[dict] = None
+_crypto_modules: dict | None = None
 
 
 def _get_crypto():
@@ -24,9 +25,9 @@ def _get_crypto():
         return _crypto_modules
 
     try:
+        from cryptography.hazmat.backends import default_backend
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import padding, rsa
-        from cryptography.hazmat.backends import default_backend
 
         _crypto_modules = {
             "hashes": hashes,
@@ -48,11 +49,11 @@ class AssertionLedger:
     """Signed assertion ledger for validation results."""
 
     def __init__(self):
-        self.assertions: List["ValidationResult"] = []
+        self.assertions: list[ValidationResult] = []
         self.private_key = self._generate_key()
         self.public_key = self.private_key.public_key() if self.private_key else None
 
-    def _generate_key(self) -> Optional[Any]:
+    def _generate_key(self) -> Any | None:
         """Generate RSA key pair for signing."""
         crypto = _get_crypto()
         if not crypto:
@@ -69,7 +70,7 @@ class AssertionLedger:
         """Add a validation result to the ledger."""
         self.assertions.append(result)
 
-    def _sign_data(self, data: bytes) -> Optional[bytes]:
+    def _sign_data(self, data: bytes) -> bytes | None:
         """Sign data with private key."""
         crypto = _get_crypto()
         if not crypto or not self.private_key:

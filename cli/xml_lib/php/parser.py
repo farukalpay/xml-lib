@@ -3,7 +3,7 @@
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+
 from lxml import etree
 
 
@@ -14,7 +14,7 @@ class ParseConfig:
     max_size_bytes: int = 10 * 1024 * 1024  # 10MB default
     max_parse_time_seconds: float = 30.0
     validate_schema: bool = True
-    schema_path: Optional[Path] = None
+    schema_path: Path | None = None
 
 
 class ParseError(Exception):
@@ -33,7 +33,7 @@ class SecureXMLParser:
     - Optional schema validation (Relax NG/Schematron)
     """
 
-    def __init__(self, config: Optional[ParseConfig] = None):
+    def __init__(self, config: ParseConfig | None = None):
         """Initialize the secure parser.
 
         Args:

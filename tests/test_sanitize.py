@@ -1,8 +1,8 @@
 """Tests for mathy-XML sanitizer."""
 
-import pytest
 from pathlib import Path
-from xml_lib.sanitize import Sanitizer, MathPolicy, SanitizeResult
+
+from xml_lib.sanitize import MathPolicy, Sanitizer
 
 
 def test_sanitizer_detects_invalid_names():
@@ -35,8 +35,8 @@ def test_sanitizer_sanitizes_simple_element(tmp_path):
     assert result.mappings[0].kind == "element"
 
     # Check that surrogate is valid XML
-    assert '<op name="×"'.encode("utf-8") in result.content
-    assert 'xml:orig="×"'.encode("utf-8") in result.content
+    assert '<op name="×"'.encode() in result.content
+    assert 'xml:orig="×"'.encode() in result.content
 
 
 def test_sanitizer_sanitizes_nested_elements(tmp_path):

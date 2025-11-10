@@ -5,14 +5,14 @@ import io
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+
 from lxml import etree
 
-from xml_lib.storage import ContentStore
-from xml_lib.types import ValidationError
 from xml_lib.guardrails import GuardrailEngine
+from xml_lib.sanitize import MathPolicy, Sanitizer
+from xml_lib.storage import ContentStore
 from xml_lib.telemetry import TelemetrySink
-from xml_lib.sanitize import Sanitizer, MathPolicy
+from xml_lib.types import ValidationError
 
 
 @dataclass
@@ -20,10 +20,10 @@ class ValidationResult:
     """Result of validation."""
 
     is_valid: bool
-    errors: List[ValidationError] = field(default_factory=list)
-    warnings: List[ValidationError] = field(default_factory=list)
-    validated_files: List[str] = field(default_factory=list)
-    checksums: Dict[str, str] = field(default_factory=dict)
+    errors: list[ValidationError] = field(default_factory=list)
+    warnings: list[ValidationError] = field(default_factory=list)
+    validated_files: list[str] = field(default_factory=list)
+    checksums: dict[str, str] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -34,7 +34,7 @@ class Validator:
         self,
         schemas_dir: Path,
         guardrails_dir: Path,
-        telemetry: Optional[TelemetrySink] = None,
+        telemetry: TelemetrySink | None = None,
         math_policy: MathPolicy = MathPolicy.SANITIZE,
     ):
         self.schemas_dir = schemas_dir
@@ -43,14 +43,14 @@ class Validator:
         self.content_store = ContentStore(Path("store"))
         self.guardrail_engine = GuardrailEngine(guardrails_dir)
         self.math_policy = math_policy
-        self._last_result: Optional[ValidationResult] = None
+        self._last_result: ValidationResult | None = None
 
         # Load schemas
         self.relaxng_lifecycle = self._load_relaxng("lifecycle.rng")
         self.relaxng_guardrails = self._load_relaxng("guardrails.rng")
         self.schematron_lifecycle = self._load_schematron("lifecycle.sch")
 
-    def _load_relaxng(self, filename: str) -> Optional[etree.RelaxNG]:
+    def _load_relaxng(self, filename: str) -> etree.RelaxNG | None:
         """Load a Relax NG schema."""
         schema_path = self.schemas_dir / filename
         if not schema_path.exists():
@@ -63,7 +63,7 @@ class Validator:
             print(f"Warning: Failed to load Relax NG schema {filename}: {e}")
             return None
 
-    def _load_schematron(self, filename: str) -> Optional[etree.Schematron]:
+    def _load_schematron(self, filename: str) -> etree.Schematron | None:
         """Load a Schematron schema."""
         schema_path = self.schemas_dir / filename
         if not schema_path.exists():
@@ -79,7 +79,7 @@ class Validator:
     def validate_project(
         self,
         project_path: Path,
-        math_policy: Optional[MathPolicy] = None,
+        math_policy: MathPolicy | None = None,
     ) -> ValidationResult:
         """Validate all XML files in a project."""
         start_time = datetime.now()
@@ -91,8 +91,8 @@ class Validator:
         xml_files = list(project_path.rglob("*.xml"))
 
         # Track IDs across all files for cross-file validation
-        all_ids: Set[str] = set()
-        id_locations: Dict[str, str] = {}
+        all_ids: set[str] = set()
+        id_locations: dict[str, str] = {}
 
         for xml_file in xml_files:
             # Skip schema and guardrail files
@@ -378,8 +378,8 @@ class Validator:
         self,
         doc: etree._ElementTree,
         xml_file: Path,
-        all_ids: Set[str],
-        id_locations: Dict[str, str],
+        all_ids: set[str],
+        id_locations: dict[str, str],
         result: ValidationResult,
     ) -> None:
         """Check for duplicate IDs across files."""
@@ -420,7 +420,7 @@ class Validator:
             return
 
         # Extract timestamps from phases
-        timestamps: Dict[str, datetime] = {}
+        timestamps: dict[str, datetime] = {}
         phase_order = ["begin", "start", "iteration", "end", "continuum"]
 
         for phase in phases.findall("phase"):

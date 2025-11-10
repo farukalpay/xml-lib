@@ -1,11 +1,11 @@
 """Checksum validation and signoff logic."""
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from xml_lib.types import Priority, ValidationResult
+from xml_lib.types import ValidationResult
 
 
 @dataclass

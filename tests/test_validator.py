@@ -1,13 +1,11 @@
 """Tests for XML validator."""
 
-import pytest
 from pathlib import Path
-from datetime import datetime
-from lxml import etree
 
-from xml_lib.validator import Validator, ValidationResult
-from xml_lib.types import ValidationError
+import pytest
+
 from xml_lib.storage import ContentStore, deterministic_uuid
+from xml_lib.validator import Validator
 
 
 @pytest.fixture

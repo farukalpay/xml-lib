@@ -5,15 +5,14 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-import pytest
 import networkx as nx
+import pytest
 
 from xml_lib.formal_verification import (
     ProofNode,
     ProofResult,
     ProofStatus,
     ProofTree,
-    GuardrailProperty,
 )
 from xml_lib.proof_visualization import ProofTreeVisualizer
 

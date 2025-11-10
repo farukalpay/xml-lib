@@ -1,7 +1,7 @@
 """Fixed-point iteration algorithms."""
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 import numpy as np
 

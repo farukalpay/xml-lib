@@ -1,7 +1,8 @@
 """Tests for XML differ."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from xml_lib.differ import Differ, DiffType
 

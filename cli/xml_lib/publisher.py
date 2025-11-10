@@ -1,14 +1,14 @@
 """XSLT 3.0 publisher for HTML rendering."""
 
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
-from lxml import etree
-import tempfile
 
+from lxml import etree
+
+from xml_lib.sanitize import MathPolicy, Sanitizer
 from xml_lib.telemetry import TelemetrySink
-from xml_lib.sanitize import Sanitizer, MathPolicy
 
 
 @dataclass
@@ -16,8 +16,8 @@ class PublishResult:
     """Result of publishing operation."""
 
     success: bool
-    files: List[str] = field(default_factory=list)
-    error: Optional[str] = None
+    files: list[str] = field(default_factory=list)
+    error: str | None = None
 
 
 class Publisher:
@@ -26,7 +26,7 @@ class Publisher:
     def __init__(
         self,
         xslt_dir: Path,
-        telemetry: Optional[TelemetrySink] = None,
+        telemetry: TelemetrySink | None = None,
     ):
         self.xslt_dir = xslt_dir
         self.telemetry = telemetry
@@ -311,7 +311,7 @@ class Publisher:
 
         return result
 
-    def _create_index(self, output_dir: Path, files: List[str]) -> None:
+    def _create_index(self, output_dir: Path, files: list[str]) -> None:
         """Create an index.html page."""
         html = (
             """<!DOCTYPE html>

@@ -1,7 +1,7 @@
 """Mathematical operators with sympy and numpy."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 from sympy import Matrix, Symbol, simplify

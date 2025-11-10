@@ -7,15 +7,16 @@ for all guardrail properties defined in the XML governance platform.
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+
 from lxml import etree
 from z3 import (
     Bool,
     Int,
+    Not,
     Solver,
     sat,
     unsat,
-    Not,
 )
 
 
@@ -36,8 +37,8 @@ class GuardrailProperty:
     name: str
     description: str
     formula: Any  # Z3 expression
-    constraints: List[Any] = field(default_factory=list)
-    invariants: List[Any] = field(default_factory=list)
+    constraints: list[Any] = field(default_factory=list)
+    invariants: list[Any] = field(default_factory=list)
 
 
 @dataclass
@@ -47,9 +48,9 @@ class ProofResult:
     property_id: str
     property_name: str
     status: ProofStatus
-    model: Optional[Dict[str, Any]] = None
-    counterexample: Optional[Dict[str, Any]] = None
-    proof_steps: List[str] = field(default_factory=list)
+    model: dict[str, Any] | None = None
+    counterexample: dict[str, Any] | None = None
+    proof_steps: list[str] = field(default_factory=list)
     verification_time: float = 0.0
 
 
@@ -58,8 +59,8 @@ class ProofTree:
     """A proof tree structure for visualization."""
 
     root: "ProofNode"
-    properties: List[GuardrailProperty]
-    results: List[ProofResult]
+    properties: list[GuardrailProperty]
+    results: list[ProofResult]
 
 
 @dataclass
@@ -70,10 +71,10 @@ class ProofNode:
     label: str
     type: str  # axiom, lemma, theorem, corollary
     statement: str
-    proof_steps: List[str] = field(default_factory=list)
-    children: List["ProofNode"] = field(default_factory=list)
+    proof_steps: list[str] = field(default_factory=list)
+    children: list["ProofNode"] = field(default_factory=list)
     status: ProofStatus = ProofStatus.UNKNOWN
-    dependencies: List[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
 
 
 class FormalVerificationEngine:
@@ -99,10 +100,10 @@ class FormalVerificationEngine:
         self.solver.set("timeout", timeout_ms)
 
         # Storage for parsed elements
-        self.axioms: Dict[str, ProofNode] = {}
-        self.lemmas: Dict[str, ProofNode] = {}
-        self.theorems: Dict[str, ProofNode] = {}
-        self.properties: List[GuardrailProperty] = []
+        self.axioms: dict[str, ProofNode] = {}
+        self.lemmas: dict[str, ProofNode] = {}
+        self.theorems: dict[str, ProofNode] = {}
+        self.properties: list[GuardrailProperty] = []
 
         # Parse engine files
         self._parse_engine_files()
@@ -209,7 +210,7 @@ class FormalVerificationEngine:
         except Exception as e:
             print(f"Warning: Failed to parse proof: {e}")
 
-    def verify_guardrail_properties(self, guardrails_dir: Path) -> List[ProofResult]:
+    def verify_guardrail_properties(self, guardrails_dir: Path) -> list[ProofResult]:
         """Verify all guardrail properties using Z3.
 
         Args:
@@ -230,9 +231,9 @@ class FormalVerificationEngine:
 
         return results
 
-    def _extract_properties(self, guardrails_dir: Path) -> List[GuardrailProperty]:
+    def _extract_properties(self, guardrails_dir: Path) -> list[GuardrailProperty]:
         """Extract formal properties from guardrail XML files."""
-        properties: List[GuardrailProperty] = []
+        properties: list[GuardrailProperty] = []
 
         if not guardrails_dir.exists():
             return properties
@@ -429,7 +430,7 @@ class FormalVerificationEngine:
             results=[],
         )
 
-    def verify_all(self, guardrails_dir: Path) -> Tuple[ProofTree, List[ProofResult]]:
+    def verify_all(self, guardrails_dir: Path) -> tuple[ProofTree, list[ProofResult]]:
         """Perform complete formal verification and build proof tree.
 
         Args:
@@ -450,7 +451,7 @@ class FormalVerificationEngine:
 
         return proof_tree, results
 
-    def _update_proof_tree_status(self, proof_tree: ProofTree, results: List[ProofResult]) -> None:
+    def _update_proof_tree_status(self, proof_tree: ProofTree, results: list[ProofResult]) -> None:
         """Update proof tree node statuses based on verification results."""
         # Create a map of property IDs to results
         result_map = {r.property_id: r for r in results}
@@ -471,7 +472,7 @@ def verify_guardrails(
     engine_dir: Path,
     guardrails_dir: Path,
     timeout_ms: int = 30000,
-) -> Tuple[ProofTree, List[ProofResult]]:
+) -> tuple[ProofTree, list[ProofResult]]:
     """Convenience function to verify all guardrails.
 
     Args:

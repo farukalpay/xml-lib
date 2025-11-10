@@ -1,9 +1,9 @@
 """Tests for validator handling of math symbols in XML."""
 
-import pytest
 from pathlib import Path
-from xml_lib.validator import Validator
+
 from xml_lib.sanitize import MathPolicy
+from xml_lib.validator import Validator
 
 
 def test_validator_sanitize_policy_succeeds(tmp_path):

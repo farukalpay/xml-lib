@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
+
 from lxml import etree
 
 from xml_lib.telemetry import TelemetrySink
@@ -24,9 +24,9 @@ class Difference:
 
     type: DiffType
     path: str
-    old_value: Optional[str] = None
-    new_value: Optional[str] = None
-    explanation: Optional[str] = None
+    old_value: str | None = None
+    new_value: str | None = None
+    explanation: str | None = None
 
     def format(self, explain: bool = False) -> str:
         """Format difference as string."""
@@ -66,7 +66,7 @@ class DiffResult:
     """Result of diff operation."""
 
     identical: bool
-    differences: List[Difference]
+    differences: list[Difference]
 
 
 class Differ:
@@ -75,7 +75,7 @@ class Differ:
     def __init__(
         self,
         schemas_dir: Path,
-        telemetry: Optional[TelemetrySink] = None,
+        telemetry: TelemetrySink | None = None,
     ):
         self.schemas_dir = schemas_dir
         self.telemetry = telemetry
@@ -153,10 +153,10 @@ class Differ:
 
     def _compare_elements(
         self,
-        elem1: Optional[etree._Element],
-        elem2: Optional[etree._Element],
+        elem1: etree._Element | None,
+        elem2: etree._Element | None,
         path: str,
-        differences: List[Difference],
+        differences: list[Difference],
         explain: bool,
     ) -> None:
         """Recursively compare elements."""

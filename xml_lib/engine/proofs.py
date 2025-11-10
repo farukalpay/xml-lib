@@ -67,7 +67,7 @@ class Proof:
 
         html.append("<h4>Proof:</h4>")
         for i, step in enumerate(self.steps, 1):
-            html.append(f'<div class="proof-step">')
+            html.append('<div class="proof-step">')
             html.append(f"<strong>Step {i}:</strong> {step.statement}<br>")
             html.append(f"<em>Justification:</em> {step.justification}")
             html.append("</div>")

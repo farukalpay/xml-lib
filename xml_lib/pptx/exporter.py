@@ -33,7 +33,7 @@ class HTMLExporter:
 
             # Export each slide
             for i, slide in enumerate(prs.slides, 1):
-                html.append(f'<div class="slide">')
+                html.append('<div class="slide">')
                 html.append(f"<h2>Slide {i}</h2>")
 
                 # Extract text from shapes
@@ -44,7 +44,7 @@ class HTMLExporter:
                 # Add notes if present
                 notes_slide = slide.notes_slide
                 if notes_slide and notes_slide.notes_text_frame.text:
-                    html.append(f'<div class="notes">')
+                    html.append('<div class="notes">')
                     html.append(f"<strong>Notes:</strong> {notes_slide.notes_text_frame.text}")
                     html.append("</div>")
 
@@ -58,7 +58,7 @@ class HTMLExporter:
 
             return True
 
-        except Exception as e:
+        except Exception:
             return False
 
     def _get_styles(self) -> str:

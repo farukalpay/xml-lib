@@ -3,7 +3,8 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from lxml import etree
 
 from xml_lib.types import ValidationError
@@ -19,16 +20,16 @@ class GuardrailRule:
     priority: str
     constraint_type: str
     constraint: str
-    message: Optional[str]
-    provenance: Dict[str, Any]
+    message: str | None
+    provenance: dict[str, Any]
 
 
 @dataclass
 class GuardrailResult:
     """Result of guardrail validation."""
 
-    errors: List[ValidationError] = field(default_factory=list)
-    warnings: List[ValidationError] = field(default_factory=list)
+    errors: list[ValidationError] = field(default_factory=list)
+    warnings: list[ValidationError] = field(default_factory=list)
     rules_checked: int = 0
 
 
@@ -37,16 +38,16 @@ class GuardrailEngine:
 
     def __init__(self, guardrails_dir: Path):
         self.guardrails_dir = guardrails_dir
-        self.rules: List[GuardrailRule] = []
+        self.rules: list[GuardrailRule] = []
         self._load_rules()
 
     def _load_rules(self) -> None:
         """Load and compile guardrail rules from XML files."""
         self.rules = self.load_guardrails()
 
-    def load_guardrails(self) -> List[GuardrailRule]:
+    def load_guardrails(self) -> list[GuardrailRule]:
         """Return compiled guardrail rules."""
-        compiled_rules: List[GuardrailRule] = []
+        compiled_rules: list[GuardrailRule] = []
         if not self.guardrails_dir.exists():
             return compiled_rules
 
@@ -65,7 +66,7 @@ class GuardrailEngine:
 
         return compiled_rules
 
-    def _load_guardrails(self) -> List[GuardrailRule]:
+    def _load_guardrails(self) -> list[GuardrailRule]:
         """Compatibility shim for benchmark suite."""
         return self.load_guardrails()
 
@@ -73,7 +74,7 @@ class GuardrailEngine:
         self,
         element: etree._Element,
         source_file: Path,
-    ) -> Optional[GuardrailRule]:
+    ) -> GuardrailRule | None:
         """Parse a guardrail element into a rule."""
         try:
             rule_id = element.get("id")
@@ -149,7 +150,7 @@ class GuardrailEngine:
         doc: etree._ElementTree,
         xml_file: Path,
         rule: GuardrailRule,
-    ) -> List[ValidationError]:
+    ) -> list[ValidationError]:
         """Check a single rule against a document."""
         violations = []
 
@@ -177,7 +178,7 @@ class GuardrailEngine:
         doc: etree._ElementTree,
         xml_file: Path,
         rule: GuardrailRule,
-    ) -> List[ValidationError]:
+    ) -> list[ValidationError]:
         """Check XPath constraint."""
         violations = []
 
@@ -217,7 +218,7 @@ class GuardrailEngine:
         doc: etree._ElementTree,
         xml_file: Path,
         rule: GuardrailRule,
-    ) -> List[ValidationError]:
+    ) -> list[ValidationError]:
         """Check regex constraint against document text."""
         violations = []
 
@@ -254,7 +255,7 @@ class GuardrailEngine:
         doc: etree._ElementTree,
         xml_file: Path,
         rule: GuardrailRule,
-    ) -> List[ValidationError]:
+    ) -> list[ValidationError]:
         """Check checksum constraint."""
         # Checksum validation is handled by the main validator
         return []
@@ -264,7 +265,7 @@ class GuardrailEngine:
         doc: etree._ElementTree,
         xml_file: Path,
         rule: GuardrailRule,
-    ) -> List[ValidationError]:
+    ) -> list[ValidationError]:
         """Check temporal constraint."""
         # Temporal validation is handled by the main validator
         return []

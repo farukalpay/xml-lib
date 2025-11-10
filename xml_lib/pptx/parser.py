@@ -3,8 +3,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from lxml import etree
-
 from xml_lib.utils.xml_utils import parse_xml
 
 

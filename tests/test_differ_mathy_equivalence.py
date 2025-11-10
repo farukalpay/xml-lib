@@ -1,9 +1,8 @@
 """Tests for differ treating original vs sanitized XML as equivalent."""
 
-import pytest
 from pathlib import Path
+
 from xml_lib.differ import Differ
-from xml_lib.sanitize import Sanitizer
 
 
 def test_differ_treats_original_and_sanitized_as_equivalent(tmp_path):

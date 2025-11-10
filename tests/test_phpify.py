@@ -1,15 +1,14 @@
 """Tests for PHP generation functionality."""
 
-import json
-import re
 import subprocess
 from pathlib import Path
+
 import pytest
 from lxml import etree
 
-from xml_lib.php.parser import SecureXMLParser, ParseConfig, ParseError
-from xml_lib.php.ir import IRBuilder, IntermediateRepresentation, Heading, Paragraph, Section
-from xml_lib.php.generator import PHPGenerator, GeneratorConfig
+from xml_lib.php.generator import GeneratorConfig, PHPGenerator
+from xml_lib.php.ir import Heading, IntermediateRepresentation, IRBuilder, Paragraph, Section
+from xml_lib.php.parser import ParseConfig, ParseError, SecureXMLParser
 
 
 class TestSecureXMLParser:
@@ -251,7 +250,7 @@ class TestPHPGenerator:
 
     def test_table_generation(self):
         """Test table generation."""
-        from xml_lib.php.ir import Table, TableRow, TableCell
+        from xml_lib.php.ir import Table, TableCell, TableRow
 
         ir = IntermediateRepresentation()
         ir.metadata.title = "Table Test"

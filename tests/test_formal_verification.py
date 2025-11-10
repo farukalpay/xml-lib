@@ -4,7 +4,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from lxml import etree
 
 from xml_lib.formal_verification import (
     FormalVerificationEngine,

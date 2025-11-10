@@ -7,7 +7,6 @@ This module provides functionality to:
 """
 
 from pathlib import Path
-from typing import Any
 
 import xmlschema
 from lxml import etree

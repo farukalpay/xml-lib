@@ -61,7 +61,7 @@ class LifecycleDAG:
         Raises:
             ValueError: If cycle detected
         """
-        in_degree = {node_id: 0 for node_id in self.nodes}
+        in_degree = dict.fromkeys(self.nodes, 0)
         for node_id, neighbors in self.edges.items():
             for neighbor in neighbors:
                 in_degree[neighbor] = in_degree.get(neighbor, 0) + 1

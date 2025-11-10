@@ -1,8 +1,8 @@
 """PHP rendering modules for xml-lib."""
 
-from .parser import SecureXMLParser
-from .ir import IntermediateRepresentation, IRBuilder, IRList
 from .generator import PHPGenerator
+from .ir import IntermediateRepresentation, IRBuilder, IRList
+from .parser import SecureXMLParser
 
 __all__ = [
     "SecureXMLParser",

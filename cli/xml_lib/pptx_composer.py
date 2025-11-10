@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+
 from lxml import etree
 from pptx import Presentation
 from pptx.util import Pt
@@ -17,7 +17,7 @@ class RenderResult:
     success: bool
     slide_count: int = 0
     citation_count: int = 0
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class PPTXComposer:
@@ -25,8 +25,8 @@ class PPTXComposer:
 
     def __init__(
         self,
-        template: Optional[Path] = None,
-        telemetry: Optional[TelemetrySink] = None,
+        template: Path | None = None,
+        telemetry: TelemetrySink | None = None,
     ):
         self.template = template
         self.telemetry = telemetry
@@ -53,7 +53,7 @@ class PPTXComposer:
                 prs = Presentation()
 
             # Track citations
-            citations: List[str] = []
+            citations: list[str] = []
 
             # Render based on root element type
             if root.tag == "document":
@@ -86,7 +86,7 @@ class PPTXComposer:
         self,
         root: etree._Element,
         prs: Presentation,
-        citations: List[str],
+        citations: list[str],
     ) -> None:
         """Render a document element."""
         # Title slide
@@ -127,7 +127,7 @@ class PPTXComposer:
         self,
         phase: etree._Element,
         prs: Presentation,
-        citations: List[str],
+        citations: list[str],
     ) -> None:
         """Render a phase element as a slide."""
         slide = prs.slides.add_slide(prs.slide_layouts[1])  # Title and Content
@@ -210,7 +210,7 @@ class PPTXComposer:
         self,
         root: etree._Element,
         prs: Presentation,
-        citations: List[str],
+        citations: list[str],
     ) -> None:
         """Render generic XML element."""
         # Title slide
@@ -252,7 +252,7 @@ class PPTXComposer:
     def _add_citations_slide(
         self,
         prs: Presentation,
-        citations: List[str],
+        citations: list[str],
     ) -> None:
         """Add citations slide."""
         slide = prs.slides.add_slide(prs.slide_layouts[1])

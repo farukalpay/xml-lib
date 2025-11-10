@@ -2,18 +2,18 @@
 
 import sys
 from pathlib import Path
-import click
-from typing import Optional
 
-from xml_lib.validator import Validator
-from xml_lib.publisher import Publisher
-from xml_lib.pptx_composer import PPTXComposer
+import click
+
 from xml_lib.differ import Differ
-from xml_lib.telemetry import TelemetrySink
-from xml_lib.sanitize import MathPolicy, Sanitizer
-from xml_lib.php.parser import SecureXMLParser, ParseConfig
+from xml_lib.php.generator import GeneratorConfig, PHPGenerator
 from xml_lib.php.ir import IRBuilder
-from xml_lib.php.generator import PHPGenerator, GeneratorConfig
+from xml_lib.php.parser import ParseConfig, SecureXMLParser
+from xml_lib.pptx_composer import PPTXComposer
+from xml_lib.publisher import Publisher
+from xml_lib.sanitize import MathPolicy, Sanitizer
+from xml_lib.telemetry import TelemetrySink
+from xml_lib.validator import Validator
 
 
 @click.group()
@@ -26,7 +26,7 @@ from xml_lib.php.generator import PHPGenerator, GeneratorConfig
 )
 @click.option("--telemetry-target", help="Telemetry target (file path, db connection)")
 @click.pass_context
-def main(ctx: click.Context, telemetry: str, telemetry_target: Optional[str]) -> None:
+def main(ctx: click.Context, telemetry: str, telemetry_target: str | None) -> None:
     """XML-Lifecycle Validator & Publisher.
 
     Validates and publishes XML documents following the canonical lifecycle chain:
@@ -154,7 +154,7 @@ def publish(
 def render_pptx(
     ctx: click.Context,
     xml_file: str,
-    template: Optional[str],
+    template: str | None,
     output: str,
 ) -> None:
     """Render XML guidance to PowerPoint presentation.
@@ -223,7 +223,7 @@ def diff(
 def roundtrip(
     ctx: click.Context,
     restore: str,
-    mapping: Optional[str],
+    mapping: str | None,
     output: str,
 ) -> None:
     """Restore original mathy markup from sanitized XML.
@@ -285,17 +285,17 @@ def roundtrip(
 def phpify(
     ctx: click.Context,
     xml_file: str,
-    output: Optional[str],
+    output: str | None,
     template: str,
-    title: Optional[str],
-    favicon: Optional[str],
+    title: str | None,
+    favicon: str | None,
     assets_dir: str,
     no_toc: bool,
     no_css: bool,
-    css_path: Optional[str],
+    css_path: str | None,
     strict: bool,
     max_size: int,
-    schema: Optional[str],
+    schema: str | None,
 ) -> None:
     """Generate production-ready PHP page from XML document.
 

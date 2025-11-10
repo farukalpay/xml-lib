@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 try:
     import psycopg2
@@ -22,7 +22,7 @@ class TelemetryEvent:
 
     timestamp: datetime
     event_type: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
 
 class TelemetrySink(ABC):

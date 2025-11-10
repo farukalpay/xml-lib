@@ -5,7 +5,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Union
+
 from lxml import etree
 
 
@@ -31,7 +32,7 @@ class Link:
     href: str
     text: str
     is_external: bool
-    title: Optional[str] = None
+    title: str | None = None
 
 
 @dataclass
@@ -40,9 +41,9 @@ class Figure:
 
     src: str
     alt: str
-    caption: Optional[str] = None
-    width: Optional[str] = None
-    height: Optional[str] = None
+    caption: str | None = None
+    width: str | None = None
+    height: str | None = None
 
 
 @dataclass
@@ -59,16 +60,16 @@ class TableCell:
 class TableRow:
     """Represents a table row."""
 
-    cells: List[TableCell] = field(default_factory=list)
+    cells: list[TableCell] = field(default_factory=list)
 
 
 @dataclass
 class Table:
     """Represents a table."""
 
-    headers: List[TableRow] = field(default_factory=list)
-    rows: List[TableRow] = field(default_factory=list)
-    caption: Optional[str] = None
+    headers: list[TableRow] = field(default_factory=list)
+    rows: list[TableRow] = field(default_factory=list)
+    caption: str | None = None
 
 
 @dataclass
@@ -76,7 +77,7 @@ class CodeBlock:
     """Represents a code block."""
 
     code: str
-    language: Optional[str] = None
+    language: str | None = None
     line_numbers: bool = False
 
 
@@ -85,14 +86,14 @@ class ListItem:
     """Represents a list item."""
 
     content: str
-    children: List["ListItem"] = field(default_factory=list)
+    children: list[ListItem] = field(default_factory=list)
 
 
 @dataclass
 class IRList:
     """Represents a list (ordered or unordered)."""
 
-    items: List[ListItem] = field(default_factory=list)
+    items: list[ListItem] = field(default_factory=list)
     ordered: bool = False
 
 
@@ -102,7 +103,7 @@ class Heading:
 
     text: str
     level: int  # 1-6
-    id: Optional[str] = None
+    id: str | None = None
 
 
 @dataclass
@@ -110,7 +111,7 @@ class Paragraph:
     """Represents a paragraph."""
 
     content: str
-    style: Optional[str] = None
+    style: str | None = None
 
 
 @dataclass
@@ -126,9 +127,9 @@ class Citation:
 class Section:
     """Represents a document section."""
 
-    title: Optional[str] = None
-    id: Optional[str] = None
-    content: List["ContentElement"] = field(default_factory=list)
+    title: str | None = None
+    id: str | None = None
+    content: list[ContentElement] = field(default_factory=list)
 
 
 @dataclass
@@ -136,11 +137,11 @@ class Metadata:
     """Document metadata."""
 
     title: str = "Untitled Document"
-    description: Optional[str] = None
-    author: Optional[str] = None
-    date: Optional[str] = None
-    keywords: List[str] = field(default_factory=list)
-    custom: Dict[str, str] = field(default_factory=dict)
+    description: str | None = None
+    author: str | None = None
+    date: str | None = None
+    keywords: list[str] = field(default_factory=list)
+    custom: dict[str, str] = field(default_factory=dict)
 
 
 ContentElement = Union[
@@ -153,9 +154,9 @@ class IntermediateRepresentation:
     """Typed intermediate representation of XML document."""
 
     metadata: Metadata = field(default_factory=Metadata)
-    content: List[ContentElement] = field(default_factory=list)
-    citations: Dict[str, Citation] = field(default_factory=dict)
-    internal_links: Dict[str, str] = field(default_factory=dict)  # id -> href
+    content: list[ContentElement] = field(default_factory=list)
+    citations: dict[str, Citation] = field(default_factory=dict)
+    internal_links: dict[str, str] = field(default_factory=dict)  # id -> href
 
 
 class IRBuilder:
@@ -251,8 +252,8 @@ class IRBuilder:
         self,
         elem: etree._Element,
         ir: IntermediateRepresentation,
-        parent_context: Optional[str] = None,
-    ) -> List[ContentElement]:
+        parent_context: str | None = None,
+    ) -> list[ContentElement]:
         """Process XML element and convert to content elements.
 
         Args:
@@ -263,7 +264,7 @@ class IRBuilder:
         Returns:
             List of content elements
         """
-        content: List[ContentElement] = []
+        content: list[ContentElement] = []
 
         for child in elem:
             tag = child.tag.lower()
@@ -340,7 +341,7 @@ class IRBuilder:
 
         return content
 
-    def _extract_heading(self, elem: etree._Element) -> Optional[Heading]:
+    def _extract_heading(self, elem: etree._Element) -> Heading | None:
         """Extract heading from element."""
         text = self._get_text_content(elem)
         if not text:
@@ -373,7 +374,7 @@ class IRBuilder:
 
         return Heading(text=text, level=level, id=elem_id)
 
-    def _extract_paragraph(self, elem: etree._Element) -> Optional[Paragraph]:
+    def _extract_paragraph(self, elem: etree._Element) -> Paragraph | None:
         """Extract paragraph from element."""
         text = self._get_text_content(elem)
         if not text:
@@ -382,7 +383,7 @@ class IRBuilder:
         style = elem.get("style")
         return Paragraph(content=text, style=style)
 
-    def _extract_list(self, elem: etree._Element) -> Optional[IRList]:
+    def _extract_list(self, elem: etree._Element) -> IRList | None:
         """Extract list from element."""
         items = []
         ordered = elem.tag.lower() in ["ol"] or elem.get("type") == "ordered"
@@ -418,7 +419,7 @@ class IRBuilder:
 
         return IRList(items=items, ordered=ordered)
 
-    def _extract_table(self, elem: etree._Element) -> Optional[Table]:
+    def _extract_table(self, elem: etree._Element) -> Table | None:
         """Extract table from element."""
         headers = []
         rows = []
@@ -476,7 +477,7 @@ class IRBuilder:
 
         return Table(headers=headers, rows=rows, caption=caption)
 
-    def _extract_code(self, elem: etree._Element) -> Optional[CodeBlock]:
+    def _extract_code(self, elem: etree._Element) -> CodeBlock | None:
         """Extract code block from element."""
         code = self._get_text_content(elem, preserve_whitespace=True)
         if not code:
@@ -487,7 +488,7 @@ class IRBuilder:
 
         return CodeBlock(code=code, language=language, line_numbers=line_numbers)
 
-    def _extract_figure(self, elem: etree._Element) -> Optional[Figure]:
+    def _extract_figure(self, elem: etree._Element) -> Figure | None:
         """Extract figure/image from element."""
         src = elem.get("src") or elem.get("path", "")
         if not src:
@@ -507,7 +508,7 @@ class IRBuilder:
 
     def _extract_section(
         self, elem: etree._Element, ir: IntermediateRepresentation
-    ) -> Optional[Section]:
+    ) -> Section | None:
         """Extract section from element."""
         title = elem.get("name") or elem.get("title")
         section_id = elem.get("id")
@@ -532,7 +533,7 @@ class IRBuilder:
 
     def _extract_citation(
         self, elem: etree._Element, ir: IntermediateRepresentation
-    ) -> Optional[Citation]:
+    ) -> Citation | None:
         """Extract citation from element."""
         citation_id = elem.get("id") or f"cite-{len(ir.citations) + 1}"
         content = self._get_text_content(elem)

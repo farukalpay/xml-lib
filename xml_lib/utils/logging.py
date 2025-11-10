@@ -2,8 +2,7 @@
 
 import json
 import logging
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -46,7 +45,7 @@ def structured_log(
         **kwargs: Additional metadata
     """
     log_data = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "message": message,
     }
 

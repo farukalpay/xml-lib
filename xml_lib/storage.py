@@ -3,7 +3,6 @@
 import hashlib
 import uuid
 from pathlib import Path
-from typing import Optional
 
 
 class ContentStore:
@@ -14,7 +13,7 @@ class ContentStore:
         self.sha256_dir = base_path / "sha256"
         self.sha256_dir.mkdir(parents=True, exist_ok=True)
 
-    def store(self, content: bytes, checksum: Optional[str] = None) -> Path:
+    def store(self, content: bytes, checksum: str | None = None) -> Path:
         """Store content and return its path.
 
         Args:
@@ -39,7 +38,7 @@ class ContentStore:
 
         return file_path
 
-    def retrieve(self, checksum: str) -> Optional[bytes]:
+    def retrieve(self, checksum: str) -> bytes | None:
         """Retrieve content by checksum.
 
         Args:

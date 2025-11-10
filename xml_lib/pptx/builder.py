@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pptx import Presentation
-from pptx.util import Inches, Pt
 
 from xml_lib.pptx.parser import BuildPlan
 
