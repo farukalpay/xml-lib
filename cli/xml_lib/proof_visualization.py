@@ -104,9 +104,7 @@ class ProofTreeVisualizer:
             """Recursively add nodes to Graphviz graph."""
             # Determine colors
             fill_color = color_map.get(node.type, "#FFFFFF")
-            border_color = status_border_map.get(
-                node.status.value, "#000000"
-            )
+            border_color = status_border_map.get(node.status.value, "#000000")
 
             # Create label with HTML-like formatting
             label = f"<<B>{node.label}</B><BR/>"
@@ -242,7 +240,9 @@ class ProofTreeVisualizer:
         fig = go.Figure(
             data=[edge_trace, node_trace],
             layout=go.Layout(
-                title=dict(text="<b>Formal Verification Proof Tree</b>", font=dict(size=20)),
+                title=dict(
+                    text="<b>Formal Verification Proof Tree</b>", font=dict(size=20)
+                ),
                 showlegend=False,
                 hovermode="closest",
                 margin=dict(b=20, l=5, r=5, t=40),

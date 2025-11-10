@@ -217,9 +217,7 @@ class FormalVerificationEngine:
         except Exception as e:
             print(f"Warning: Failed to parse proof: {e}")
 
-    def verify_guardrail_properties(
-        self, guardrails_dir: Path
-    ) -> List[ProofResult]:
+    def verify_guardrail_properties(self, guardrails_dir: Path) -> List[ProofResult]:
         """Verify all guardrail properties using Z3.
 
         Args:
@@ -266,14 +264,14 @@ class FormalVerificationEngine:
                     constraint_type = constraint_elem.get("type", "xpath")
                     constraint_text = constraint_elem.text or ""
 
-                    formula = self._constraint_to_z3(
-                        constraint_type, constraint_text
-                    )
+                    formula = self._constraint_to_z3(constraint_type, constraint_text)
 
                     prop = GuardrailProperty(
                         id=rule_id,
                         name=name_elem.text or "",
-                        description=desc_elem.text or "" if desc_elem is not None else "",
+                        description=(
+                            desc_elem.text or "" if desc_elem is not None else ""
+                        ),
                         formula=formula,
                     )
                     properties.append(prop)
@@ -407,9 +405,7 @@ class FormalVerificationEngine:
         # Add lemmas that depend on axioms
         for lemma_id, lemma in self.lemmas.items():
             # Check if this lemma depends on axioms
-            has_axiom_dep = any(
-                dep in self.axioms for dep in lemma.dependencies
-            )
+            has_axiom_dep = any(dep in self.axioms for dep in lemma.dependencies)
             if has_axiom_dep or not lemma.dependencies:
                 # Find the appropriate parent (axiom or root)
                 if lemma.dependencies:
