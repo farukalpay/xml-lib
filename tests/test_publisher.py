@@ -1,6 +1,5 @@
 """Tests for HTML publisher."""
 
-
 import pytest
 
 from xml_lib.publisher import Publisher

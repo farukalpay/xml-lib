@@ -306,9 +306,7 @@ def derive_relaxng_from_examples(
                     "{http://relaxng.org/ns/structure/1.0}element",
                     attrib={"name": child.tag},
                 )
-                etree.SubElement(
-                    child_element, "{http://relaxng.org/ns/structure/1.0}text"
-                )
+                etree.SubElement(child_element, "{http://relaxng.org/ns/structure/1.0}text")
                 seen_elements.add(child.tag)
 
     # Write RELAX NG

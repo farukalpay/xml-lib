@@ -1,6 +1,5 @@
 """Tests for schema module."""
 
-
 from xml_lib import schema
 
 

@@ -1,6 +1,5 @@
 """Tests for PowerPoint composer."""
 
-
 import pytest
 
 from xml_lib.pptx_composer import PPTXComposer
