@@ -68,8 +68,7 @@ def stream_parse(
         parser=parser,
     )
 
-    for event, elem in context:
-        yield event, elem
+    yield from context
 
 
 def serialize_xml(

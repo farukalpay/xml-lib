@@ -174,7 +174,7 @@ class TestGuardrailEngine:
         engine = GuardrailEngine(temp_guardrails_dir)
 
         # Verify we have different constraint types
-        constraint_types = set(r.constraint_type for r in engine.rules)
+        constraint_types = {r.constraint_type for r in engine.rules}
 
         assert "xpath" in constraint_types
         assert "regex" in constraint_types
@@ -184,7 +184,7 @@ class TestGuardrailEngine:
         """Test different priority levels."""
         engine = GuardrailEngine(temp_guardrails_dir)
 
-        priorities = set(r.priority for r in engine.rules)
+        priorities = {r.priority for r in engine.rules}
 
         assert "critical" in priorities
         assert "high" in priorities

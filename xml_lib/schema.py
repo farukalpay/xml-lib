@@ -283,7 +283,7 @@ def derive_relaxng_from_examples(
 
     start = etree.SubElement(rng_root, "{http://relaxng.org/ns/structure/1.0}start")
     element_name = root_element or root.tag
-    element_ref = etree.SubElement(
+    etree.SubElement(
         start, "{http://relaxng.org/ns/structure/1.0}ref", attrib={"name": element_name}
     )
 
@@ -306,7 +306,7 @@ def derive_relaxng_from_examples(
                     "{http://relaxng.org/ns/structure/1.0}element",
                     attrib={"name": child.tag},
                 )
-                text_node = etree.SubElement(
+                etree.SubElement(
                     child_element, "{http://relaxng.org/ns/structure/1.0}text"
                 )
                 seen_elements.add(child.tag)

@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Union
 
 from lxml import etree
 
@@ -144,9 +143,9 @@ class Metadata:
     custom: dict[str, str] = field(default_factory=dict)
 
 
-ContentElement = Union[
-    Heading, Paragraph, IRList, Table, CodeBlock, Figure, Link, Citation, Section
-]
+ContentElement = (
+    Heading | Paragraph | IRList | Table | CodeBlock | Figure | Link | Citation | Section
+)
 
 
 @dataclass

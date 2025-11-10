@@ -282,7 +282,7 @@ def engine_prove(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("[cyan]Generating proof...", total=None)
+        progress.add_task("[cyan]Generating proof...", total=None)
 
         generator = ProofGenerator()
         proof = generator.generate_from_xml(xml_path)
@@ -337,7 +337,7 @@ def engine_verify(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("[cyan]Running fixed-point iteration...", total=None)
+        progress.add_task("[cyan]Running fixed-point iteration...", total=None)
         fp_result = iterator.iterate(x0, record_trace=True)
 
     duration = (time.time() - start_time) * 1000
@@ -389,7 +389,7 @@ def pptx_build(
         builder = PPTXBuilder(template_path=template)
         result = builder.build(plan, output)
 
-        duration = (time.time() - start_time) * 1000
+        (time.time() - start_time) * 1000
 
     if result.success:
         console.print(f"[green]✓[/green] Presentation built: {output}")
@@ -412,12 +412,12 @@ def pptx_export(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("[cyan]Exporting to HTML...", total=None)
+        progress.add_task("[cyan]Exporting to HTML...", total=None)
 
         exporter = HTMLExporter()
         success = exporter.export(pptx_path, output)
 
-        duration = (time.time() - start_time) * 1000
+        (time.time() - start_time) * 1000
 
     if success:
         console.print(f"[green]✓[/green] Exported to: {output}")
@@ -440,7 +440,7 @@ def schema_derive(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task(f"[cyan]Deriving {schema_type} schema...", total=None)
+        progress.add_task(f"[cyan]Deriving {schema_type} schema...", total=None)
 
         if schema_type == "xsd":
             schema.derive_xsd_from_examples(examples, output)
@@ -450,7 +450,7 @@ def schema_derive(
             console.print(f"[red]Unknown schema type: {schema_type}[/red]")
             raise typer.Exit(1)
 
-        duration = (time.time() - start_time) * 1000
+        (time.time() - start_time) * 1000
 
     console.print(f"[green]✓[/green] Schema derived: {output}")
 

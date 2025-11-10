@@ -62,7 +62,7 @@ def test_differ_normalizes_element_names(tmp_path):
     assert len(result.differences) > 0
 
     # The difference should reference the original symbol, not "op"
-    diff_str = result.differences[0].format(explain=True)
+    result.differences[0].format(explain=True)
     # At minimum it should handle the comparison correctly
     assert (
         result.differences[0].old_value is not None or result.differences[0].new_value is not None

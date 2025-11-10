@@ -49,7 +49,7 @@ def xml_document(draw):
     include_phases = [include_begin] + [draw(st.booleans()) for _ in range(4)]
 
     prev_timestamp = None
-    for i, (phase_name, include) in enumerate(zip(phase_names, include_phases)):
+    for i, (phase_name, include) in enumerate(zip(phase_names, include_phases, strict=False)):
         if include:
             # Generate monotonically increasing timestamp
             if prev_timestamp:
