@@ -42,9 +42,7 @@ class PolicyTranspiler:
                     "{http://www.w3.org/1999/XSL/Transform}if",
                     attrib={"test": f"not({rule.constraint})"},
                 )
-                message = etree.SubElement(
-                    test, "{http://www.w3.org/1999/XSL/Transform}message"
-                )
+                message = etree.SubElement(test, "{http://www.w3.org/1999/XSL/Transform}message")
                 message.text = rule.message or f"Rule {rule.id} failed: {rule.description}"
 
         # Write XSLT

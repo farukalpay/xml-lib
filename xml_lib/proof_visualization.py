@@ -65,9 +65,7 @@ class ProofTreeVisualizer:
         # Build graph starting from root
         add_node_recursive(self.proof_tree.root)
 
-    def render_graphviz(
-        self, output_path: Path, format: str = "svg", view: bool = False
-    ) -> Path:
+    def render_graphviz(self, output_path: Path, format: str = "svg", view: bool = False) -> Path:
         """Render proof tree using Graphviz.
 
         Args:
@@ -238,9 +236,7 @@ class ProofTreeVisualizer:
         fig = go.Figure(
             data=[edge_trace, node_trace],
             layout=go.Layout(
-                title=dict(
-                    text="<b>Formal Verification Proof Tree</b>", font=dict(size=20)
-                ),
+                title=dict(text="<b>Formal Verification Proof Tree</b>", font=dict(size=20)),
                 showlegend=False,
                 hovermode="closest",
                 margin=dict(b=20, l=5, r=5, t=40),

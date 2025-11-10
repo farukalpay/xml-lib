@@ -247,9 +247,7 @@ class Validator:
                     self._last_result = result
                     return
                 if policy == MathPolicy.SANITIZE and sanitizer:
-                    sanitize_result = sanitizer.sanitize_for_parse(
-                        path, policy=self.math_policy
-                    )
+                    sanitize_result = sanitizer.sanitize_for_parse(path, policy=self.math_policy)
                     if sanitize_result.has_surrogates:
                         doc = etree.parse(io.BytesIO(sanitize_result.content))
                         rel_path = Path(path.name)
@@ -360,9 +358,7 @@ class Validator:
             self.schematron_lifecycle.assertValid(doc)
         except etree.DocumentInvalid:
             for error in self.schematron_lifecycle.error_log:
-                error_type = (
-                    "warning" if "warning" in error.message.lower() else "error"
-                )
+                error_type = "warning" if "warning" in error.message.lower() else "error"
                 validation_error = ValidationError(
                     file=str(xml_file),
                     line=error.line,

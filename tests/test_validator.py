@@ -114,9 +114,7 @@ def test_temporal_monotonicity(validator, tmp_path):
     # Should detect temporal ordering violation
     assert not result.is_valid
     temporal_errors = [
-        e
-        for e in result.errors
-        if "temporal" in e.rule or "timestamp" in e.message.lower()
+        e for e in result.errors if "temporal" in e.rule or "timestamp" in e.message.lower()
     ]
     assert len(temporal_errors) > 0
 

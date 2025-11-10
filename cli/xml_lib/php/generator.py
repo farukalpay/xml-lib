@@ -131,9 +131,7 @@ class PHPGenerator:
 
         # Select template
         template_name = (
-            "php/minimal_page.php.j2"
-            if self.config.template == "minimal"
-            else "php/page.php.j2"
+            "php/minimal_page.php.j2" if self.config.template == "minimal" else "php/page.php.j2"
         )
 
         # Render template
@@ -325,7 +323,9 @@ class PHPGenerator:
         headers_json = self._json_encode(headers)
         rows_json = self._json_encode(rows)
 
-        return f"                <?php echo render_table({headers_json}, {rows_json}, {caption}); ?>"
+        return (
+            f"                <?php echo render_table({headers_json}, {rows_json}, {caption}); ?>"
+        )
 
     def _render_code(self, code: CodeBlock) -> str:
         """Render code block to HTML.

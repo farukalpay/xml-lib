@@ -22,9 +22,7 @@ from xml_lib.proof_visualization import ProofTreeVisualizer
 def is_graphviz_available():
     """Check if Graphviz dot executable is available."""
     try:
-        subprocess.run(
-            ["dot", "-V"], capture_output=True, check=True, timeout=5
-        )
+        subprocess.run(["dot", "-V"], capture_output=True, check=True, timeout=5)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
         return False
@@ -32,8 +30,7 @@ def is_graphviz_available():
 
 graphviz_available = is_graphviz_available()
 skip_if_no_graphviz = pytest.mark.skipif(
-    not graphviz_available,
-    reason="Graphviz not installed (required for rendering tests)"
+    not graphviz_available, reason="Graphviz not installed (required for rendering tests)"
 )
 
 

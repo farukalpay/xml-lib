@@ -62,7 +62,9 @@ class ChecksumValidator:
         computed = self.compute_checksum(file_path, algorithm)
         is_valid = computed == expected_checksum
 
-        errors = [] if is_valid else [f"Checksum mismatch: expected {expected_checksum}, got {computed}"]
+        errors = (
+            [] if is_valid else [f"Checksum mismatch: expected {expected_checksum}, got {computed}"]
+        )
 
         return ValidationResult(
             is_valid=is_valid,

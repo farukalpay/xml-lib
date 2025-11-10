@@ -18,22 +18,22 @@ class TestSecureXMLParser:
     def test_parse_valid_xml(self, tmp_path):
         """Test parsing valid XML."""
         xml_file = tmp_path / "test.xml"
-        xml_file.write_text('<document><title>Test</title></document>')
+        xml_file.write_text("<document><title>Test</title></document>")
 
         parser = SecureXMLParser()
         root = parser.parse(xml_file)
 
-        assert root.tag == 'document'
-        assert root.find('title').text == 'Test'
+        assert root.tag == "document"
+        assert root.find("title").text == "Test"
 
     def test_parse_xxe_protection(self, tmp_path):
         """Test XXE protection."""
         # XML with external entity
-        xml_content = '''<?xml version="1.0"?>
+        xml_content = """<?xml version="1.0"?>
 <!DOCTYPE foo [
   <!ENTITY xxe SYSTEM "file:///etc/passwd">
 ]>
-<document>&xxe;</document>'''
+<document>&xxe;</document>"""
 
         xml_file = tmp_path / "xxe.xml"
         xml_file.write_text(xml_content)
@@ -41,13 +41,13 @@ class TestSecureXMLParser:
         parser = SecureXMLParser()
         # Should parse without resolving entity
         root = parser.parse(xml_file)
-        assert root.tag == 'document'
+        assert root.tag == "document"
 
     def test_file_size_limit(self, tmp_path):
         """Test file size limit."""
         xml_file = tmp_path / "large.xml"
         # Create 11MB file
-        large_content = '<document>' + ('x' * (11 * 1024 * 1024)) + '</document>'
+        large_content = "<document>" + ("x" * (11 * 1024 * 1024)) + "</document>"
         xml_file.write_text(large_content)
 
         config = ParseConfig(max_size_bytes=10 * 1024 * 1024)
@@ -58,18 +58,18 @@ class TestSecureXMLParser:
 
     def test_parse_string(self):
         """Test parsing XML from string."""
-        xml_string = '<document><title>Test</title></document>'
+        xml_string = "<document><title>Test</title></document>"
 
         parser = SecureXMLParser()
         root = parser.parse_string(xml_string)
 
-        assert root.tag == 'document'
-        assert root.find('title').text == 'Test'
+        assert root.tag == "document"
+        assert root.find("title").text == "Test"
 
     def test_invalid_xml(self, tmp_path):
         """Test parsing invalid XML."""
         xml_file = tmp_path / "invalid.xml"
-        xml_file.write_text('<document><unclosed>')
+        xml_file.write_text("<document><unclosed>")
 
         parser = SecureXMLParser()
 
@@ -82,7 +82,7 @@ class TestIRBuilder:
 
     def test_extract_metadata(self):
         """Test metadata extraction."""
-        xml = '''<document>
+        xml = """<document>
             <meta>
                 <title>Test Document</title>
                 <description>A test</description>
@@ -91,9 +91,9 @@ class TestIRBuilder:
                 <keyword>test</keyword>
                 <keyword>xml</keyword>
             </meta>
-        </document>'''
+        </document>"""
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 
@@ -106,13 +106,13 @@ class TestIRBuilder:
 
     def test_extract_headings(self):
         """Test heading extraction."""
-        xml = '''<document>
+        xml = """<document>
             <h1>Heading 1</h1>
             <h2>Heading 2</h2>
             <heading level="3">Heading 3</heading>
-        </document>'''
+        </document>"""
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 
@@ -125,13 +125,13 @@ class TestIRBuilder:
 
     def test_extract_paragraphs(self):
         """Test paragraph extraction."""
-        xml = '''<document>
+        xml = """<document>
             <paragraph>First paragraph</paragraph>
             <p>Second paragraph</p>
             <note>A note paragraph</note>
-        </document>'''
+        </document>"""
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 
@@ -143,13 +143,13 @@ class TestIRBuilder:
 
     def test_extract_sections(self):
         """Test section extraction."""
-        xml = '''<document>
+        xml = """<document>
             <section id="intro" name="Introduction">
                 <paragraph>Intro text</paragraph>
             </section>
-        </document>'''
+        </document>"""
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 
@@ -199,18 +199,18 @@ class TestPHPGenerator:
 
         files = generator.generate(ir)
 
-        assert 'page.php' in files
-        php_content = files['page.php']
+        assert "page.php" in files
+        php_content = files["page.php"]
 
         # Check for proper escaping functions
-        assert 'function escape_html' in php_content
-        assert 'function escape_attr' in php_content
-        assert 'function sanitize_url' in php_content
+        assert "function escape_html" in php_content
+        assert "function escape_attr" in php_content
+        assert "function sanitize_url" in php_content
 
         # Check content rendering
-        assert 'Test Page' in php_content
-        assert 'Hello World' in php_content
-        assert 'This is a test paragraph' in php_content
+        assert "Test Page" in php_content
+        assert "Hello World" in php_content
+        assert "This is a test paragraph" in php_content
 
     def test_generate_with_css(self, tmp_path):
         """Test generating page with CSS."""
@@ -223,10 +223,10 @@ class TestPHPGenerator:
 
         files = generator.generate(ir)
 
-        assert 'assets/style.css' in files
-        css_content = files['assets/style.css']
-        assert 'container' in css_content
-        assert 'page-header' in css_content
+        assert "assets/style.css" in files
+        css_content = files["assets/style.css"]
+        assert "container" in css_content
+        assert "page-header" in css_content
 
     def test_escaping_html_injection(self, tmp_path):
         """Test HTML escaping prevents injection."""
@@ -242,12 +242,12 @@ class TestPHPGenerator:
         generator = PHPGenerator(templates_dir, config)
 
         files = generator.generate(ir)
-        php_content = files['page.php']
+        php_content = files["page.php"]
 
         # Should contain escaped versions
-        assert 'escape_html' in php_content
+        assert "escape_html" in php_content
         # Raw script tags should not appear
-        assert '<script>' not in php_content or 'escape_html' in php_content
+        assert "<script>" not in php_content or "escape_html" in php_content
 
     def test_table_generation(self):
         """Test table generation."""
@@ -258,18 +258,22 @@ class TestPHPGenerator:
 
         table = Table(
             headers=[
-                TableRow(cells=[
-                    TableCell(content="Col1", is_header=True),
-                    TableCell(content="Col2", is_header=True),
-                ])
+                TableRow(
+                    cells=[
+                        TableCell(content="Col1", is_header=True),
+                        TableCell(content="Col2", is_header=True),
+                    ]
+                )
             ],
             rows=[
-                TableRow(cells=[
-                    TableCell(content="A"),
-                    TableCell(content="B"),
-                ])
+                TableRow(
+                    cells=[
+                        TableCell(content="A"),
+                        TableCell(content="B"),
+                    ]
+                )
             ],
-            caption="Test Table"
+            caption="Test Table",
         )
         ir.content = [table]
 
@@ -278,10 +282,10 @@ class TestPHPGenerator:
         generator = PHPGenerator(templates_dir, config)
 
         files = generator.generate(ir)
-        php_content = files['page.php']
+        php_content = files["page.php"]
 
-        assert 'render_table' in php_content
-        assert 'Test Table' in php_content
+        assert "render_table" in php_content
+        assert "Test Table" in php_content
 
     def test_code_block_generation(self):
         """Test code block generation."""
@@ -290,10 +294,7 @@ class TestPHPGenerator:
         ir = IntermediateRepresentation()
         ir.metadata.title = "Code Test"
 
-        code = CodeBlock(
-            code='<?php echo "Hello"; ?>',
-            language="php"
-        )
+        code = CodeBlock(code='<?php echo "Hello"; ?>', language="php")
         ir.content = [code]
 
         config = GeneratorConfig(template="minimal", no_css=True)
@@ -301,11 +302,11 @@ class TestPHPGenerator:
         generator = PHPGenerator(templates_dir, config)
 
         files = generator.generate(ir)
-        php_content = files['page.php']
+        php_content = files["page.php"]
 
-        assert '<pre>' in php_content
-        assert '<code' in php_content
-        assert 'escape_html' in php_content
+        assert "<pre>" in php_content
+        assert "<code" in php_content
+        assert "escape_html" in php_content
 
 
 class TestPHPValidation:
@@ -326,14 +327,11 @@ class TestPHPValidation:
 
         files = generator.generate(ir)
         php_file = tmp_path / "test.php"
-        php_file.write_text(files['page.php'])
+        php_file.write_text(files["page.php"])
 
         try:
             result = subprocess.run(
-                ['php', '-l', str(php_file)],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["php", "-l", str(php_file)], capture_output=True, text=True, timeout=5
             )
             assert result.returncode == 0, f"PHP syntax error: {result.stderr}"
         except FileNotFoundError:
@@ -364,19 +362,16 @@ class TestIntegration:
 
         files = generator.generate(ir, "example_document")
 
-        assert 'example_document.php' in files
-        assert 'assets/style.css' in files
+        assert "example_document.php" in files
+        assert "assets/style.css" in files
 
         # Write and validate
         php_file = tmp_path / "example_document.php"
-        php_file.write_text(files['example_document.php'])
+        php_file.write_text(files["example_document.php"])
 
         try:
             result = subprocess.run(
-                ['php', '-l', str(php_file)],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["php", "-l", str(php_file)], capture_output=True, text=True, timeout=5
             )
             assert result.returncode == 0
         except FileNotFoundError:
@@ -400,18 +395,15 @@ class TestIntegration:
 
         files = generator.generate(ir, "example_amphibians")
 
-        assert 'example_amphibians.php' in files
+        assert "example_amphibians.php" in files
 
         # Write and validate
         php_file = tmp_path / "example_amphibians.php"
-        php_file.write_text(files['example_amphibians.php'])
+        php_file.write_text(files["example_amphibians.php"])
 
         try:
             result = subprocess.run(
-                ['php', '-l', str(php_file)],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["php", "-l", str(php_file)], capture_output=True, text=True, timeout=5
             )
             assert result.returncode == 0
         except FileNotFoundError:
@@ -423,13 +415,13 @@ class TestAdversarial:
 
     def test_xss_prevention_in_titles(self):
         """Test XSS prevention in titles."""
-        xml = '''<document>
+        xml = """<document>
             <meta>
                 <title>&lt;script&gt;alert('XSS')&lt;/script&gt;</title>
             </meta>
-        </document>'''
+        </document>"""
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 
@@ -438,10 +430,10 @@ class TestAdversarial:
         generator = PHPGenerator(templates_dir, config)
 
         files = generator.generate(ir)
-        php_content = files['page.php']
+        php_content = files["page.php"]
 
         # Should use escape_html
-        assert 'escape_html' in php_content
+        assert "escape_html" in php_content
 
     def test_malicious_urls(self):
         """Test handling of malicious URLs."""
@@ -451,10 +443,7 @@ class TestAdversarial:
         ir.metadata.title = "URL Test"
 
         # Try various malicious URLs
-        figure = Figure(
-            src='javascript:alert(1)',
-            alt='Test'
-        )
+        figure = Figure(src="javascript:alert(1)", alt="Test")
         ir.content = [figure]
 
         config = GeneratorConfig(template="minimal", no_css=True)
@@ -462,20 +451,20 @@ class TestAdversarial:
         generator = PHPGenerator(templates_dir, config)
 
         files = generator.generate(ir)
-        php_content = files['page.php']
+        php_content = files["page.php"]
 
         # Should use sanitize_url function
-        assert 'sanitize_url' in php_content
+        assert "sanitize_url" in php_content
 
     def test_huge_document(self):
         """Test handling of very large documents."""
-        xml = '<document>'
+        xml = "<document>"
         # Add many paragraphs
         for i in range(1000):
-            xml += f'<paragraph>Paragraph {i}</paragraph>'
-        xml += '</document>'
+            xml += f"<paragraph>Paragraph {i}</paragraph>"
+        xml += "</document>"
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 
@@ -486,17 +475,17 @@ class TestAdversarial:
         generator = PHPGenerator(templates_dir, config)
 
         files = generator.generate(ir)
-        assert 'page.php' in files
+        assert "page.php" in files
 
     def test_duplicate_ids(self):
         """Test handling of duplicate IDs."""
-        xml = '''<document>
+        xml = """<document>
             <section id="test">Section 1</section>
             <section id="test">Section 2</section>
             <section id="test">Section 3</section>
-        </document>'''
+        </document>"""
 
-        root = etree.fromstring(xml.encode('utf-8'))
+        root = etree.fromstring(xml.encode("utf-8"))
         builder = IRBuilder()
         ir = builder.build(root)
 

@@ -94,10 +94,7 @@ class Differ:
 
     def _get_element_name(self, elem: etree._Element) -> str:
         """Get normalized element name, preferring xml:orig for surrogates."""
-        if (
-            elem.tag == "op"
-            and "{http://www.w3.org/XML/1998/namespace}orig" in elem.attrib
-        ):
+        if elem.tag == "op" and "{http://www.w3.org/XML/1998/namespace}orig" in elem.attrib:
             return elem.get("{http://www.w3.org/XML/1998/namespace}orig")
         if elem.tag == "op" and "xml:orig" in elem.attrib:
             return elem.get("xml:orig")

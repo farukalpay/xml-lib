@@ -545,9 +545,7 @@ class IRBuilder:
 
         return citation
 
-    def _get_text_content(
-        self, elem: etree._Element, preserve_whitespace: bool = False
-    ) -> str:
+    def _get_text_content(self, elem: etree._Element, preserve_whitespace: bool = False) -> str:
         """Get text content from element and its children.
 
         Args:

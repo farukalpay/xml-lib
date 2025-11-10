@@ -261,9 +261,7 @@ class FormalVerificationEngine:
                     prop = GuardrailProperty(
                         id=rule_id,
                         name=name_elem.text or "",
-                        description=(
-                            desc_elem.text or "" if desc_elem is not None else ""
-                        ),
+                        description=(desc_elem.text or "" if desc_elem is not None else ""),
                         formula=formula,
                     )
                     properties.append(prop)
@@ -452,9 +450,7 @@ class FormalVerificationEngine:
 
         return proof_tree, results
 
-    def _update_proof_tree_status(
-        self, proof_tree: ProofTree, results: List[ProofResult]
-    ) -> None:
+    def _update_proof_tree_status(self, proof_tree: ProofTree, results: List[ProofResult]) -> None:
         """Update proof tree node statuses based on verification results."""
         # Create a map of property IDs to results
         result_map = {r.property_id: r for r in results}

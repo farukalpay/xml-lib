@@ -184,9 +184,7 @@ class Publisher:
         """
         start_time = datetime.now()
         result = PublishResult(success=True)
-        sanitizer = (
-            Sanitizer(output_dir) if math_policy == MathPolicy.SANITIZE else None
-        )
+        sanitizer = Sanitizer(output_dir) if math_policy == MathPolicy.SANITIZE else None
 
         try:
             # Check if project path exists
@@ -231,9 +229,7 @@ class Publisher:
                         elif math_policy == MathPolicy.SKIP:
                             if strict:
                                 result.success = False
-                                result.error = (
-                                    f"XML parse error in {xml_file}: {parse_error}"
-                                )
+                                result.error = f"XML parse error in {xml_file}: {parse_error}"
                                 break
                             else:
                                 print(
@@ -246,9 +242,7 @@ class Publisher:
                             if sanitize_result.has_surrogates:
                                 # Write mapping
                                 rel_path = xml_file.relative_to(project_path)
-                                sanitizer.write_mapping(
-                                    rel_path, sanitize_result.mappings
-                                )
+                                sanitizer.write_mapping(rel_path, sanitize_result.mappings)
 
                                 # Parse sanitized content
                                 with tempfile.NamedTemporaryFile(

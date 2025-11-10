@@ -138,9 +138,7 @@ def load_lifecycle(base_path: Path) -> LifecycleDAG:
         try:
             root = parse_xml(xml_path)
             timestamp_str = get_element_timestamp(root)
-            timestamp = (
-                datetime.fromisoformat(timestamp_str) if timestamp_str else datetime.now()
-            )
+            timestamp = datetime.fromisoformat(timestamp_str) if timestamp_str else datetime.now()
 
             node = PhaseNode(
                 phase=phase,  # type: ignore
@@ -219,7 +217,10 @@ def validate_dag(dag: LifecycleDAG) -> ValidationResult:
         is_valid=is_valid,
         errors=errors,
         warnings=warnings,
-        metadata={"node_count": len(dag.nodes), "edge_count": sum(len(v) for v in dag.edges.values())},
+        metadata={
+            "node_count": len(dag.nodes),
+            "edge_count": sum(len(v) for v in dag.edges.values()),
+        },
     )
 
 

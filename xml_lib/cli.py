@@ -46,15 +46,9 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: Optional[str]) ->
 @main.command()
 @click.argument("project_path", type=click.Path(exists=True))
 @click.option("--schemas-dir", default="schemas", help="Directory containing schemas")
-@click.option(
-    "--guardrails-dir", default="guardrails", help="Directory containing guardrails"
-)
-@click.option(
-    "--output", "-o", default="out/assertions.xml", help="Output assertions file"
-)
-@click.option(
-    "--jsonl", default="out/assertions.jsonl", help="JSON Lines output for CI"
-)
+@click.option("--guardrails-dir", default="guardrails", help="Directory containing guardrails")
+@click.option("--output", "-o", default="out/assertions.xml", help="Output assertions file")
+@click.option("--jsonl", default="out/assertions.jsonl", help="JSON Lines output for CI")
 @click.option("--strict", is_flag=True, help="Fail on warnings")
 @click.option(
     "--math-policy",
@@ -109,12 +103,8 @@ def validate(
 
 @main.command()
 @click.argument("project_path", type=click.Path(exists=True))
-@click.option(
-    "--output-dir", "-o", default="out/site", help="Output directory for HTML"
-)
-@click.option(
-    "--xslt-dir", default="schemas/xslt", help="Directory containing XSLT templates"
-)
+@click.option("--output-dir", "-o", default="out/site", help="Output directory for HTML")
+@click.option("--xslt-dir", default="schemas/xslt", help="Directory containing XSLT templates")
 @click.option("--strict", is_flag=True, help="Fail fast on XML parse errors")
 @click.option(
     "--math-policy",
@@ -367,9 +357,7 @@ def phpify(
             # Try from working directory
             templates_dir = Path.cwd() / "templates"
         if not templates_dir.exists():
-            raise FileNotFoundError(
-                f"Templates directory not found. Tried: {templates_dir}"
-            )
+            raise FileNotFoundError(f"Templates directory not found. Tried: {templates_dir}")
 
         generator = PHPGenerator(templates_dir, gen_config)
         files = generator.generate(ir, output_basename=xml_path.stem)

@@ -95,9 +95,7 @@ class Sanitizer:
         """
         return hashlib.sha256(orig.encode("utf-8")).hexdigest()[:16]
 
-    def create_surrogate_element(
-        self, orig: str, uid: str, is_empty: bool = False
-    ) -> str:
+    def create_surrogate_element(self, orig: str, uid: str, is_empty: bool = False) -> str:
         """Create surrogate element markup.
 
         Args:
@@ -190,9 +188,7 @@ class Sanitizer:
 
                             # Create surrogate
                             uid = self.compute_uid(tag_name)
-                            surrogate = self.create_surrogate_element(
-                                tag_name, uid, is_empty
-                            )
+                            surrogate = self.create_surrogate_element(tag_name, uid, is_empty)
 
                             # Record mapping
                             mappings.append(
@@ -241,9 +237,7 @@ class Sanitizer:
                 }
                 f.write(json.dumps(entry) + "\n")
 
-    def restore(
-        self, sanitized_path: Path, mapping_path: Path, output_path: Path
-    ) -> None:
+    def restore(self, sanitized_path: Path, mapping_path: Path, output_path: Path) -> None:
         """Restore original mathy markup from sanitized XML.
 
         Args:

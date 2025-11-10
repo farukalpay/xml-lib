@@ -140,9 +140,7 @@ class PPTXComposer:
 
         # Add timestamp citation
         if phase.get("timestamp"):
-            citations.append(
-                f"Phase '{phase_name}' timestamp: {phase.get('timestamp')}"
-            )
+            citations.append(f"Phase '{phase_name}' timestamp: {phase.get('timestamp')}")
 
         # Build content
         content_lines = []

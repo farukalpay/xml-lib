@@ -40,9 +40,7 @@ class XSLTTransformer:
 
         return transform
 
-    def transform(
-        self, xml_path: Path, xslt_path: Path, output_path: Path, **params: str
-    ) -> bool:
+    def transform(self, xml_path: Path, xslt_path: Path, output_path: Path, **params: str) -> bool:
         """Apply XSLT transform to XML document.
 
         Args:

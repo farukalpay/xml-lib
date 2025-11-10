@@ -201,11 +201,7 @@ class GuardrailEngine:
                         line=None,
                         column=None,
                         message=f"{rule.name}: {message}",
-                        type=(
-                            "error"
-                            if rule.priority in ["critical", "high"]
-                            else "warning"
-                        ),
+                        type=("error" if rule.priority in ["critical", "high"] else "warning"),
                         rule=rule.id,
                     )
                 )
@@ -243,11 +239,7 @@ class GuardrailEngine:
                         line=None,
                         column=None,
                         message=f"{rule.name}: {message}",
-                        type=(
-                            "error"
-                            if rule.priority in ["critical", "high"]
-                            else "warning"
-                        ),
+                        type=("error" if rule.priority in ["critical", "high"] else "warning"),
                         rule=rule.id,
                     )
                 )

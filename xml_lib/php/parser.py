@@ -57,8 +57,7 @@ class SecureXMLParser:
         file_size = xml_path.stat().st_size
         if file_size > self.config.max_size_bytes:
             raise ParseError(
-                f"File too large: {file_size} bytes "
-                f"(max: {self.config.max_size_bytes})"
+                f"File too large: {file_size} bytes " f"(max: {self.config.max_size_bytes})"
             )
 
         # Create secure parser
@@ -76,8 +75,7 @@ class SecureXMLParser:
         elapsed = time.time() - start_time
         if elapsed > self.config.max_parse_time_seconds:
             raise ParseError(
-                f"Parse timeout: {elapsed:.2f}s "
-                f"(max: {self.config.max_parse_time_seconds}s)"
+                f"Parse timeout: {elapsed:.2f}s " f"(max: {self.config.max_parse_time_seconds}s)"
             )
 
         root = tree.getroot()
@@ -104,8 +102,7 @@ class SecureXMLParser:
         size_bytes = len(xml_string.encode("utf-8"))
         if size_bytes > self.config.max_size_bytes:
             raise ParseError(
-                f"XML too large: {size_bytes} bytes "
-                f"(max: {self.config.max_size_bytes})"
+                f"XML too large: {size_bytes} bytes " f"(max: {self.config.max_size_bytes})"
             )
 
         # Create secure parser
@@ -123,8 +120,7 @@ class SecureXMLParser:
         elapsed = time.time() - start_time
         if elapsed > self.config.max_parse_time_seconds:
             raise ParseError(
-                f"Parse timeout: {elapsed:.2f}s "
-                f"(max: {self.config.max_parse_time_seconds}s)"
+                f"Parse timeout: {elapsed:.2f}s " f"(max: {self.config.max_parse_time_seconds}s)"
             )
 
         return root

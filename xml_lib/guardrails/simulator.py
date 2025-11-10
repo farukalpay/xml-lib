@@ -107,9 +107,7 @@ class GuardrailSimulator:
                 break
 
         final_state = self.current_state or "unknown"
-        success = (
-            self.states.get(final_state, State("", StateType.ACTIVE)).type == StateType.PASSED
-        )
+        success = self.states.get(final_state, State("", StateType.ACTIVE)).type == StateType.PASSED
 
         return SimulationResult(
             success=success,

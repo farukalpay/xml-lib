@@ -56,10 +56,10 @@ class Proof:
             HTML formatted proof
         """
         html = ['<div class="proof">']
-        html.append(f'<h3>Theorem: {self.theorem}</h3>')
+        html.append(f"<h3>Theorem: {self.theorem}</h3>")
 
         if self.hypothesis:
-            html.append('<h4>Hypothesis:</h4>')
+            html.append("<h4>Hypothesis:</h4>")
             html.append("<ul>")
             for hyp in self.hypothesis:
                 html.append(f"<li>{hyp}</li>")
@@ -69,7 +69,7 @@ class Proof:
         for i, step in enumerate(self.steps, 1):
             html.append(f'<div class="proof-step">')
             html.append(f"<strong>Step {i}:</strong> {step.statement}<br>")
-            html.append(f'<em>Justification:</em> {step.justification}')
+            html.append(f"<em>Justification:</em> {step.justification}")
             html.append("</div>")
 
         if self.conclusion:
