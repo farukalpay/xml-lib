@@ -71,6 +71,22 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: str | None) -> No
     default="error",
     help="Treat warnings as errors (default: error)",
 )
+@click.option(
+    "--streaming/--no-streaming",
+    default=False,
+    help="Use streaming validation for large files (default: off)",
+)
+@click.option(
+    "--streaming-threshold",
+    type=int,
+    default=10 * 1024 * 1024,
+    help="File size threshold for streaming in bytes (default: 10MB)",
+)
+@click.option(
+    "--progress/--no-progress",
+    default=False,
+    help="Show progress indicator (default: off)",
+)
 @click.pass_context
 def validate(
     ctx: click.Context,
@@ -83,6 +99,9 @@ def validate(
     math_policy: str,
     output_format: str,
     fail_level: str,
+    streaming: bool,
+    streaming_threshold: int,
+    progress: bool,
 ) -> None:
     """Validate XML documents against lifecycle schemas and guardrails.
 
@@ -92,7 +111,7 @@ def validate(
     # Handle --strict and --fail-level interaction
     treat_warnings_as_errors = strict or fail_level == "warning"
 
-    if output_format == "text":
+    if output_format == "text" and not progress:
         click.echo(f"🔍 Validating project: {project_path}")
 
     policy = MathPolicy(math_policy)
@@ -101,6 +120,9 @@ def validate(
         guardrails_dir=Path(guardrails_dir),
         telemetry=ctx.obj.get("telemetry"),
         math_policy=policy,
+        use_streaming=streaming,
+        streaming_threshold_bytes=streaming_threshold,
+        show_progress=progress,
     )
     result = validator.validate_project(Path(project_path), math_policy=policy)
 

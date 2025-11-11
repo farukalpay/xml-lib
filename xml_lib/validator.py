@@ -2,9 +2,12 @@
 
 import hashlib
 import io
+import os
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 
 from lxml import etree
 
@@ -13,6 +16,51 @@ from xml_lib.sanitize import MathPolicy, Sanitizer
 from xml_lib.storage import ContentStore
 from xml_lib.telemetry import TelemetrySink
 from xml_lib.types import ValidationError
+
+
+class ProgressReporter:
+    """Progress reporter for large XML file validation."""
+
+    SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+    def __init__(self, enabled: bool = True, tty_only: bool = True):
+        """Initialize progress reporter.
+
+        Args:
+            enabled: Enable progress reporting
+            tty_only: Only show progress if stdout is a TTY
+        """
+        self.enabled = enabled and (not tty_only or sys.stdout.isatty())
+        self.frame_index = 0
+        self.current_message = ""
+
+    def update(self, message: str, done: bool = False) -> None:
+        """Update progress message.
+
+        Args:
+            message: Progress message to display
+            done: Whether the operation is complete
+        """
+        if not self.enabled:
+            return
+
+        if done:
+            # Clear the line and print completion
+            sys.stdout.write("\r\033[K")  # Clear line
+            sys.stdout.write(f"✓ {message}\n")
+            sys.stdout.flush()
+        else:
+            # Show spinner
+            spinner = self.SPINNER_FRAMES[self.frame_index % len(self.SPINNER_FRAMES)]
+            sys.stdout.write(f"\r{spinner} {message}")
+            sys.stdout.flush()
+            self.frame_index += 1
+
+    def clear(self) -> None:
+        """Clear the current progress line."""
+        if self.enabled:
+            sys.stdout.write("\r\033[K")  # Clear line
+            sys.stdout.flush()
 
 
 @dataclass
@@ -25,6 +73,7 @@ class ValidationResult:
     validated_files: list[str] = field(default_factory=list)
     checksums: dict[str, str] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
+    used_streaming: bool = False  # Whether streaming validation was used
 
 
 class Validator:
@@ -36,7 +85,21 @@ class Validator:
         guardrails_dir: Path,
         telemetry: TelemetrySink | None = None,
         math_policy: MathPolicy = MathPolicy.SANITIZE,
+        use_streaming: bool = False,
+        streaming_threshold_bytes: int = 10 * 1024 * 1024,  # 10MB default
+        show_progress: bool = False,
     ):
+        """Initialize validator.
+
+        Args:
+            schemas_dir: Directory containing schema files
+            guardrails_dir: Directory containing guardrail files
+            telemetry: Optional telemetry sink
+            math_policy: Policy for handling mathematical XML
+            use_streaming: Enable streaming validation for large files
+            streaming_threshold_bytes: File size threshold for streaming (default 10MB)
+            show_progress: Show progress indicator for large files
+        """
         self.schemas_dir = schemas_dir
         self.guardrails_dir = guardrails_dir
         self.telemetry = telemetry
@@ -44,6 +107,9 @@ class Validator:
         self.guardrail_engine = GuardrailEngine(guardrails_dir)
         self.math_policy = math_policy
         self._last_result: ValidationResult | None = None
+        self.use_streaming = use_streaming
+        self.streaming_threshold_bytes = streaming_threshold_bytes
+        self.show_progress = show_progress
 
         # Load schemas
         self.relaxng_lifecycle = self._load_relaxng("lifecycle.rng")
@@ -87,23 +153,40 @@ class Validator:
         policy = math_policy or self.math_policy
         sanitizer = Sanitizer(Path("out")) if policy == MathPolicy.SANITIZE else None
 
+        # Initialize progress reporter
+        progress = ProgressReporter(enabled=self.show_progress) if self.show_progress else None
+
         # Find all XML files
         xml_files = list(project_path.rglob("*.xml"))
+
+        if progress:
+            progress.update(f"Found {len(xml_files)} XML files to validate")
 
         # Track IDs across all files for cross-file validation
         all_ids: set[str] = set()
         id_locations: dict[str, str] = {}
 
-        for xml_file in xml_files:
+        for i, xml_file in enumerate(xml_files, 1):
             # Skip schema and guardrail files
             if "schema" in str(xml_file) or xml_file.parent.name == "guardrails":
                 continue
 
             try:
+                if progress:
+                    progress.update(f"Validating {i}/{len(xml_files)}: {xml_file.name}")
+
+                # Check if we should use streaming validation
+                use_streaming_for_file = self._should_use_streaming(xml_file)
+
                 # Parse XML with optional sanitization
                 doc = None
                 try:
-                    doc = etree.parse(str(xml_file))
+                    if use_streaming_for_file:
+                        doc = self._validate_streaming(xml_file, result, progress)
+                        if doc is None:
+                            continue  # Streaming validation failed, errors already added
+                    else:
+                        doc = etree.parse(str(xml_file))
                 except etree.XMLSyntaxError as parse_error:
                     if policy == MathPolicy.ERROR:
                         raise
@@ -189,6 +272,10 @@ class Validator:
         if result.errors:
             result.is_valid = False
 
+        # Run guardrail checks
+        if progress:
+            progress.update("Running guardrail checks")
+
         # Log telemetry
         duration = (datetime.now() - start_time).total_seconds()
         if self.telemetry:
@@ -199,6 +286,15 @@ class Validator:
                 file_count=len(result.validated_files),
                 error_count=len(result.errors),
                 warning_count=len(result.warnings),
+            )
+
+        # Complete progress
+        if progress:
+            status = "passed" if result.is_valid else "failed"
+            progress.update(
+                f"Validation {status}: {len(result.validated_files)} files, "
+                f"{len(result.errors)} errors, {len(result.warnings)} warnings",
+                done=True,
             )
 
         self._last_result = result
@@ -464,6 +560,99 @@ class Validator:
                     result.is_valid = False
                 prev_time = curr_time
                 prev_phase = phase_name
+
+    def _should_use_streaming(self, file_path: Path) -> bool:
+        """Determine if streaming validation should be used for a file.
+
+        Args:
+            file_path: Path to the XML file
+
+        Returns:
+            True if streaming should be used
+        """
+        if not self.use_streaming:
+            return False
+
+        try:
+            file_size = file_path.stat().st_size
+            return file_size >= self.streaming_threshold_bytes
+        except Exception:
+            return False
+
+    def _validate_streaming(
+        self,
+        file_path: Path,
+        result: ValidationResult,
+        progress: ProgressReporter | None = None,
+    ) -> etree._ElementTree | None:
+        """Validate XML file using streaming iterparse.
+
+        This method provides basic well-formedness checking via iterparse.
+        Schema validation still requires full tree, so we fall back to that.
+
+        Args:
+            file_path: Path to XML file
+            result: ValidationResult to populate
+            progress: Optional progress reporter
+
+        Returns:
+            Parsed document tree if successful, None otherwise
+        """
+        try:
+            if progress:
+                progress.update(f"Streaming parse: {file_path.name}")
+
+            # Use iterparse for basic well-formedness check
+            # Note: Relax NG and Schematron require full tree, so we still need to parse fully
+            # This streaming approach mainly helps with initial parsing of very large files
+            element_count = 0
+            context = etree.iterparse(str(file_path), events=("start", "end"))
+
+            for event, elem in context:
+                if event == "end":
+                    element_count += 1
+                    if progress and element_count % 1000 == 0:
+                        progress.update(f"Parsed {element_count} elements from {file_path.name}")
+
+                    # Clear element to save memory
+                    elem.clear()
+                    while elem.getprevious() is not None:
+                        del elem.getparent()[0]
+
+            # After streaming validation, we still need full tree for schema validation
+            if progress:
+                progress.update(f"Building tree for schema validation: {file_path.name}")
+
+            doc = etree.parse(str(file_path))
+            result.used_streaming = True
+            return doc
+
+        except etree.XMLSyntaxError as e:
+            result.errors.append(
+                ValidationError(
+                    file=str(file_path),
+                    line=e.lineno,
+                    column=getattr(e, "position", [None])[0],
+                    message=str(e),
+                    type="error",
+                    rule="xml-syntax",
+                )
+            )
+            result.is_valid = False
+            return None
+        except Exception as e:
+            result.errors.append(
+                ValidationError(
+                    file=str(file_path),
+                    line=None,
+                    column=None,
+                    message=f"Streaming validation error: {e}",
+                    type="error",
+                    rule="streaming",
+                )
+            )
+            result.is_valid = False
+            return None
 
     def write_assertions(
         self,
