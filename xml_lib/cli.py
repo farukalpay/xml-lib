@@ -516,6 +516,11 @@ def roundtrip(
     type=click.Path(exists=True),
     help="Optional Relax NG or Schematron schema for validation",
 )
+@click.option(
+    "--allow-xxe",
+    is_flag=True,
+    help="Allow external entities (WARNING: security risk, only use with trusted XML)",
+)
 @click.pass_context
 def phpify(
     ctx: click.Context,
@@ -531,6 +536,7 @@ def phpify(
     strict: bool,
     max_size: int,
     schema: str | None,
+    allow_xxe: bool,
 ) -> None:
     """Generate production-ready PHP page from XML document.
 
@@ -559,7 +565,14 @@ def phpify(
             max_size_bytes=max_size,
             validate_schema=schema is not None,
             schema_path=Path(schema) if schema else None,
+            allow_xxe=allow_xxe,
         )
+
+        # Warn user if XXE is enabled
+        if allow_xxe:
+            click.echo(
+                "  ⚠️  WARNING: External entities (XXE) enabled - only use with trusted XML!"
+            )
 
         # Parse XML securely
         click.echo("  Parsing XML...")
