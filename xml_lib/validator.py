@@ -2,12 +2,10 @@
 
 import hashlib
 import io
-import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
 
 from lxml import etree
 

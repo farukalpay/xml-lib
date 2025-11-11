@@ -93,6 +93,125 @@ xml-lib diff example_document.xml example_amphibians.xml
 
 # With semantic explanations
 xml-lib diff example_document.xml example_amphibians.xml --explain
+
+# JSON output for CI/CD
+xml-lib diff example_document.xml example_amphibians.xml --format json
+```
+
+### 6. Lint XML Files (2 minutes) ✨ NEW
+
+```bash
+# Lint XML files for formatting and security
+xml-lib lint .
+
+# Output as JSON for CI/CD pipelines
+xml-lib lint . --format json
+
+# Treat warnings as failures
+xml-lib lint . --fail-level warning
+
+# Check for specific issues
+xml-lib lint . --no-check-attribute-order  # Skip attribute order checking
+```
+
+**What gets checked:**
+- ✅ Indentation consistency (configurable, default 2 spaces)
+- ✅ Alphabetical attribute ordering
+- ✅ XXE vulnerabilities (external entities)
+- ✅ Trailing whitespace and line length
+- ✅ Missing final newlines
+
+## New Features
+
+### 🚀 Streaming Validation (for Large Files)
+
+Handle large XML files (>10MB) efficiently with streaming validation:
+
+```bash
+# Enable streaming validation
+xml-lib validate large-project/ --streaming
+
+# Custom threshold (5MB)
+xml-lib validate large-project/ --streaming --streaming-threshold 5242880
+
+# With progress indicator
+xml-lib validate large-project/ --streaming --progress
+```
+
+**Benefits:**
+- Memory-efficient processing with iterparse
+- Progress tracking for long-running validations
+- Graceful fallback when schemas require full tree
+
+### 🔒 Enhanced Security
+
+#### XXE Protection in PHP Generator
+
+The PHP generator now has hardened XXE protection by default:
+
+```bash
+# Secure by default - XXE disabled
+xml-lib phpify document.xml
+
+# Explicit opt-in for external entities (shows warning)
+xml-lib phpify document.xml --allow-xxe  # Only with trusted XML!
+```
+
+#### XML Security Linting
+
+Detect security issues in XML files:
+
+```bash
+# Scan for XXE vulnerabilities
+xml-lib lint . --check-external-entities
+
+# Allow external entities for specific use cases
+xml-lib lint . --allow-xxe
+```
+
+### 📊 Machine-Readable Output
+
+Get JSON output for CI/CD integration:
+
+```bash
+# Validation results as JSON
+xml-lib validate . --format json > results.json
+
+# Lint results as JSON
+xml-lib lint . --format json > lint.json
+
+# Diff results as JSON
+xml-lib diff file1.xml file2.xml --format json > diff.json
+```
+
+**Example JSON output:**
+```json
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [],
+  "files": ["begin.xml", "start.xml"],
+  "summary": {
+    "error_count": 0,
+    "warning_count": 0,
+    "file_count": 2
+  }
+}
+```
+
+### 🎯 Flexible Failure Levels
+
+Control when commands should fail:
+
+```bash
+# Fail on errors only (default)
+xml-lib validate . --fail-level error
+
+# Treat warnings as errors
+xml-lib validate . --fail-level warning
+
+# Fail on any issues (lint only)
+xml-lib lint . --fail-level info
 ```
 
 ## Repository Contents

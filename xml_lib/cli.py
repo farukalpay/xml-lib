@@ -179,9 +179,7 @@ def validate(
                     click.echo(f"  WARNING: {warning}")
 
     # Exit code logic
-    if result.errors:
-        sys.exit(1)
-    elif treat_warnings_as_errors and result.warnings:
+    if result.errors or treat_warnings_as_errors and result.warnings:
         sys.exit(1)
     else:
         sys.exit(0)
@@ -440,11 +438,7 @@ def lint(
 
     # Determine exit code based on fail-level
     should_fail = False
-    if fail_level == "error" and result.error_count > 0:
-        should_fail = True
-    elif fail_level == "warning" and (result.error_count > 0 or result.warning_count > 0):
-        should_fail = True
-    elif fail_level == "info" and len(result.issues) > 0:
+    if fail_level == "error" and result.error_count > 0 or fail_level == "warning" and (result.error_count > 0 or result.warning_count > 0) or fail_level == "info" and len(result.issues) > 0:
         should_fail = True
 
     sys.exit(1 if should_fail else 0)
