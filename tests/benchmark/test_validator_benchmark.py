@@ -1,10 +1,12 @@
 """Performance benchmarks for xml-lib components."""
 
-import pytest
 from pathlib import Path
-from xml_lib.validator import Validator
-from xml_lib.publisher import Publisher
+
+import pytest
+
 from xml_lib.differ import Differ
+from xml_lib.publisher import Publisher
+from xml_lib.validator import Validator
 
 
 @pytest.fixture

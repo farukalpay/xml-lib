@@ -1,12 +1,13 @@
 """Property-based tests for idempotence and invariants."""
 
-import pytest
 from pathlib import Path
-from hypothesis import given, strategies as st
+
+from hypothesis import given
+from hypothesis import strategies as st
 from lxml import etree
 
+from xml_lib.storage import ContentStore, compute_checksum, deterministic_uuid
 from xml_lib.validator import Validator
-from xml_lib.storage import ContentStore, deterministic_uuid, compute_checksum
 
 
 # Strategies for generating XML elements
@@ -48,7 +49,7 @@ def xml_document(draw):
     include_phases = [include_begin] + [draw(st.booleans()) for _ in range(4)]
 
     prev_timestamp = None
-    for i, (phase_name, include) in enumerate(zip(phase_names, include_phases)):
+    for i, (phase_name, include) in enumerate(zip(phase_names, include_phases, strict=False)):
         if include:
             # Generate monotonically increasing timestamp
             if prev_timestamp:
@@ -132,7 +133,7 @@ def test_validation_idempotence(tmp_path_factory, doc_data):
     for phase_name, timestamp in phases:
         xml_content += f'    <phase name="{phase_name}" timestamp="{timestamp}">\n'
         xml_content += f"      <payload>Test {phase_name}</payload>\n"
-        xml_content += f"    </phase>\n"
+        xml_content += "    </phase>\n"
 
     xml_content += """  </phases>
 </document>
@@ -272,7 +273,6 @@ def test_sanitizer_roundtrip_bijective(tmp_path_factory, invalid_name):
     assert result.mappings[0].orig == invalid_name
 
     # Sanitized content should be parseable
-    from lxml import etree
     import io
 
     doc = etree.parse(io.BytesIO(result.content))

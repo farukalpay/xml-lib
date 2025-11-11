@@ -5,23 +5,18 @@ hold across a wide range of generated XML documents and configurations.
 """
 
 import hashlib
-import io
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List
 
-import pytest
-from hypothesis import given, strategies as st, settings, assume, HealthCheck
+from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import strategies as st
 from lxml import etree
 
-from xml_lib.validator import Validator, ValidationResult
-from xml_lib.guardrails import GuardrailEngine, GuardrailRule
 from xml_lib.storage import ContentStore
-from xml_lib.types import ValidationError
-
 
 # Custom strategies for XML generation
+
 
 @st.composite
 def xml_element_name(draw):
@@ -114,9 +109,7 @@ def lifecycle_document(draw):
     for i, phase_name in enumerate(phase_names):
         timestamp = (base_time + timedelta(days=i * 30)).isoformat() + "Z"
         phase_id = f"{doc_id}-{phase_name}"
-        phases.append(
-            f'    <phase name="{phase_name}" id="{phase_id}" timestamp="{timestamp}"/>'
-        )
+        phases.append(f'    <phase name="{phase_name}" id="{phase_id}" timestamp="{timestamp}"/>')
 
     phases_xml = "\n".join(phases)
 
@@ -276,9 +269,7 @@ class TestGuardrailProperties:
     def test_constraint_xpath_returns_bool_or_list(self, elements):
         """Property: XPath constraints should return evaluable results."""
         # Create XML with elements
-        element_xml = "\n  ".join(
-            [f"<{name}>{value}</{name}>" for name, value in elements]
-        )
+        element_xml = "\n  ".join([f"<{name}>{value}</{name}>" for name, value in elements])
 
         xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <root>

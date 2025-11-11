@@ -1,9 +1,8 @@
 """Tests for differ treating original vs sanitized XML as equivalent."""
 
-import pytest
 from pathlib import Path
+
 from xml_lib.differ import Differ
-from xml_lib.sanitize import Sanitizer
 
 
 def test_differ_treats_original_and_sanitized_as_equivalent(tmp_path):
@@ -49,8 +48,7 @@ def test_differ_normalizes_element_names(tmp_path):
     """Test that differ uses normalized names in messages."""
     file1 = tmp_path / "file1.xml"
     file1.write_text(
-        '<?xml version="1.0"?>\n'
-        '<doc><op name="×" xml:orig="×" xml:uid="abc">data</op></doc>'
+        '<?xml version="1.0"?>\n' '<doc><op name="×" xml:orig="×" xml:uid="abc">data</op></doc>'
     )
 
     file2 = tmp_path / "file2.xml"
@@ -64,11 +62,10 @@ def test_differ_normalizes_element_names(tmp_path):
     assert len(result.differences) > 0
 
     # The difference should reference the original symbol, not "op"
-    diff_str = result.differences[0].format(explain=True)
+    result.differences[0].format(explain=True)
     # At minimum it should handle the comparison correctly
     assert (
-        result.differences[0].old_value is not None
-        or result.differences[0].new_value is not None
+        result.differences[0].old_value is not None or result.differences[0].new_value is not None
     )
 
 
@@ -76,14 +73,12 @@ def test_differ_identical_with_both_surrogates(tmp_path):
     """Test that two files with same surrogates are identical."""
     file1 = tmp_path / "file1.xml"
     file1.write_text(
-        '<?xml version="1.0"?>\n'
-        '<doc><op name="×" xml:orig="×" xml:uid="abc">data</op></doc>'
+        '<?xml version="1.0"?>\n' '<doc><op name="×" xml:orig="×" xml:uid="abc">data</op></doc>'
     )
 
     file2 = tmp_path / "file2.xml"
     file2.write_text(
-        '<?xml version="1.0"?>\n'
-        '<doc><op name="×" xml:orig="×" xml:uid="xyz">data</op></doc>'
+        '<?xml version="1.0"?>\n' '<doc><op name="×" xml:orig="×" xml:uid="xyz">data</op></doc>'
     )
 
     differ = Differ(schemas_dir=Path("schemas"), telemetry=None)

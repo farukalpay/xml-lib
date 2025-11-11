@@ -3,21 +3,23 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .ir import (
-    IntermediateRepresentation,
-    ContentElement,
-    Heading,
-    Paragraph,
-    List as IRList,
-    ListItem,
-    Table,
-    CodeBlock,
-    Figure,
-    Section,
     Citation,
+    CodeBlock,
+    ContentElement,
+    Figure,
+    Heading,
+    IntermediateRepresentation,
+    ListItem,
+    Paragraph,
+    Section,
+    Table,
+)
+from .ir import (
+    List as IRList,
 )
 
 
@@ -26,12 +28,12 @@ class GeneratorConfig:
     """Configuration for PHP generator."""
 
     template: str = "default"  # 'default' or 'minimal'
-    title: Optional[str] = None
-    favicon: Optional[str] = None
+    title: str | None = None
+    favicon: str | None = None
     assets_dir: str = "assets"
     no_toc: bool = False
     no_css: bool = False
-    css_path: Optional[str] = None
+    css_path: str | None = None
 
 
 class PHPGenerator:
@@ -46,7 +48,7 @@ class PHPGenerator:
     - Responsive layout
     """
 
-    def __init__(self, templates_dir: Path, config: Optional[GeneratorConfig] = None):
+    def __init__(self, templates_dir: Path, config: GeneratorConfig | None = None):
         """Initialize PHP generator.
 
         Args:
@@ -69,7 +71,7 @@ class PHPGenerator:
 
     def generate(
         self, ir: IntermediateRepresentation, output_basename: str = "page"
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         """Generate PHP files from IR.
 
         Args:
@@ -131,9 +133,7 @@ class PHPGenerator:
 
         # Select template
         template_name = (
-            "php/minimal_page.php.j2"
-            if self.config.template == "minimal"
-            else "php/page.php.j2"
+            "php/minimal_page.php.j2" if self.config.template == "minimal" else "php/page.php.j2"
         )
 
         # Render template
@@ -158,7 +158,7 @@ class PHPGenerator:
         template = self.env.get_template("php/style.css.j2")
         return template.render()
 
-    def _build_toc(self, content: List[ContentElement]) -> List[Dict[str, str]]:
+    def _build_toc(self, content: list[ContentElement]) -> list[dict[str, str]]:
         """Build table of contents from content.
 
         Args:
@@ -194,7 +194,7 @@ class PHPGenerator:
 
         return toc
 
-    def _render_content(self, content: List[ContentElement]) -> str:
+    def _render_content(self, content: list[ContentElement]) -> str:
         """Render content elements to PHP/HTML.
 
         Args:
@@ -325,7 +325,9 @@ class PHPGenerator:
         headers_json = self._json_encode(headers)
         rows_json = self._json_encode(rows)
 
-        return f"                <?php echo render_table({headers_json}, {rows_json}, {caption}); ?>"
+        return (
+            f"                <?php echo render_table({headers_json}, {rows_json}, {caption}); ?>"
+        )
 
     def _render_code(self, code: CodeBlock) -> str:
         """Render code block to HTML.

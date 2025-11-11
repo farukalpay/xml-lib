@@ -1,7 +1,6 @@
 """Tests for HTML publisher."""
 
 import pytest
-from pathlib import Path
 
 from xml_lib.publisher import Publisher
 
