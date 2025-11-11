@@ -1,11 +1,13 @@
 """Main CLI entry point for xml-lib."""
 
+import json
 import sys
 from pathlib import Path
 
 import click
 
 from xml_lib.differ import Differ
+from xml_lib.linter import XMLLinter
 from xml_lib.php.generator import GeneratorConfig, PHPGenerator
 from xml_lib.php.ir import IRBuilder
 from xml_lib.php.parser import ParseConfig, SecureXMLParser
@@ -56,6 +58,19 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: str | None) -> No
     default="sanitize",
     help="Policy for handling mathy XML (default: sanitize)",
 )
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format (default: text)",
+)
+@click.option(
+    "--fail-level",
+    type=click.Choice(["warning", "error"]),
+    default="error",
+    help="Treat warnings as errors (default: error)",
+)
 @click.pass_context
 def validate(
     ctx: click.Context,
@@ -66,13 +81,19 @@ def validate(
     jsonl: str,
     strict: bool,
     math_policy: str,
+    output_format: str,
+    fail_level: str,
 ) -> None:
     """Validate XML documents against lifecycle schemas and guardrails.
 
     Validates the canonical chain (begin → start → iteration → end → continuum)
     using Relax NG + Schematron with cross-file constraints.
     """
-    click.echo(f"🔍 Validating project: {project_path}")
+    # Handle --strict and --fail-level interaction
+    treat_warnings_as_errors = strict or fail_level == "warning"
+
+    if output_format == "text":
+        click.echo(f"🔍 Validating project: {project_path}")
 
     policy = MathPolicy(math_policy)
     validator = Validator(
@@ -86,19 +107,62 @@ def validate(
     # Write assertions
     validator.write_assertions(result, Path(output), Path(jsonl))
 
-    if result.is_valid:
-        click.echo("✅ Validation passed")
-        sys.exit(0)
+    # Format output
+    if output_format == "json":
+        output_data = {
+            "valid": result.is_valid,
+            "errors": [
+                {
+                    "file": err.file,
+                    "line": err.line,
+                    "column": err.column,
+                    "message": err.message,
+                    "type": err.type,
+                    "rule": err.rule,
+                }
+                for err in result.errors
+            ],
+            "warnings": [
+                {
+                    "file": warn.file,
+                    "line": warn.line,
+                    "column": warn.column,
+                    "message": warn.message,
+                    "type": warn.type,
+                    "rule": warn.rule,
+                }
+                for warn in result.warnings
+            ],
+            "files": result.validated_files,
+            "summary": {
+                "error_count": len(result.errors),
+                "warning_count": len(result.warnings),
+                "file_count": len(result.validated_files),
+            },
+        }
+        click.echo(json.dumps(output_data, indent=2))
     else:
-        click.echo(
-            f"❌ Validation failed: {len(result.errors)} errors, {len(result.warnings)} warnings"
-        )
-        for error in result.errors[:10]:  # Show first 10
-            click.echo(f"  ERROR: {error}")
-        if strict and result.warnings:
-            click.echo("❌ Strict mode: warnings treated as errors")
-            sys.exit(1)
-        sys.exit(1 if result.errors else 0)
+        # Text output
+        if result.is_valid:
+            click.echo("✅ Validation passed")
+        else:
+            click.echo(
+                f"❌ Validation failed: {len(result.errors)} errors, {len(result.warnings)} warnings"
+            )
+            for error in result.errors[:10]:  # Show first 10
+                click.echo(f"  ERROR: {error}")
+            if treat_warnings_as_errors and result.warnings:
+                click.echo(f"❌ Treating {len(result.warnings)} warnings as errors")
+                for warning in result.warnings[:10]:  # Show first 10
+                    click.echo(f"  WARNING: {warning}")
+
+    # Exit code logic
+    if result.errors:
+        sys.exit(1)
+    elif treat_warnings_as_errors and result.warnings:
+        sys.exit(1)
+    else:
+        sys.exit(0)
 
 
 @main.command()
@@ -184,6 +248,13 @@ def render_pptx(
 @click.argument("file2", type=click.Path(exists=True))
 @click.option("--explain", is_flag=True, help="Provide detailed explanations")
 @click.option("--schemas-dir", default="schemas", help="Directory containing schemas")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format (default: text)",
+)
 @click.pass_context
 def diff(
     ctx: click.Context,
@@ -191,12 +262,14 @@ def diff(
     file2: str,
     explain: bool,
     schemas_dir: str,
+    output_format: str,
 ) -> None:
     """Schema-aware structural diff between two XML files.
 
     Compares XML documents with understanding of lifecycle semantics.
     """
-    click.echo(f"🔎 Comparing: {file1} ↔ {file2}")
+    if output_format == "text":
+        click.echo(f"🔎 Comparing: {file1} ↔ {file2}")
 
     differ = Differ(
         schemas_dir=Path(schemas_dir),
@@ -205,14 +278,154 @@ def diff(
 
     result = differ.diff(Path(file1), Path(file2), explain=explain)
 
-    if result.identical:
-        click.echo("✅ Files are identical")
-        sys.exit(0)
+    if output_format == "json":
+        output_data = {
+            "identical": result.identical,
+            "difference_count": len(result.differences),
+            "differences": [
+                {
+                    "type": diff.type.value,
+                    "path": diff.path,
+                    "old_value": diff.old_value,
+                    "new_value": diff.new_value,
+                    "explanation": diff.explanation,
+                }
+                for diff in result.differences
+            ],
+        }
+        click.echo(json.dumps(output_data, indent=2))
     else:
-        click.echo(f"📋 Found {len(result.differences)} differences:")
-        for diff in result.differences:
-            click.echo(f"\n{diff.format(explain=explain)}")
-        sys.exit(1)
+        # Text output
+        if result.identical:
+            click.echo("✅ Files are identical")
+        else:
+            click.echo(f"📋 Found {len(result.differences)} differences:")
+            for diff in result.differences:
+                click.echo(f"\n{diff.format(explain=explain)}")
+
+    sys.exit(0 if result.identical else 1)
+
+
+@main.command()
+@click.argument("path", type=click.Path(exists=True))
+@click.option("--recursive/--no-recursive", default=True, help="Recursively scan directories")
+@click.option(
+    "--check-indentation/--no-check-indentation",
+    default=True,
+    help="Check for consistent indentation",
+)
+@click.option(
+    "--check-attribute-order/--no-check-attribute-order",
+    default=True,
+    help="Check for alphabetically sorted attributes",
+)
+@click.option(
+    "--check-external-entities/--no-check-external-entities",
+    default=True,
+    help="Check for XXE vulnerabilities",
+)
+@click.option(
+    "--check-formatting/--no-check-formatting",
+    default=True,
+    help="Check for general formatting issues",
+)
+@click.option("--indent-size", default=2, type=int, help="Expected indentation size (spaces)")
+@click.option(
+    "--allow-xxe",
+    is_flag=True,
+    help="Allow external entities (WARNING: security risk)",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format (default: text)",
+)
+@click.option(
+    "--fail-level",
+    type=click.Choice(["info", "warning", "error"]),
+    default="error",
+    help="Minimum level to trigger failure (default: error)",
+)
+def lint(
+    path: str,
+    recursive: bool,
+    check_indentation: bool,
+    check_attribute_order: bool,
+    check_external_entities: bool,
+    check_formatting: bool,
+    indent_size: int,
+    allow_xxe: bool,
+    output_format: str,
+    fail_level: str,
+) -> None:
+    """Lint XML files for formatting and security issues.
+
+    Checks for:
+    - Consistent indentation and formatting
+    - Alphabetically ordered attributes
+    - External entity declarations (XXE vulnerabilities)
+    - Trailing whitespace and line length
+    """
+    path_obj = Path(path)
+
+    if output_format == "text":
+        click.echo(f"🔍 Linting: {path}")
+
+    linter = XMLLinter(
+        check_indentation=check_indentation,
+        check_attribute_order=check_attribute_order,
+        check_external_entities=check_external_entities,
+        check_formatting=check_formatting,
+        indent_size=indent_size,
+        allow_xxe=allow_xxe,
+    )
+
+    # Lint file or directory
+    if path_obj.is_file():
+        result = linter.lint_file(path_obj)
+    else:
+        result = linter.lint_directory(path_obj, recursive=recursive)
+
+    # Format output
+    if output_format == "json":
+        output_data = {
+            "files_checked": result.files_checked,
+            "issues": [issue.to_dict() for issue in result.issues],
+            "summary": {
+                "error_count": result.error_count,
+                "warning_count": result.warning_count,
+                "info_count": len(result.issues) - result.error_count - result.warning_count,
+            },
+        }
+        click.echo(json.dumps(output_data, indent=2))
+    else:
+        # Text output
+        if not result.issues:
+            click.echo(f"✅ All {result.files_checked} files passed linting")
+        else:
+            click.echo(
+                f"\n📋 Found {len(result.issues)} issues in {result.files_checked} files:"
+            )
+            click.echo(
+                f"   Errors: {result.error_count}, Warnings: {result.warning_count}, Info: {len(result.issues) - result.error_count - result.warning_count}"
+            )
+            click.echo()
+
+            for issue in result.issues:
+                click.echo(issue.format_text())
+
+    # Determine exit code based on fail-level
+    should_fail = False
+    if fail_level == "error" and result.error_count > 0:
+        should_fail = True
+    elif fail_level == "warning" and (result.error_count > 0 or result.warning_count > 0):
+        should_fail = True
+    elif fail_level == "info" and len(result.issues) > 0:
+        should_fail = True
+
+    sys.exit(1 if should_fail else 0)
 
 
 @main.command()
