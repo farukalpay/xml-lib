@@ -1,0 +1,32 @@
+# Basic XML Validation Pipeline
+#
+# This pipeline validates XML documents and generates validation reports.
+#
+# Usage:
+#   xml-lib pipeline run pipeline.yaml input/sample-valid.xml
+
+name: basic_validation
+description: Validate XML and generate reports
+error_strategy: fail_fast
+rollback_enabled: false  # Read-only operations don't need rollback
+
+stages:
+  # Stage 1: Validate XML against schemas
+  - type: validate
+    name: validate_input
+    schemas_dir: ../../../schemas
+    guardrails_dir: ../../../guardrails
+    strict: true
+    streaming: false
+
+  # Stage 2: Generate HTML validation report
+  - type: output
+    name: generate_html_report
+    format: html
+    output_path: output/validation-report.html
+
+  # Stage 3: Generate JSON summary for CI/CD
+  - type: output
+    name: generate_json_summary
+    format: json
+    output_path: output/summary.json

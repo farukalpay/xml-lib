@@ -1,0 +1,70 @@
+# Configuration File Validation Pipeline
+#
+# This pipeline validates XML configuration files, resolves includes/imports,
+# applies environment-specific overrides, and validates the final merged config.
+#
+# Usage:
+#   xml-lib pipeline run templates/pipelines/config-validation.yaml config.xml
+
+name: config_validation
+description: Validate and merge XML configuration files with environment overrides
+
+error_strategy: rollback
+rollback_enabled: true
+
+variables:
+  environment: "${ENV}"  # Set via ENV environment variable
+  config_version: "1.0"
+
+stages:
+  # Stage 1: Validate base configuration schema
+  - type: validate
+    name: validate_base_config
+    schemas_dir: schemas/config
+    guardrails_dir: guardrails/config
+    strict: true
+
+  # Stage 2: Resolve includes and imports
+  - type: transform
+    name: resolve_includes
+    transform: transforms/config/resolve-includes.xsl
+
+  # Stage 3: Apply environment-specific overrides
+  - type: transform
+    name: apply_environment_overrides
+    transform: transforms/config/apply-overrides.xsl
+    params:
+      environment: "${environment}"
+      timestamp: "{{ datetime.now().isoformat() }}"
+
+  # Stage 4: Validate merged configuration
+  - type: validate
+    name: validate_merged_config
+    schemas_dir: schemas/config
+    strict: true
+
+  # Stage 5: Security lint (check for sensitive data, XXE vulnerabilities)
+  - type: validate
+    name: security_lint
+    schemas_dir: schemas/config
+    guardrails_dir: guardrails/security
+    strict: true
+
+  # Stage 6: Output final configuration (XML)
+  - type: output
+    name: output_config_xml
+    format: xml
+    output_path: out/config/${environment}/config.xml
+
+  # Stage 7: Output deployment format (JSON)
+  - type: output
+    name: output_config_json
+    format: json
+    output_path: out/config/${environment}/config.json
+
+  # Stage 8: Generate configuration report
+  - type: output
+    name: generate_report
+    format: html
+    output_path: out/config/${environment}/report.html
+    template: templates/config-report.xsl
