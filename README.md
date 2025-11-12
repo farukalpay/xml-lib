@@ -214,6 +214,65 @@ xml-lib validate . --fail-level warning
 xml-lib lint . --fail-level info
 ```
 
+### 🔬 Mathematical Engine & Proof Verification ✨ NEW
+
+Formal verification of guardrail properties using Banach/Hilbert space constructs and fixed-point theory:
+
+```bash
+# Validate with engine proof checks
+xml-lib validate . --engine-check --engine-dir lib/engine --engine-output out/engine
+
+# Export proofs to JSON for CI/CD
+xml-lib engine export --guardrails-dir guardrails --engine-dir lib/engine -o out/engine_export.json
+```
+
+**What gets verified:**
+- ✅ **Contraction operators**: Proves `‖T(x)−T(y)‖ ≤ q‖x−y‖` with q < 1
+- ✅ **Fixed-point convergence**: Verifies unique fixed point exists via Banach theorem
+- ✅ **Fejér monotonicity**: Ensures sequence converges to safe set
+- ✅ **Energy bounds**: Proves `Σ ‖x_{k+1} - x_k‖² < ∞` (geometric series)
+- ✅ **Firmly nonexpansive**: Verifies projection operators satisfy `‖T(x)−T(y)‖² ≤ ⟨T(x)−T(y), x−y⟩`
+
+**Mathematical constructs implemented:**
+- **Hilbert spaces** with inner product `⟨·,·⟩` and induced norm
+- **Contraction operators** with Lipschitz constant q ∈ [0,1)
+- **Projection operators** onto convex feasibility sets
+- **Resolvent operators** `J_A = (I + λA)^{-1}` for monotone A
+- **Proximal operators** `prox_φ = argmin [φ(z) + ½‖z-x‖²]`
+- **Fixed-point iteration** with convergence analysis
+
+**Integration:**
+- **Assertion Ledger**: Proof artifacts written to XML + JSONL
+- **Telemetry**: Verification metrics sent to telemetry sink
+- **Streaming-safe**: Compatible with `--streaming` validation
+- **Property tests**: Hypothesis-based invariant verification
+- **Microbenchmarks**: Performance tracking for engine operations
+
+**Example output:**
+```json
+{
+  "rule_id": "gr-001",
+  "operator_name": "Op_gr-001",
+  "fixed_point_converged": true,
+  "fixed_point_metrics": {
+    "iterations": 42,
+    "final_residual": 1.23e-7,
+    "energy": 0.456,
+    "rate": 0.9,
+    "status": "converged"
+  },
+  "obligations": [
+    {
+      "obligation_id": "contraction_Op_gr-001",
+      "statement": "Operator is contraction with q=0.9",
+      "status": "verified"
+    }
+  ]
+}
+```
+
+**See:** [ARTIFACTS.md](ARTIFACTS.md#mathematical-engine) for complete schema→engine mapping and examples.
+
 ## Repository Contents
 
 XML-Lib contains a canonical XML lifecycle, guardrail subsystem, and mathematical proof engine:

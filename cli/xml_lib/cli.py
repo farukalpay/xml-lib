@@ -56,6 +56,11 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: str | None) -> No
     default="sanitize",
     help="Policy for handling mathy XML (default: sanitize)",
 )
+@click.option(
+    "--engine-check", is_flag=True, help="Run mathematical engine proof checks on guardrails"
+)
+@click.option("--engine-dir", default="lib/engine", help="Directory containing engine XML specs")
+@click.option("--engine-output", default="out/engine", help="Output directory for engine artifacts")
 @click.pass_context
 def validate(
     ctx: click.Context,
@@ -66,11 +71,17 @@ def validate(
     jsonl: str,
     strict: bool,
     math_policy: str,
+    engine_check: bool,
+    engine_dir: str,
+    engine_output: str,
 ) -> None:
     """Validate XML documents against lifecycle schemas and guardrails.
 
     Validates the canonical chain (begin → start → iteration → end → continuum)
     using Relax NG + Schematron with cross-file constraints.
+
+    With --engine-check, runs mathematical engine proofs on guardrail rules to verify
+    operator properties (contractions, fixed-points, convergence).
     """
     click.echo(f"🔍 Validating project: {project_path}")
 
@@ -86,19 +97,62 @@ def validate(
     # Write assertions
     validator.write_assertions(result, Path(output), Path(jsonl))
 
-    if result.is_valid:
+    # Run engine checks if requested
+    engine_success = True
+    if engine_check:
+        click.echo("🔬 Running engine proof checks...")
+        try:
+            from xml_lib.engine_wrapper import EngineWrapper
+
+            engine = EngineWrapper(
+                engine_dir=Path(engine_dir),
+                output_dir=Path(engine_output),
+                telemetry=ctx.obj.get("telemetry"),
+            )
+
+            # Get guardrail rules
+            guardrail_rules = validator.guardrail_engine.rules
+
+            # Run checks
+            guardrail_proofs, proof_result, metrics = engine.run_engine_checks(guardrail_rules)
+
+            # Write outputs
+            engine.write_outputs(guardrail_proofs, proof_result, metrics)
+
+            # Report results
+            click.echo(
+                f"  ✓ Generated {len(guardrail_proofs)} proofs for {metrics.guardrail_count} guardrail rules"
+            )
+            click.echo(
+                f"  ✓ Verified {metrics.verified_count}/{metrics.proof_count} proof obligations"
+            )
+
+            if metrics.failed_count > 0:
+                click.echo(f"  ⚠ {metrics.failed_count} proof obligations failed")
+                engine_success = False
+
+            click.echo(f"  ✓ Engine artifacts written to: {engine_output}")
+
+        except Exception as e:
+            click.echo(f"  ❌ Engine check failed: {e}")
+            engine_success = False
+
+    if result.is_valid and engine_success:
         click.echo("✅ Validation passed")
         sys.exit(0)
     else:
-        click.echo(
-            f"❌ Validation failed: {len(result.errors)} errors, {len(result.warnings)} warnings"
-        )
-        for error in result.errors[:10]:  # Show first 10
-            click.echo(f"  ERROR: {error}")
+        if not result.is_valid:
+            click.echo(
+                f"❌ Validation failed: {len(result.errors)} errors, {len(result.warnings)} warnings"
+            )
+            for error in result.errors[:10]:  # Show first 10
+                click.echo(f"  ERROR: {error}")
+        if not engine_success:
+            click.echo("❌ Engine checks failed")
         if strict and result.warnings:
             click.echo("❌ Strict mode: warnings treated as errors")
             sys.exit(1)
-        sys.exit(1 if result.errors else 0)
+        sys.exit(1 if (result.errors or not engine_success) else 0)
 
 
 @main.command()
@@ -414,6 +468,77 @@ def phpify(
             import traceback
 
             click.echo(traceback.format_exc())
+        sys.exit(1)
+
+
+@main.group()
+def engine() -> None:
+    """Mathematical engine commands for proof generation and export."""
+    pass
+
+
+@engine.command()
+@click.option("--guardrails-dir", default="guardrails", help="Directory containing guardrails")
+@click.option("--engine-dir", default="lib/engine", help="Directory containing engine XML specs")
+@click.option("--output", "-o", default="out/engine_export.json", help="Output JSON file")
+@click.pass_context
+def export(
+    ctx: click.Context,
+    guardrails_dir: str,
+    engine_dir: str,
+    output: str,
+) -> None:
+    """Export engine proofs and metrics as JSON.
+
+    Generates mathematical proofs for all guardrail rules and exports them
+    to a JSON file with convergence metrics and proof obligations.
+    """
+    click.echo("🔬 Exporting engine proofs...")
+
+    try:
+        from xml_lib.engine_wrapper import EngineWrapper
+        from xml_lib.guardrails import GuardrailEngine
+
+        # Load guardrail rules
+        guardrail_engine = GuardrailEngine(Path(guardrails_dir))
+        rules = guardrail_engine.rules
+
+        click.echo(f"  Loaded {len(rules)} guardrail rules")
+
+        # Initialize engine wrapper
+        engine = EngineWrapper(
+            engine_dir=Path(engine_dir),
+            output_dir=Path(output).parent,
+            telemetry=ctx.obj.get("telemetry"),
+        )
+
+        # Run engine checks
+        guardrail_proofs, proof_result, metrics = engine.run_engine_checks(rules)
+
+        # Export as JSON
+        export_data = engine.export_proofs_json(guardrail_proofs, proof_result, metrics)
+
+        # Write to output file
+        output_path = Path(output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        import json
+
+        with output_path.open("w") as f:
+            json.dump(export_data, f, indent=2)
+
+        click.echo(f"✅ Exported {len(guardrail_proofs)} proofs to: {output}")
+        click.echo(f"   Verified: {metrics.verified_count}/{metrics.proof_count}")
+        click.echo(f"   Failed: {metrics.failed_count}")
+        click.echo(f"   Checksum: {export_data['checksum'][:16]}...")
+
+        sys.exit(0)
+
+    except Exception as e:
+        click.echo(f"❌ Export failed: {e}")
+        import traceback
+
+        click.echo(traceback.format_exc())
         sys.exit(1)
 
 

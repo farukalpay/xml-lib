@@ -61,10 +61,6 @@ class LipschitzOperator(Operator):
 
     lipschitz_L: float = 1.0
 
-    def apply(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        """Apply operator: default identity."""
-        return x.copy()
-
     def is_lipschitz(
         self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64], tol: float = 1e-9
     ) -> bool:
@@ -94,10 +90,6 @@ class ContractionOperator(LipschitzOperator):
         if not (0 <= self.contraction_q < 1):
             raise ValueError(f"Contraction constant must be in [0,1): {self.contraction_q}")
         self.lipschitz_L = self.contraction_q
-
-    def apply(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        """Apply operator: default scaled identity."""
-        return self.contraction_q * x
 
     def is_contraction(
         self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64], tol: float = 1e-9

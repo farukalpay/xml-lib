@@ -579,3 +579,441 @@ make benchmark
 - **XSLT 3.0**: [W3C Recommendation](https://www.w3.org/TR/xslt-30/)
 - **OOXML**: [ECMA-376](https://www.ecma-international.org/publications-and-standards/standards/ecma-376/)
 - **Content Addressing**: [IPFS Specification](https://docs.ipfs.tech/concepts/content-addressing/)
+
+---
+
+## Mathematical Engine
+
+The mathematical engine layer provides formal verification of guardrail properties through Banach/Hilbert space constructs and fixed-point theory.
+
+### Architecture
+
+The engine layer consists of:
+
+1. **XML Engine Specs** (`lib/engine/*.xml`) — Mathematical definitions
+2. **Python Engine** (`cli/xml_lib/engine/`) — Implementation
+3. **CLI Integration** — `--engine-check` flag and `engine export` command
+4. **Assertion Ledger** — XML + JSONL outputs with proof artifacts
+
+### XML Engine Specs
+
+#### `lib/engine/spaces.xml`
+
+Defines mathematical spaces underlying guardrail engineering:
+
+- **Metric Space** `(U, d)` — States with distance function
+- **Normed Space** `(B, ‖·‖)` — With norm-induced metric
+- **Banach Space** — Complete normed space (closure of enforcement packages)
+- **Hilbert Space** `(H, ⟨·,·⟩)` — With inner product for projections
+- **Convex Sets** `C ⊆ H` — Safe regions (closed, convex)
+
+**Key Properties:**
+- Completeness: Cauchy sequences converge (for end.xml archival)
+- Closed safe regions: Limits of safe states remain safe
+- Projection: `P_C: H → C` exists and is unique (Hilbert projection theorem)
+
+#### `lib/engine/hilbert.xml`
+
+Hilbert space structure and operator definitions:
+
+**Inner Product Axioms:**
+```xml
+<axiom>⟨x, y⟩ = ⟨y, x⟩</axiom>
+<axiom>⟨ax + bz, y⟩ = a⟨x, y⟩ + b⟨z, y⟩</axiom>
+<axiom>⟨x, x⟩ ≥ 0 and = 0 iff x=0</axiom>
+```
+
+**Derived Properties:**
+- Norm: `‖x‖ = sqrt(⟨x, x⟩)`
+- Distance: `d(x,y) = ‖x−y‖`
+- Cauchy-Schwarz: `|⟨x,y⟩| ≤ ‖x‖‖y‖`
+
+**Operator Classes:**
+- **Nonexpansive**: `‖T(x)−T(y)‖ ≤ ‖x−y‖`
+- **Contraction**: `‖T(x)−T(y)‖ ≤ q‖x−y‖`, q ∈ [0,1)
+- **Firmly Nonexpansive**: `‖T(x)−T(y)‖² ≤ ⟨T(x)−T(y), x−y⟩`
+
+#### `lib/engine/operators.xml`
+
+Operator algebra for the middle-phase guardrails:
+
+**Base Operators:**
+- `T`: Baseline transform (from iteration.xml semantics)
+- `P_C`: Projection onto feasibility set C
+- `G = P_C ∘ T`: Composed guardrail operator
+
+**Lipschitz Bounds:**
+- `T` is L-Lipschitz with L ≤ 1
+- `P_C` is 1-Lipschitz (firmly nonexpansive)
+- If L < 1, then G is contraction on C with constant q ≤ L
+
+**Spectral Properties:**
+- For normal operators T, spectral radius `ρ(T) < 1` implies contraction
+- Energy bound: `Σ ‖x_{k+1} - x_k‖² < ∞` (geometric series)
+
+#### `lib/engine/axioms.xml`
+
+Logic skeleton for guardrail proofs:
+
+**Axioms:**
+- **A1**: Invariants from guardrails-begin imply constraints hold
+- **A2**: Middle-phase fixed-point model preserves constraints
+- **A3**: End-phase handshake preserves checksums with telemetry
+- **A4**: Identical control-plane hashes guarantee observable equality
+- **A5**: Validation matrix completeness (all scope/failure-mode pairs covered)
+
+#### `lib/engine/proof.xml`
+
+Formal proof structure:
+
+**Lemmas:**
+- **L1**: Invariant preservation through middle-phase transformations
+- **L2**: Checksum/telemetry binding persistence through guardrails-end
+- **L3**: Validation matrix completeness
+
+**Main Theorem (T1):**
+```
+FORALL state s satisfying guardrails-begin invariants,
+  guardrails-end exports artifacts that keep s compliant
+```
+
+**Corollary (C1):**
+Fixed-point property: Applying guardrails-middle after guardrails-end yields no change.
+
+#### `lib/engine/hilbert/fixed_points.xml`
+
+Fejér-monotone sequences and fixed-point theorems:
+
+**Fejér Monotonicity:**
+Sequence `x_{k+1} = Π_syn(x_k)` is Fejér monotone w.r.t. C:
+```
+∀ x* ∈ C: ‖x_{k+1} - x*‖ ≤ ‖x_k - x*‖
+```
+
+**Resolvent Lemma:**
+For penalty φ capturing invariant violations, `prox_φ ∘ T` is contraction on C.
+
+**Main Fixed-Point Theorem:**
+Guardrails-middle pipeline admits unique fixed point `x* ∈ C` satisfying:
+- `x* = G(x*)`
+- `Π_syn(x*) = x*`
+
+**Energy Bound:**
+`Σ_{k≥0} ‖x_{k+1} - x_k‖²` converges (geometric series with ratio q²).
+
+#### `lib/engine/hilbert/operators.xml`
+
+Advanced operator constructs:
+
+**Resolvents:**
+- `J_A = (I + λA)^{-1}` for maximal monotone A
+- Firmly nonexpansive
+- Used for feasibility projections
+
+**Proximal Operators:**
+- `prox_φ(x) = argmin_z [φ(z) + (1/2λ)‖z - x‖²]`
+- Related to resolvent: `prox_φ = J_{∂φ}` (Moreau identity)
+- Penalty φ counts invariant violations
+
+**Semigroups:**
+- Continuous semigroup `{S(t)}_{t≥0}` with `S(0)=I`, `S(t+s)=S(t)S(s)`
+- Generator `A x = lim_{t→0+} (S(t)x - x)/t`
+- Models gradual guardrail ramp-ups
+
+### Python Engine Implementation
+
+Located in `cli/xml_lib/engine/`:
+
+#### Module Structure
+
+```
+cli/xml_lib/engine/
+├── __init__.py          # Package exports
+├── spaces.py            # MathematicalSpace, HilbertSpace, ConvexSet
+├── operators.py         # Operator classes (Contraction, Nonexpansive, FNE, Resolvent, Proximal)
+├── fixed_points.py      # FixedPointIterator, FejerMonotoneSequence, ConvergenceMetrics
+├── proofs.py            # ProofObligation, ProofEngine, GuardrailProof
+├── parser.py            # EngineSpecParser (XML → Python dataclasses)
+├── integration.py       # EngineLedgerIntegration, EngineMetrics, StreamingSafeEvaluator
+└── engine_wrapper.py    # CLI integration wrapper
+```
+
+#### Core Classes
+
+**Spaces** (`spaces.py`):
+```python
+@dataclass
+class HilbertSpace(BanachSpace):
+    """Hilbert space with inner product."""
+    inner_product: InnerProduct
+    
+    def cauchy_schwarz_holds(self, x, y) -> bool
+    def gram_schmidt(self, vectors) -> list[NDArray]
+    def project_onto_subspace(self, x, basis) -> NDArray
+```
+
+**Operators** (`operators.py`):
+```python
+@dataclass
+class ContractionOperator(LipschitzOperator):
+    """Contraction with constant q ∈ [0,1)."""
+    contraction_q: float = 0.9
+    
+    def is_contraction(self, x, y) -> bool
+    def apply(self, x) -> NDArray
+```
+
+**Fixed-Point Iteration** (`fixed_points.py`):
+```python
+@dataclass
+class FixedPointIterator:
+    """Fixed-point iteration engine."""
+    operator: Operator
+    max_iterations: int = 1000
+    tolerance: float = 1e-6
+    
+    def iterate(self, x0) -> ConvergenceResult
+    def banach_fixed_point_theorem(self, q, x0, x1) -> dict
+```
+
+**Proof Engine** (`proofs.py`):
+```python
+@dataclass
+class ProofEngine:
+    """Generate and verify proof obligations."""
+    
+    def prove_contraction(self, operator, samples, q) -> ProofObligation
+    def prove_firmly_nonexpansive(self, operator, space, samples) -> ProofObligation
+    def prove_fixed_point_exists(self, operator, x0) -> tuple[ProofObligation, ConvergenceResult]
+    def prove_guardrail_compliance(self, rule_id, operator, x0, samples) -> GuardrailProof
+    def batch_verify(self, proofs) -> ProofResult
+```
+
+### Schema → Engine Mapping
+
+| XML Element | Python Class | Purpose |
+|-------------|--------------|---------|
+| `<spaces/normed>` | `NormedSpace` | Normed vector space with ‖·‖ |
+| `<spaces/banach>` | `BanachSpace` | Complete normed space |
+| `<hilbert-hook/space>` | `HilbertSpace` | Space with inner product ⟨·,·⟩ |
+| `<operators/operator[@id='T']>` | `NonexpansiveOperator` | Base transform T |
+| `<operators/operator[@id='P_C']>` | `ProjectionOperator` | Projection onto C |
+| `<composition[@id='G']>` | `ComposedOperator` | G = P_C ∘ T |
+| `<guardrail-axioms/axiom>` | `ProofObligation.axioms_used` | Referenced axioms |
+| `<guardrail-proof/lemma>` | `ProofStep` | Proof step |
+| `<guardrail-proof/theorem>` | `ProofObligation` | Main proof obligation |
+
+### CLI Usage
+
+#### Validate with Engine Checks
+
+```bash
+xml-lib validate . --engine-check --engine-dir lib/engine --engine-output out/engine
+```
+
+**Flags:**
+- `--engine-check`: Enable engine proof verification
+- `--engine-dir`: Directory containing engine XML specs (default: `lib/engine`)
+- `--engine-output`: Output directory for proof artifacts (default: `out/engine`)
+
+**Outputs:**
+- `out/engine/engine_proofs.xml`: XML assertion ledger with proofs
+- `out/engine/engine_proofs.jsonl`: JSON Lines format for CI
+- `out/engine/engine_metrics.json`: Convergence metrics
+- `out/engine/engine_artifact.json`: Complete proof artifact with checksum
+
+#### Export Engine Proofs
+
+```bash
+xml-lib engine export --guardrails-dir guardrails --engine-dir lib/engine -o out/engine_export.json
+```
+
+**Output Format (JSON):**
+```json
+{
+  "metadata": {
+    "timestamp": "2025-11-12T08:00:00Z",
+    "version": "1.0",
+    "checksum": "a1b2c3..."
+  },
+  "proofs": [
+    {
+      "rule_id": "gr-001",
+      "rule_name": "Example Rule",
+      "operator_name": "Op_gr-001",
+      "fixed_point_converged": true,
+      "fixed_point_metrics": {
+        "iterations": 42,
+        "final_residual": 1.23e-7,
+        "energy": 0.456,
+        "rate": 0.9,
+        "status": "converged"
+      },
+      "obligations": [
+        {
+          "obligation_id": "contraction_Op_gr-001",
+          "statement": "Operator is contraction with q=0.9",
+          "axioms_used": ["Banach-fixed-point"],
+          "status": "verified",
+          "steps": [...]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_proofs": 5,
+    "total_obligations": 15,
+    "verified": 14,
+    "failed": 1,
+    "success_rate": 0.933
+  },
+  "all_verified": false
+}
+```
+
+### Streaming-Safe Evaluation
+
+The engine supports streaming validation (compatible with `--streaming` flag):
+
+```python
+from xml_lib.engine.integration import StreamingSafeEvaluator
+
+evaluator = StreamingSafeEvaluator(chunk_size=100)
+result = evaluator.streaming_proof_verification(guardrail_proofs)
+```
+
+**Features:**
+- Chunk-based processing (default: 100 items)
+- Memory-efficient for large proof sets
+- Compatible with existing streaming validators
+
+### Telemetry Integration
+
+Engine results are automatically sent to the telemetry sink:
+
+```python
+telemetry_sink.log_event(
+    "engine_proof_verification",
+    total_obligations=15,
+    verified=14,
+    failed=1,
+    success_rate=0.933,
+    all_verified=False
+)
+```
+
+**Telemetry Fields:**
+- `total_obligations`: Number of proof obligations checked
+- `verified`: Successfully verified obligations
+- `failed`: Failed obligations
+- `success_rate`: Ratio of verified to total
+- `all_verified`: Boolean flag
+
+### Property Tests
+
+Located in `tests/test_engine_properties.py`:
+
+Uses Hypothesis for property-based testing of mathematical invariants:
+
+- **Cauchy-Schwarz**: `|⟨x,y⟩| ≤ ‖x‖‖y‖`
+- **Triangle Inequality**: `‖x+y‖ ≤ ‖x‖ + ‖y‖`
+- **Contraction Property**: `‖T(x)−T(y)‖ ≤ q‖x−y‖`
+- **Energy Bounds**: `Σ ‖x_{k+1} - x_k‖² < ∞`
+- **Proof Soundness**: Verified proofs imply actual properties
+
+Run with:
+```bash
+pytest tests/test_engine_properties.py -v
+```
+
+### Microbenchmarks
+
+Located in `tests/test_engine_benchmarks.py`:
+
+Performance benchmarks for:
+- Inner product computation
+- Norm/distance calculations
+- Operator application
+- Lipschitz constant estimation
+- Fixed-point iteration
+- Proof generation
+
+Run with:
+```bash
+pytest tests/test_engine_benchmarks.py --benchmark-only
+```
+
+### Example: Guardrail → Operator → Proof
+
+**1. Guardrail Rule (XML):**
+```xml
+<guardrail id="latency-bound" priority="critical">
+  <name>Latency Upper Bound</name>
+  <description>Ensure p95 latency stays under 40ms</description>
+  <constraint type="temporal">p95_latency_ms &lt;= 40</constraint>
+</guardrail>
+```
+
+**2. Engine Mapping:**
+- Creates `ContractionOperator` with `q=0.9` (parameterized from continuum.xml simulation)
+- Operator: `T(x) = 0.9 * x` (scaled down to enforce bound)
+- Feasible set: `C = {x ∈ H : ‖x‖ ≤ 40}`
+- Composed operator: `G = P_C ∘ T`
+
+**3. Proof Generation:**
+- **Contraction Proof**: Verifies `‖T(x)−T(y)‖ ≤ 0.9‖x−y‖` on samples
+- **Fixed-Point Proof**: Runs iteration `x_{k+1} = G(x_k)`, proves convergence
+- **Energy Bound**: Computes `Σ ‖x_{k+1} - x_k‖² = 1.234` (finite)
+
+**4. Convergence Metrics:**
+```json
+{
+  "converged": true,
+  "iterations": 42,
+  "final_residual": 1.23e-7,
+  "energy": 1.234,
+  "rate": 0.89
+}
+```
+
+**5. Proof Artifact:**
+Exported to `out/engine/engine_proofs.xml` and `.jsonl` with traceable provenance.
+
+### Security & Determinism
+
+- **Deterministic**: All outputs are reproducible (fixed random seeds)
+- **Secure**: No arbitrary code execution (operators defined via dataclasses)
+- **Signed**: Proof artifacts include SHA-256 checksums
+- **Auditable**: Full proof steps recorded in assertion ledger
+
+### Migration from Previous Versions
+
+**Breaking Changes:** None (engine is opt-in via `--engine-check`)
+
+**New Features:**
+- Mathematical proof verification for guardrails
+- Engine export command for CI/CD integration
+- Streaming-safe evaluation hooks
+- Telemetry integration for proof metrics
+
+**Backward Compatibility:**
+- Existing validation workflows unchanged
+- Engine checks are optional (flag-gated)
+- Can be incrementally adopted per-project
+
+**Recommended Migration Path:**
+1. Run `xml-lib validate .` (existing workflow)
+2. Add `--engine-check` to enable proofs
+3. Review `out/engine/engine_metrics.json`
+4. Integrate `xml-lib engine export` into CI pipeline
+5. Monitor telemetry for proof verification rates
+
+---
+
+### References
+
+- **Banach Fixed-Point Theorem**: [Wikipedia](https://en.wikipedia.org/wiki/Banach_fixed-point_theorem)
+- **Hilbert Spaces**: [Wikipedia](https://en.wikipedia.org/wiki/Hilbert_space)
+- **Firmly Nonexpansive Operators**: [Bauschke & Combettes, 2017]
+- **Fejér-Monotone Sequences**: [Combettes & Pesquet, 2011]
+- **Proximal Operators**: [Parikh & Boyd, 2014]
