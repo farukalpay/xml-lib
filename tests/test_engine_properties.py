@@ -14,7 +14,7 @@ from xml_lib.engine.operators import (
     NonexpansiveOperator,
 )
 from xml_lib.engine.proofs import ProofEngine
-from xml_lib.engine.spaces import HilbertSpace, InnerProduct
+from xml_lib.engine.spaces import HilbertSpace
 
 
 @st.composite

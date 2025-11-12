@@ -117,7 +117,7 @@ def validate(
             guardrail_proofs, proof_result, metrics = engine.run_engine_checks(guardrail_rules)
 
             # Write outputs
-            output_files = engine.write_outputs(guardrail_proofs, proof_result, metrics)
+            engine.write_outputs(guardrail_proofs, proof_result, metrics)
 
             # Report results
             click.echo(
@@ -493,7 +493,7 @@ def export(
     Generates mathematical proofs for all guardrail rules and exports them
     to a JSON file with convergence metrics and proof obligations.
     """
-    click.echo(f"🔬 Exporting engine proofs...")
+    click.echo("🔬 Exporting engine proofs...")
 
     try:
         from xml_lib.engine_wrapper import EngineWrapper

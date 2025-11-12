@@ -5,7 +5,6 @@ This script demonstrates the mathematical engine layer that verifies guardrail
 properties through Banach/Hilbert space constructs and fixed-point theory.
 """
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -38,7 +37,7 @@ def demo_spaces() -> HilbertSpace:
     y = np.array([2.0, 3.0, 4.0, 5.0, 6.0])
 
     print(f"Created Hilbert space: {space.name} (dimension={space.dimension})")
-    print(f"\nTest vectors:")
+    print("\nTest vectors:")
     print(f"  x = {x}")
     print(f"  y = {y}")
 
@@ -73,7 +72,7 @@ def demo_operators(space: HilbertSpace) -> ContractionOperator:
     # Uses default implementation: scaled identity (q * x)
 
     print(f"Created operator: {operator.name}")
-    print(f"  Type: Contraction")
+    print("  Type: Contraction")
     print(f"  Contraction constant q = {operator.contraction_q}")
 
     # Test contraction property
@@ -86,7 +85,7 @@ def demo_operators(space: HilbertSpace) -> ContractionOperator:
     d_xy = space.distance(x, y)
     d_txy = space.distance(tx, ty)
 
-    print(f"\nVerifying contraction property:")
+    print("\nVerifying contraction property:")
     print(f"  ‖x - y‖ = {d_xy:.2f}")
     print(f"  ‖T(x) - T(y)‖ = {d_txy:.2f}")
     print(f"  ‖T(x) - T(y)‖ / ‖x - y‖ = {d_txy / d_xy:.2f}")
@@ -106,7 +105,7 @@ def demo_fixed_point(operator: ContractionOperator, space: HilbertSpace) -> None
     x0 = np.array([5.0, 4.0, 3.0, 2.0, 1.0])
 
     print(f"Initial point x₀ = {x0}")
-    print(f"Starting fixed-point iteration: xₖ₊₁ = T(xₖ)")
+    print("Starting fixed-point iteration: xₖ₊₁ = T(xₖ)")
 
     # Create iterator
     iterator = FixedPointIterator(
@@ -119,7 +118,7 @@ def demo_fixed_point(operator: ContractionOperator, space: HilbertSpace) -> None
     # Run iteration
     result = iterator.iterate(x0)
 
-    print(f"\nConvergence results:")
+    print("\nConvergence results:")
     print(f"  Status: {result.metrics.status.value}")
     print(f"  Iterations: {result.metrics.iterations}")
     print(f"  Final residual: {result.metrics.final_residual:.2e}")
@@ -132,12 +131,12 @@ def demo_fixed_point(operator: ContractionOperator, space: HilbertSpace) -> None
     # Verify it's a fixed point
     tx_star = operator.apply(result.fixed_point)
     residual = space.distance(result.fixed_point, tx_star)
-    print(f"\nFixed-point verification:")
+    print("\nFixed-point verification:")
     print(f"  ‖x* - T(x*)‖ = {residual:.2e} ≈ 0 ✓")
 
     # Show trajectory convergence
     if len(result.trajectory) >= 5:
-        print(f"\nTrajectory (first 5 iterations):")
+        print("\nTrajectory (first 5 iterations):")
         for i, x in enumerate(result.trajectory[:5]):
             print(f"  x_{i} norm: {space.norm(x):.4f}")
 
@@ -155,7 +154,7 @@ def demo_proofs(operator: ContractionOperator, space: HilbertSpace) -> Guardrail
     print(f"Generated {len(sample_points)} sample points for verification")
 
     # Generate proof for a guardrail rule
-    print(f"\nGenerating proof for guardrail rule 'latency-bound'...")
+    print("\nGenerating proof for guardrail rule 'latency-bound'...")
 
     x0 = np.array([5.0, 4.0, 3.0, 2.0, 1.0])
 
@@ -183,7 +182,7 @@ def demo_proofs(operator: ContractionOperator, space: HilbertSpace) -> Guardrail
     # Fixed-point metrics
     if guardrail_proof.fixed_point_result:
         fp = guardrail_proof.fixed_point_result
-        print(f"\n  Fixed-Point Convergence:")
+        print("\n  Fixed-Point Convergence:")
         print(f"    Converged: {fp.is_converged()}")
         print(f"    Iterations: {fp.metrics.iterations}")
         print(f"    Final residual: {fp.metrics.final_residual:.2e}")
@@ -242,7 +241,7 @@ def demo_integration(guardrail_proof: GuardrailProof) -> None:
     checksum = integration.generate_checksum([guardrail_proof])
     print(f"\n  Proof checksum: {checksum[:16]}...")
 
-    print(f"\nAll artifacts written to: out/demo_engine/")
+    print("\nAll artifacts written to: out/demo_engine/")
 
 
 def main() -> None:

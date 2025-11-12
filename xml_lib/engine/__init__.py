@@ -1,37 +1,37 @@
 """Mathematical engine for xml-lib: Banach/Hilbert constructs and proof obligations."""
 
+from xml_lib.engine.fixed_points import (
+    ConvergenceMetrics,
+    ConvergenceResult,
+    FejerMonotoneSequence,
+    FixedPointIterator,
+)
+from xml_lib.engine.integration import EngineLedgerIntegration, EngineMetrics
+from xml_lib.engine.operators import (
+    ContractionOperator,
+    FirmlyNonexpansiveOperator,
+    NonexpansiveOperator,
+    Operator,
+    ProjectionOperator,
+    ProximalOperator,
+    ResolventOperator,
+)
+from xml_lib.engine.parser import EngineSpecParser
+from xml_lib.engine.proofs import (
+    GuardrailProof,
+    ProofEngine,
+    ProofObligation,
+    ProofResult,
+    ProofStep,
+)
 from xml_lib.engine.spaces import (
-    MathematicalSpace,
-    MetricSpace,
-    NormedSpace,
     BanachSpace,
     HilbertSpace,
     InnerProduct,
+    MathematicalSpace,
+    MetricSpace,
+    NormedSpace,
 )
-from xml_lib.engine.operators import (
-    Operator,
-    ContractionOperator,
-    NonexpansiveOperator,
-    FirmlyNonexpansiveOperator,
-    ResolventOperator,
-    ProximalOperator,
-    ProjectionOperator,
-)
-from xml_lib.engine.fixed_points import (
-    FixedPointIterator,
-    FejerMonotoneSequence,
-    ConvergenceResult,
-    ConvergenceMetrics,
-)
-from xml_lib.engine.proofs import (
-    ProofObligation,
-    ProofStep,
-    ProofResult,
-    GuardrailProof,
-    ProofEngine,
-)
-from xml_lib.engine.parser import EngineSpecParser
-from xml_lib.engine.integration import EngineLedgerIntegration, EngineMetrics
 
 __all__ = [
     # Spaces

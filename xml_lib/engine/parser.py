@@ -11,17 +11,13 @@ from lxml import etree
 from xml_lib.engine.operators import (
     ComposedOperator,
     ContractionOperator,
-    FirmlyNonexpansiveOperator,
     FunctionOperator,
     NonexpansiveOperator,
     Operator,
     ProjectionOperator,
-    ProximalOperator,
-    ResolventOperator,
 )
 from xml_lib.engine.spaces import (
     BanachSpace,
-    ConvexSet,
     HilbertSpace,
     InnerProduct,
     MathematicalSpace,

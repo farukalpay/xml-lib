@@ -11,10 +11,7 @@ from xml_lib.engine.fixed_points import (
 from xml_lib.engine.operators import (
     ComposedOperator,
     ContractionOperator,
-    FirmlyNonexpansiveOperator,
     FunctionOperator,
-    NonexpansiveOperator,
-    ProjectionOperator,
 )
 from xml_lib.engine.proofs import ProofEngine
 from xml_lib.engine.spaces import ConvexSet, HilbertSpace, InnerProduct
