@@ -15,6 +15,7 @@ class ParseConfig:
     max_parse_time_seconds: float = 30.0
     validate_schema: bool = True
     schema_path: Path | None = None
+    allow_xxe: bool = False  # Allow external entities (SECURITY RISK)
 
 
 class ParseError(Exception):
@@ -131,16 +132,30 @@ class SecureXMLParser:
         Returns:
             Configured XMLParser instance
         """
-        # Disable external entity resolution to prevent XXE attacks
-        parser = etree.XMLParser(
-            resolve_entities=False,  # Disable external entities
-            no_network=True,  # Disable network access
-            dtd_validation=False,  # Disable DTD validation
-            load_dtd=False,  # Don't load DTD
-            huge_tree=False,  # Prevent billion laughs attack
-            remove_blank_text=False,  # Preserve formatting
-            remove_comments=False,  # Keep comments
-        )
+        # Configure XXE protection based on allow_xxe setting
+        # WARNING: Enabling XXE (allow_xxe=True) is a security risk!
+        if self.config.allow_xxe:
+            # SECURITY RISK: External entities are enabled
+            parser = etree.XMLParser(
+                resolve_entities=True,  # WARNING: Enables external entities
+                no_network=False,  # WARNING: Enables network access
+                dtd_validation=False,  # Still disable DTD validation
+                load_dtd=True,  # Allow loading DTD
+                huge_tree=False,  # Still prevent billion laughs
+                remove_blank_text=False,  # Preserve formatting
+                remove_comments=False,  # Keep comments
+            )
+        else:
+            # Secure default: Disable external entity resolution to prevent XXE attacks
+            parser = etree.XMLParser(
+                resolve_entities=False,  # Disable external entities
+                no_network=True,  # Disable network access
+                dtd_validation=False,  # Disable DTD validation
+                load_dtd=False,  # Don't load DTD
+                huge_tree=False,  # Prevent billion laughs attack
+                remove_blank_text=False,  # Preserve formatting
+                remove_comments=False,  # Keep comments
+            )
         return parser
 
     def _validate_schema(self, tree: etree._ElementTree, schema_path: Path) -> None:
