@@ -8,6 +8,8 @@
 
 ## Features
 
+🔄 **NEW: Pipeline Automation** — Declarative XML workflows with chaining, error recovery, and rollback. [See Pipeline Guide →](docs/PIPELINE_GUIDE.md)
+
 🔍 **Relax NG + Schematron Validation** — Validates XML documents against lifecycle schemas with cross-file constraints (IDs, checksums, temporal monotonicity)
 
 📊 **Rule Engine** — Compiles guardrails from XML into executable checks with full provenance tracking (who/when/why)
@@ -120,6 +122,61 @@ xml-lib lint . --no-check-attribute-order  # Skip attribute order checking
 - ✅ XXE vulnerabilities (external entities)
 - ✅ Trailing whitespace and line length
 - ✅ Missing final newlines
+
+### 7. Pipeline Automation (2 minutes) ✨ NEW
+
+Chain XML operations (validate → transform → output) with error recovery:
+
+```bash
+# Run a pre-built pipeline template
+xml-lib pipeline run templates/pipelines/soap-validation.yaml input.xml
+
+# List available templates
+xml-lib pipeline list
+
+# Preview pipeline stages (dry-run)
+xml-lib pipeline dry-run templates/pipelines/rss-feed.yaml feed.xml
+
+# Use in CI/CD
+xml-lib pipeline run templates/pipelines/ci-validation.yaml *.xml
+```
+
+**Available Templates:**
+- 📧 **SOAP Validation** - SOAP envelope validation and enrichment
+- 📰 **RSS Feed** - RSS 2.0 validation and publishing
+- ⚙️ **Config Validation** - Configuration file management
+- 🔄 **Schema Migration** - XML schema version migration
+- 🔍 **CI/CD Validation** - Comprehensive quality checks
+
+**Create Your Own Pipeline:**
+
+```yaml
+# my-pipeline.yaml
+name: validate_and_publish
+error_strategy: fail_fast
+rollback_enabled: true
+
+stages:
+  - type: validate
+    name: check_xml
+    schemas_dir: schemas
+    strict: true
+
+  - type: transform
+    name: enrich
+    transform: transforms/add-metadata.xsl
+
+  - type: output
+    name: generate_report
+    format: html
+    output_path: out/report.html
+```
+
+```bash
+xml-lib pipeline run my-pipeline.yaml input.xml
+```
+
+**Learn More:** [Pipeline Guide](docs/PIPELINE_GUIDE.md) | [Examples](examples/pipelines/)
 
 ## New Features
 
