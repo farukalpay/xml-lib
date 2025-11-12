@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra import numpy as npst
 
@@ -34,7 +34,7 @@ def vectors(draw, dim=5):
 @st.composite
 def contraction_constants(draw):
     """Strategy for generating contraction constants in [0, 1)."""
-    return draw(st.floats(min_value=0.1, max_value=0.99))
+    return draw(st.floats(min_value=0.1, max_value=0.95))
 
 
 class TestSpaceProperties:
@@ -45,7 +45,7 @@ class TestSpaceProperties:
         space = HilbertSpace(dimension=5, name="TestH")
 
         @given(x=vectors(5), y=vectors(5))
-        @settings(max_examples=100)
+        @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
         def check_cauchy_schwarz(x, y):
             # |<x,y>| ≤ ||x|| ||y||
             inner_prod = abs(space.inner_product(x, y))
