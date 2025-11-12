@@ -867,5 +867,342 @@ def pipeline_validate(pipeline_file: str) -> None:
         sys.exit(1)
 
 
+@main.group()
+def stream() -> None:
+    """Streaming XML validation for large files.
+
+    Process enterprise-scale XML files (1GB-10GB+) with constant memory usage.
+    Supports checkpointing, resume, and performance benchmarking.
+    """
+    pass
+
+
+@stream.command("validate")
+@click.argument("file_path", type=click.Path(exists=True))
+@click.option("--schema", type=click.Path(exists=True), help="XSD schema file for validation")
+@click.option(
+    "--checkpoint-interval",
+    type=int,
+    default=100,
+    help="Save checkpoint every N MB (0 = disabled)",
+)
+@click.option(
+    "--checkpoint-dir",
+    type=click.Path(),
+    default=".checkpoints",
+    help="Directory for checkpoint files",
+)
+@click.option("--resume-from", type=click.Path(exists=True), help="Resume from checkpoint file")
+@click.option("--track-memory/--no-track-memory", default=True, help="Track memory usage")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format",
+)
+def stream_validate(
+    file_path: str,
+    schema: str | None,
+    checkpoint_interval: int,
+    checkpoint_dir: str,
+    resume_from: str | None,
+    track_memory: bool,
+    output_format: str,
+) -> None:
+    """Validate large XML files using streaming.
+
+    Processes files with constant memory usage (~50MB), suitable for
+    files that are too large for DOM parsing.
+
+    \b
+    Examples:
+        # Validate 5GB file with checkpoints every 100MB
+        xml-lib stream validate huge.xml --checkpoint-interval 100
+
+        # Validate with XSD schema
+        xml-lib stream validate data.xml --schema schema.xsd
+
+        # Resume from checkpoint
+        xml-lib stream validate data.xml --resume-from .checkpoints/data_checkpoint_5.json
+    """
+    from xml_lib.streaming import StreamingValidator
+
+    if output_format == "text":
+        click.echo(f"🔍 Streaming validation: {file_path}")
+        if schema:
+            click.echo(f"   Schema: {schema}")
+        if resume_from:
+            click.echo(f"   Resuming from: {resume_from}")
+
+    try:
+        validator = StreamingValidator(schema_path=schema)
+
+        result = validator.validate_stream(
+            file_path=file_path,
+            checkpoint_interval_mb=checkpoint_interval,
+            checkpoint_dir=Path(checkpoint_dir) if checkpoint_dir else None,
+            resume_from=Path(resume_from) if resume_from else None,
+            track_memory=track_memory,
+        )
+
+        if output_format == "json":
+            import json
+
+            output_data = {
+                "valid": result.is_valid,
+                "errors": [
+                    {
+                        "message": err.message,
+                        "line": err.line_number,
+                        "column": err.column_number,
+                        "element": err.element_name,
+                        "type": err.error_type,
+                    }
+                    for err in result.errors
+                ],
+                "warnings": [
+                    {
+                        "message": warn.message,
+                        "line": warn.line_number,
+                        "column": warn.column_number,
+                        "element": warn.element_name,
+                    }
+                    for warn in result.warnings
+                ],
+                "statistics": {
+                    "elements_validated": result.elements_validated,
+                    "bytes_processed": result.bytes_processed,
+                    "duration_seconds": result.duration_seconds,
+                    "throughput_mbps": result.throughput_mbps,
+                    "peak_memory_mb": result.peak_memory_mb,
+                    "checkpoint_count": result.checkpoint_count,
+                },
+            }
+            click.echo(json.dumps(output_data, indent=2))
+        else:
+            click.echo("\n" + result.format_summary())
+
+        sys.exit(0 if result.is_valid else 1)
+
+    except Exception as e:
+        click.echo(f"\n❌ Validation failed: {e}")
+        sys.exit(1)
+
+
+@stream.command("benchmark")
+@click.argument("file_path", type=click.Path(exists=True))
+@click.option("--output", "-o", type=click.Path(), help="Save results to JSON file")
+@click.option("--dom/--no-dom", default=True, help="Include DOM method in comparison")
+@click.option(
+    "--streaming/--no-streaming", default=True, help="Include streaming method in comparison"
+)
+def stream_benchmark(
+    file_path: str,
+    output: str | None,
+    dom: bool,
+    streaming: bool,
+) -> None:
+    """Benchmark streaming vs DOM validation performance.
+
+    Compares processing time, memory usage, and throughput between
+    DOM and streaming methods.
+
+    \b
+    Examples:
+        # Benchmark single file
+        xml-lib stream benchmark test_100mb.xml
+
+        # Save results to JSON
+        xml-lib stream benchmark test_100mb.xml --output results.json
+
+        # Compare only streaming (skip DOM)
+        xml-lib stream benchmark huge_5gb.xml --no-dom
+    """
+    from xml_lib.streaming import BenchmarkRunner
+
+    click.echo(f"🔬 Benchmarking: {file_path}")
+
+    try:
+        runner = BenchmarkRunner()
+        result = runner.run_benchmark(
+            file_path=file_path, include_dom=dom, include_streaming=streaming
+        )
+
+        # Display report
+        click.echo(result.format_report())
+
+        # Save to JSON if requested
+        if output:
+            import json
+
+            with open(output, "w") as f:
+                json.dump(result.to_dict(), f, indent=2)
+            click.echo(f"\n✅ Results saved to {output}")
+
+        sys.exit(0)
+
+    except Exception as e:
+        click.echo(f"\n❌ Benchmark failed: {e}")
+        sys.exit(1)
+
+
+@stream.command("generate")
+@click.argument("size_mb", type=int)
+@click.option("--output", "-o", required=True, type=click.Path(), help="Output file path")
+@click.option(
+    "--pattern",
+    type=click.Choice(["simple", "complex", "nested", "realistic"]),
+    default="complex",
+    help="XML structure pattern",
+)
+@click.option(
+    "--type",
+    "record_type",
+    type=click.Choice(["user", "product", "transaction", "log"]),
+    help="Generate realistic dataset of specific type",
+)
+@click.option("--record-count", type=int, help="Number of records (for dataset mode)")
+def stream_generate(
+    size_mb: int,
+    output: str,
+    pattern: str,
+    record_type: str | None,
+    record_count: int | None,
+) -> None:
+    """Generate test XML files for benchmarking.
+
+    Creates XML files of specified size with various complexity patterns.
+
+    \b
+    Examples:
+        # Generate 1GB test file
+        xml-lib stream generate 1000 --output test_1gb.xml
+
+        # Generate with complex pattern
+        xml-lib stream generate 500 --output test_500mb.xml --pattern complex
+
+        # Generate realistic dataset
+        xml-lib stream generate 0 --output users.xml --type user --record-count 1000000
+    """
+    from xml_lib.streaming import TestFileGenerator
+
+    if record_type and record_count:
+        # Generate realistic dataset
+        click.echo(
+            f"📝 Generating realistic dataset: {record_count:,} {record_type} records"
+        )
+
+        try:
+            generator = TestFileGenerator()
+            generator.generate_realistic_dataset(
+                output_path=output,
+                record_count=record_count,
+                record_type=record_type,
+            )
+
+            output_path = Path(output)
+            file_size_mb = output_path.stat().st_size / 1024 / 1024
+
+            click.echo(f"✅ Generated {output} ({file_size_mb:.1f} MB)")
+            sys.exit(0)
+
+        except Exception as e:
+            click.echo(f"❌ Generation failed: {e}")
+            sys.exit(1)
+
+    else:
+        # Generate by size
+        click.echo(f"📝 Generating {size_mb}MB test file with {pattern} pattern")
+
+        def progress(current: int, total: int) -> None:
+            pct = (current / total) * 100
+            mb_current = current / 1024 / 1024
+            mb_total = total / 1024 / 1024
+            click.echo(
+                f"  Progress: {pct:5.1f}% ({mb_current:6.1f} / {mb_total:.1f} MB)",
+                nl=False,
+            )
+            click.echo("\r", nl=False)
+
+        try:
+            generator = TestFileGenerator()
+            generator.generate(
+                output_path=output,
+                size_mb=size_mb,
+                pattern=pattern,
+                progress_callback=progress,
+            )
+
+            click.echo(f"\n✅ Generated {output} ({size_mb} MB)")
+            sys.exit(0)
+
+        except Exception as e:
+            click.echo(f"\n❌ Generation failed: {e}")
+            sys.exit(1)
+
+
+@stream.command("checkpoint")
+@click.argument("file_path", type=click.Path(exists=True))
+@click.option(
+    "--checkpoint-dir",
+    type=click.Path(),
+    default=".checkpoints",
+    help="Checkpoint directory",
+)
+@click.option("--list", "list_checkpoints", is_flag=True, help="List available checkpoints")
+@click.option("--delete", is_flag=True, help="Delete all checkpoints for file")
+def stream_checkpoint(
+    file_path: str,
+    checkpoint_dir: str,
+    list_checkpoints: bool,
+    delete: bool,
+) -> None:
+    """Manage validation checkpoints.
+
+    List, inspect, or delete checkpoints for a file.
+
+    \b
+    Examples:
+        # List checkpoints for file
+        xml-lib stream checkpoint data.xml --list
+
+        # Delete all checkpoints
+        xml-lib stream checkpoint data.xml --delete
+    """
+    from xml_lib.streaming import CheckpointManager
+
+    try:
+        manager = CheckpointManager(checkpoint_dir=Path(checkpoint_dir))
+
+        if delete:
+            count = manager.delete_checkpoints(Path(file_path))
+            click.echo(f"✅ Deleted {count} checkpoint(s) for {file_path}")
+            sys.exit(0)
+
+        if list_checkpoints:
+            output = manager.format_checkpoint_list(Path(file_path))
+            click.echo(output)
+            sys.exit(0)
+
+        # Default: show checkpoint info
+        latest = manager.latest(Path(file_path))
+        if latest:
+            info = manager.get_checkpoint_info(latest)
+            click.echo(f"Latest checkpoint for {file_path}:")
+            click.echo(f"  File: {latest}")
+            click.echo(f"  Position: {info.get('file_position', 0):,} bytes")
+            click.echo(f"  Elements: {info.get('elements_validated', 0):,}")
+            click.echo(f"  Timestamp: {info.get('timestamp', 'N/A')}")
+        else:
+            click.echo(f"No checkpoints found for {file_path}")
+
+        sys.exit(0)
+
+    except Exception as e:
+        click.echo(f"❌ Checkpoint operation failed: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     main()
