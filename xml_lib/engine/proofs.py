@@ -125,14 +125,10 @@ class GuardrailProof:
             "rule_name": self.rule_name,
             "operator_name": self.operator.name,
             "fixed_point_converged": (
-                self.fixed_point_result.is_converged()
-                if self.fixed_point_result
-                else False
+                self.fixed_point_result.is_converged() if self.fixed_point_result else False
             ),
             "fixed_point_metrics": (
-                self.fixed_point_result.metrics.to_dict()
-                if self.fixed_point_result
-                else {}
+                self.fixed_point_result.metrics.to_dict() if self.fixed_point_result else {}
             ),
             "obligations": [o.to_dict() for o in self.obligations],
         }
@@ -327,9 +323,7 @@ class ProofEngine:
         if isinstance(operator, FirmlyNonexpansiveOperator) and isinstance(
             operator.space, HilbertSpace
         ):
-            fne_proof = self.prove_firmly_nonexpansive(
-                operator, operator.space, sample_points
-            )
+            fne_proof = self.prove_firmly_nonexpansive(operator, operator.space, sample_points)
             fne_proof.guardrail_rule_id = rule_id
             guardrail_proof.obligations.append(fne_proof)
 
@@ -341,9 +335,7 @@ class ProofEngine:
 
         return guardrail_proof
 
-    def batch_verify(
-        self, guardrail_proofs: list[GuardrailProof]
-    ) -> ProofResult:
+    def batch_verify(self, guardrail_proofs: list[GuardrailProof]) -> ProofResult:
         """Verify multiple guardrail proofs."""
         all_obligations = []
         verified_count = 0
@@ -366,9 +358,7 @@ class ProofEngine:
             "verified": verified_count,
             "failed": failed_count,
             "pending": pending_count,
-            "success_rate": (
-                verified_count / len(all_obligations) if all_obligations else 0.0
-            ),
+            "success_rate": (verified_count / len(all_obligations) if all_obligations else 0.0),
         }
 
         return ProofResult(obligations=all_obligations, summary=summary)

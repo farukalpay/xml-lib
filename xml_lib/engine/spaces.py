@@ -14,9 +14,7 @@ class InnerProduct:
 
     compute: Callable[[npt.NDArray[np.float64], npt.NDArray[np.float64]], float]
 
-    def __call__(
-        self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
-    ) -> float:
+    def __call__(self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> float:
         """Compute inner product <x, y>."""
         return self.compute(x, y)
 
@@ -44,9 +42,7 @@ class MathematicalSpace(ABC):
         pass
 
     @abstractmethod
-    def distance(
-        self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
-    ) -> float:
+    def distance(self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> float:
         """Compute distance d(x, y)."""
         pass
 
@@ -55,8 +51,8 @@ class MathematicalSpace(ABC):
 class MetricSpace(MathematicalSpace):
     """Metric space (U, d) with distance function."""
 
-    metric: Callable[[npt.NDArray[np.float64], npt.NDArray[np.float64]], float] = (
-        field(default=lambda x, y: float(np.linalg.norm(x - y)))
+    metric: Callable[[npt.NDArray[np.float64], npt.NDArray[np.float64]], float] = field(
+        default=lambda x, y: float(np.linalg.norm(x - y))
     )
     is_complete: bool = False
 
@@ -64,15 +60,11 @@ class MetricSpace(MathematicalSpace):
         """Check point dimensionality."""
         return point.shape[0] == self.dimension
 
-    def distance(
-        self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
-    ) -> float:
+    def distance(self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> float:
         """Compute metric distance."""
         return self.metric(x, y)
 
-    def is_cauchy(
-        self, sequence: list[npt.NDArray[np.float64]], epsilon: float = 1e-6
-    ) -> bool:
+    def is_cauchy(self, sequence: list[npt.NDArray[np.float64]], epsilon: float = 1e-6) -> bool:
         """Check if sequence is Cauchy."""
         if len(sequence) < 2:
             return True
@@ -130,9 +122,7 @@ class HilbertSpace(BanachSpace):
         """Check if x ⊥ y."""
         return abs(self.inner_product(x, y)) < tol
 
-    def gram_schmidt(
-        self, vectors: list[npt.NDArray[np.float64]]
-    ) -> list[npt.NDArray[np.float64]]:
+    def gram_schmidt(self, vectors: list[npt.NDArray[np.float64]]) -> list[npt.NDArray[np.float64]]:
         """Gram-Schmidt orthonormalization."""
         if not vectors:
             return []

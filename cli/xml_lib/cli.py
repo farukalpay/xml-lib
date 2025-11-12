@@ -56,7 +56,9 @@ def main(ctx: click.Context, telemetry: str, telemetry_target: str | None) -> No
     default="sanitize",
     help="Policy for handling mathy XML (default: sanitize)",
 )
-@click.option("--engine-check", is_flag=True, help="Run mathematical engine proof checks on guardrails")
+@click.option(
+    "--engine-check", is_flag=True, help="Run mathematical engine proof checks on guardrails"
+)
 @click.option("--engine-dir", default="lib/engine", help="Directory containing engine XML specs")
 @click.option("--engine-output", default="out/engine", help="Output directory for engine artifacts")
 @click.pass_context
@@ -112,14 +114,10 @@ def validate(
             guardrail_rules = validator.guardrail_engine.rules
 
             # Run checks
-            guardrail_proofs, proof_result, metrics = engine.run_engine_checks(
-                guardrail_rules
-            )
+            guardrail_proofs, proof_result, metrics = engine.run_engine_checks(guardrail_rules)
 
             # Write outputs
-            output_files = engine.write_outputs(
-                guardrail_proofs, proof_result, metrics
-            )
+            output_files = engine.write_outputs(guardrail_proofs, proof_result, metrics)
 
             # Report results
             click.echo(
@@ -130,9 +128,7 @@ def validate(
             )
 
             if metrics.failed_count > 0:
-                click.echo(
-                    f"  ⚠ {metrics.failed_count} proof obligations failed"
-                )
+                click.echo(f"  ⚠ {metrics.failed_count} proof obligations failed")
                 engine_success = False
 
             click.echo(f"  ✓ Engine artifacts written to: {engine_output}")
@@ -520,9 +516,7 @@ def export(
         guardrail_proofs, proof_result, metrics = engine.run_engine_checks(rules)
 
         # Export as JSON
-        export_data = engine.export_proofs_json(
-            guardrail_proofs, proof_result, metrics
-        )
+        export_data = engine.export_proofs_json(guardrail_proofs, proof_result, metrics)
 
         # Write to output file
         output_path = Path(output)

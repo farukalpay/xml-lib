@@ -43,9 +43,7 @@ class EngineWrapper:
         engine_spec = self.parser.parse()
 
         # Create default Hilbert space
-        space = engine_spec.spaces.get(
-            "hilbert", HilbertSpace(dimension=10, name="DefaultH")
-        )
+        space = engine_spec.spaces.get("hilbert", HilbertSpace(dimension=10, name="DefaultH"))
 
         # Generate proofs for each guardrail rule
         guardrail_proofs: list[GuardrailProof] = []
@@ -129,9 +127,7 @@ class EngineWrapper:
         output_files["metrics"] = metrics_file
 
         # Write proof artifact
-        artifact = self.integration.create_proof_artifact(
-            guardrail_proofs, proof_result
-        )
+        artifact = self.integration.create_proof_artifact(guardrail_proofs, proof_result)
         artifact_file = self.output_dir / "engine_artifact.json"
         with artifact_file.open("w") as f:
             json.dump(artifact, f, indent=2)

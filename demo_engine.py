@@ -215,12 +215,8 @@ def demo_integration(guardrail_proof: GuardrailProof) -> None:
     metrics = EngineMetrics(
         guardrail_count=1,
         proof_count=len(guardrail_proof.obligations),
-        verified_count=sum(
-            1 for o in guardrail_proof.obligations if o.status.value == "verified"
-        ),
-        failed_count=sum(
-            1 for o in guardrail_proof.obligations if o.status.value == "failed"
-        ),
+        verified_count=sum(1 for o in guardrail_proof.obligations if o.status.value == "verified"),
+        failed_count=sum(1 for o in guardrail_proof.obligations if o.status.value == "failed"),
         convergence_metrics={
             guardrail_proof.rule_id: {
                 "converged": (

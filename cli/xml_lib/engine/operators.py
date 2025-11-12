@@ -149,9 +149,7 @@ class ProjectionOperator(FirmlyNonexpansiveOperator):
 class ResolventOperator(FirmlyNonexpansiveOperator):
     """Resolvent J_A = (I + λA)^{-1} for monotone A."""
 
-    monotone_A: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]] | None = (
-        None
-    )
+    monotone_A: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]] | None = None
     lambda_param: float = 1.0
 
     def apply(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:

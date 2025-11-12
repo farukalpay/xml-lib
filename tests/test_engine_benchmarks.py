@@ -87,9 +87,7 @@ class TestOperatorBenchmarks:
         result = benchmark(apply_operator)
         assert result.shape == x.shape
 
-    def test_contraction_check_performance(
-        self, benchmark, hilbert_space, sample_points
-    ):
+    def test_contraction_check_performance(self, benchmark, hilbert_space, sample_points):
         """Benchmark contraction property verification."""
         operator = ContractionOperator(
             space=hilbert_space,
@@ -106,9 +104,7 @@ class TestOperatorBenchmarks:
         result = benchmark(check_contraction)
         assert isinstance(result, bool)
 
-    def test_lipschitz_constant_estimation(
-        self, benchmark, hilbert_space, sample_points
-    ):
+    def test_lipschitz_constant_estimation(self, benchmark, hilbert_space, sample_points):
         """Benchmark Lipschitz constant estimation."""
         operator = FunctionOperator(
             space=hilbert_space,
@@ -178,9 +174,7 @@ class TestFixedPointBenchmarks:
 class TestProofEngineBenchmarks:
     """Benchmark proof engine."""
 
-    def test_contraction_proof_performance(
-        self, benchmark, hilbert_space, sample_points
-    ):
+    def test_contraction_proof_performance(self, benchmark, hilbert_space, sample_points):
         """Benchmark contraction proof generation."""
         proof_engine = ProofEngine()
         operator = ContractionOperator(
@@ -214,9 +208,7 @@ class TestProofEngineBenchmarks:
         proof, result = benchmark(generate_proof)
         assert proof.obligation_id is not None
 
-    def test_guardrail_proof_performance(
-        self, benchmark, hilbert_space, sample_points
-    ):
+    def test_guardrail_proof_performance(self, benchmark, hilbert_space, sample_points):
         """Benchmark complete guardrail proof generation."""
         proof_engine = ProofEngine()
         operator = ContractionOperator(
@@ -249,9 +241,7 @@ class TestParserBenchmarks:
         parser = EngineSpecParser(hilbert_space)
 
         def create_operator():
-            return parser.create_sample_operator(
-                "contraction", hilbert_space, q=0.9
-            )
+            return parser.create_sample_operator("contraction", hilbert_space, q=0.9)
 
         operator = benchmark(create_operator)
         assert operator is not None

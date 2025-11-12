@@ -164,12 +164,8 @@ class FixedPointIterator:
             "contraction_q": contraction_constant,
             "initial_distance": d0,
             "error_bound_formula": "q^n / (1 - q) * d(x1, x0)",
-            "error_bound_at_10": (
-                contraction_constant**10 / (1 - contraction_constant) * d0
-            ),
-            "error_bound_at_100": (
-                contraction_constant**100 / (1 - contraction_constant) * d0
-            ),
+            "error_bound_at_10": (contraction_constant**10 / (1 - contraction_constant) * d0),
+            "error_bound_at_100": (contraction_constant**100 / (1 - contraction_constant) * d0),
         }
 
 

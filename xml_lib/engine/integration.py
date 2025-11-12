@@ -77,9 +77,7 @@ class EngineLedgerIntegration:
                     "final-residual",
                     str(proof.fixed_point_result.metrics.final_residual),
                 )
-                fp_elem.set(
-                    "energy", str(proof.fixed_point_result.metrics.energy)
-                )
+                fp_elem.set("energy", str(proof.fixed_point_result.metrics.energy))
 
             # Add obligations
             obligations_elem = etree.SubElement(proof_elem, "obligations")
@@ -237,8 +235,7 @@ class StreamingSafeEvaluator:
             "verified": verified,
             "failed": failed,
             "total": verified + failed,
-            "streaming_chunks": (len(guardrail_proofs) + self.chunk_size - 1)
-            // self.chunk_size,
+            "streaming_chunks": (len(guardrail_proofs) + self.chunk_size - 1) // self.chunk_size,
         }
 
     def validate_with_streaming(

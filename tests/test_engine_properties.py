@@ -272,12 +272,8 @@ class TestAxiomPreservation:
         @given(q1=contraction_constants(), q2=contraction_constants())
         @settings(max_examples=20)
         def check_composition(q1, q2):
-            op1 = FunctionOperator(
-                space=space, name="Op1", function=lambda x: q1 * x
-            )
-            op2 = FunctionOperator(
-                space=space, name="Op2", function=lambda x: q2 * x
-            )
+            op1 = FunctionOperator(space=space, name="Op1", function=lambda x: q1 * x)
+            op2 = FunctionOperator(space=space, name="Op2", function=lambda x: q2 * x)
 
             composed = op1.compose(op2)
 
