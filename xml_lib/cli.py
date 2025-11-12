@@ -1204,5 +1204,285 @@ def stream_checkpoint(
         sys.exit(1)
 
 
+@main.command()
+def shell() -> None:
+    """Launch interactive shell with autocomplete and history.
+
+    The interactive shell provides a REPL environment with:
+    - Tab completion for commands, files, and flags
+    - Command history (persistent across sessions)
+    - Syntax highlighting
+    - Alias support
+
+    \b
+    Examples:
+        xml-lib shell
+
+    Inside the shell:
+        xml-lib> validate data.xml --schema schema.xsd
+        xml-lib> config set aliases.v "validate --schema schema.xsd"
+        xml-lib> v data.xml
+        xml-lib> exit
+    """
+    from xml_lib.interactive import launch_shell
+
+    sys.exit(launch_shell())
+
+
+@main.command()
+@click.argument("pattern")
+@click.option(
+    "--command",
+    "-c",
+    required=True,
+    help="Command to execute (use {file} as placeholder)",
+)
+@click.option(
+    "--path",
+    default=".",
+    type=click.Path(exists=True),
+    help="Base path to watch (default: current directory)",
+)
+@click.option(
+    "--debounce",
+    "-d",
+    type=float,
+    help="Debounce delay in seconds (default: from config)",
+)
+@click.option(
+    "--clear/--no-clear",
+    default=None,
+    help="Clear terminal on change (default: from config)",
+)
+@click.option(
+    "--recursive/--no-recursive",
+    default=True,
+    help="Watch subdirectories recursively",
+)
+def watch(
+    pattern: str,
+    command: str,
+    path: str,
+    debounce: float | None,
+    clear: bool | None,
+    recursive: bool,
+) -> None:
+    """Watch files for changes and auto-execute commands.
+
+    Monitors files matching PATTERN and executes COMMAND when changes are detected.
+    Includes debouncing to avoid rapid re-runs.
+
+    Use {file} in the command string as a placeholder for the changed file path.
+
+    \b
+    Examples:
+        # Watch all XML files and validate on change
+        xml-lib watch "*.xml" --command "validate {file} --schema schema.xsd"
+
+        # Watch specific directory
+        xml-lib watch "data/**/*.xml" --command "validate {file}" --path data/
+
+        # Custom debounce delay
+        xml-lib watch "*.xml" --command "lint {file}" --debounce 1.0
+
+        # Watch without clearing terminal
+        xml-lib watch "*.xml" --command "validate {file}" --no-clear
+    """
+    from xml_lib.interactive import watch_files
+
+    sys.exit(
+        watch_files(
+            pattern=pattern,
+            command=command,
+            path=path,
+            recursive=recursive,
+            debounce=debounce,
+            clear=clear,
+        )
+    )
+
+
+@main.group()
+def config() -> None:
+    """Manage xml-lib configuration.
+
+    Configure aliases, watch mode settings, output formatting, and shell behavior.
+    Configuration is stored in ~/.xml-lib/config.yaml (or $XDG_CONFIG_HOME/xml-lib).
+    """
+    pass
+
+
+@config.command("show")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "yaml", "json"]),
+    default="text",
+    help="Output format",
+)
+def config_show(output_format: str) -> None:
+    """Show current configuration.
+
+    \b
+    Examples:
+        xml-lib config show
+        xml-lib config show --format yaml
+        xml-lib config show --format json
+    """
+    from xml_lib.interactive import get_config
+
+    cfg = get_config()
+
+    if output_format == "yaml":
+        import yaml
+
+        config_file = cfg.get_config_file()
+        if config_file.exists():
+            with open(config_file) as f:
+                click.echo(f.read())
+        else:
+            click.echo("# No configuration file found (using defaults)")
+
+    elif output_format == "json":
+        import json
+
+        data = {
+            "aliases": cfg.aliases.aliases,
+            "watch": {
+                "debounce_seconds": cfg.watch.debounce_seconds,
+                "notify": cfg.watch.notify,
+                "clear_on_change": cfg.watch.clear_on_change,
+                "ignore_patterns": cfg.watch.ignore_patterns,
+            },
+            "output": {
+                "colors": cfg.output.colors,
+                "emoji": cfg.output.emoji,
+                "verbose": cfg.output.verbose,
+                "show_timing": cfg.output.show_timing,
+                "progress_bars": cfg.output.progress_bars,
+            },
+            "shell": {
+                "prompt": cfg.shell.prompt,
+                "history_size": cfg.shell.history_size,
+                "multiline": cfg.shell.multiline,
+                "vi_mode": cfg.shell.vi_mode,
+            },
+        }
+        click.echo(json.dumps(data, indent=2))
+
+    else:  # text
+        from xml_lib.interactive import get_formatter
+
+        formatter = get_formatter()
+
+        config_dict = {
+            "aliases": cfg.aliases.aliases if cfg.aliases.aliases else "(none)",
+            "watch.debounce_seconds": cfg.watch.debounce_seconds,
+            "watch.notify": cfg.watch.notify,
+            "watch.clear_on_change": cfg.watch.clear_on_change,
+            "output.colors": cfg.output.colors,
+            "output.emoji": cfg.output.emoji,
+            "output.verbose": cfg.output.verbose,
+            "output.show_timing": cfg.output.show_timing,
+            "shell.prompt": repr(cfg.shell.prompt),
+            "shell.history_size": cfg.shell.history_size,
+            "shell.vi_mode": cfg.shell.vi_mode,
+        }
+
+        formatter.print_config(config_dict)
+
+
+@config.command("get")
+@click.argument("key")
+def config_get(key: str) -> None:
+    """Get a configuration value.
+
+    \b
+    Examples:
+        xml-lib config get output.colors
+        xml-lib config get shell.prompt
+        xml-lib config get aliases.v
+    """
+    from xml_lib.interactive import get_config
+
+    cfg = get_config()
+
+    # Special handling for aliases
+    if key.startswith("aliases."):
+        alias_name = key.split(".", 1)[1]
+        value = cfg.aliases.get(alias_name)
+    else:
+        value = cfg.get(key)
+
+    if value is not None:
+        click.echo(value)
+    else:
+        click.echo(f"Error: Configuration key not found: {key}", err=True)
+        sys.exit(1)
+
+
+@config.command("set")
+@click.argument("key")
+@click.argument("value")
+def config_set(key: str, value: str) -> None:
+    """Set a configuration value.
+
+    \b
+    Examples:
+        xml-lib config set output.emoji false
+        xml-lib config set shell.prompt ">>> "
+        xml-lib config set aliases.v "validate --schema schema.xsd"
+        xml-lib config set watch.debounce_seconds 1.0
+    """
+    from xml_lib.interactive import get_config
+
+    cfg = get_config()
+
+    # Special handling for aliases
+    if key.startswith("aliases."):
+        alias_name = key.split(".", 1)[1]
+        cfg.aliases.set(alias_name, value)
+        cfg.save()
+        click.echo(f"✅ Set alias: {alias_name} = {value}")
+        return
+
+    # Set regular config value
+    success = cfg.set(key, value)
+    if success:
+        cfg.save()
+        click.echo(f"✅ Set {key} = {value}")
+    else:
+        click.echo(f"❌ Error: Invalid configuration key: {key}", err=True)
+        click.echo("Use 'xml-lib config show' to see available settings", err=True)
+        sys.exit(1)
+
+
+@config.command("reset")
+@click.option(
+    "--confirm",
+    is_flag=True,
+    help="Confirm reset without prompting",
+)
+def config_reset(confirm: bool) -> None:
+    """Reset configuration to defaults.
+
+    \b
+    Examples:
+        xml-lib config reset --confirm
+    """
+    from xml_lib.interactive import get_config
+
+    if not confirm:
+        click.confirm(
+            "This will reset all configuration to defaults. Continue?",
+            abort=True,
+        )
+
+    cfg = get_config()
+    cfg.reset()
+    cfg.save()
+    click.echo("✅ Configuration reset to defaults")
+
+
 if __name__ == "__main__":
     main()

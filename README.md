@@ -8,7 +8,9 @@
 
 ## Features
 
-🔄 **NEW: Pipeline Automation** — Declarative XML workflows with chaining, error recovery, and rollback. [See Pipeline Guide →](docs/PIPELINE_GUIDE.md)
+🚀 **NEW: Interactive Developer Experience** — Modern CLI with interactive shell, autocomplete, watch mode, and enhanced output. [See Interactive Guide →](docs/INTERACTIVE_GUIDE.md)
+
+🔄 **Pipeline Automation** — Declarative XML workflows with chaining, error recovery, and rollback. [See Pipeline Guide →](docs/PIPELINE_GUIDE.md)
 
 🔍 **Relax NG + Schematron Validation** — Validates XML documents against lifecycle schemas with cross-file constraints (IDs, checksums, temporal monotonicity)
 
@@ -177,6 +179,80 @@ xml-lib pipeline run my-pipeline.yaml input.xml
 ```
 
 **Learn More:** [Pipeline Guide](docs/PIPELINE_GUIDE.md) | [Examples](examples/pipelines/)
+
+### 8. Interactive Shell & Watch Mode (3 minutes) ✨ NEW
+
+Experience modern CLI with autocomplete, watch mode, and enhanced output:
+
+```bash
+# Launch interactive shell
+xml-lib shell
+
+# Inside shell - use Tab for completion
+xml-lib> validate data.xml --schema schema.xsd
+✅ Validation passed (0.23s)
+
+xml-lib> config set aliases.v "validate --schema schema.xsd"
+✅ Set alias: v = validate --schema schema.xsd
+
+xml-lib> v data.xml  # Use alias
+✅ Validation passed
+
+xml-lib> exit
+```
+
+**Watch Mode** - Auto-execute on file changes:
+
+```bash
+# Watch all XML files and validate on save
+xml-lib watch "*.xml" --command "validate {file} --schema schema.xsd"
+
+# You'll see:
+👀 Watching: *.xml
+📝 Command: validate {file} --schema schema.xsd
+Press Ctrl+C to stop
+
+# When you edit a file:
+[12:34:56] Change detected: data.xml
+✅ Command completed (0.15s)
+```
+
+**Configuration** - Customize your workflow:
+
+```bash
+# Create aliases for common commands
+xml-lib config set aliases.v "validate --schema schema.xsd"
+xml-lib config set aliases.p "pipeline run"
+
+# Customize output
+xml-lib config set output.emoji true
+xml-lib config set watch.debounce_seconds 1.0
+
+# View configuration
+xml-lib config show
+```
+
+**Shell Completions** - Tab completion in your terminal:
+
+```bash
+# Install completions for Bash/Zsh
+./scripts/install_completions.sh
+
+# Then enjoy Tab completion:
+xml-lib val<Tab>              # Completes to: validate
+xml-lib validate da<Tab>      # Completes to: data.xml
+xml-lib pipeline <Tab>        # Shows: run  list  dry-run
+```
+
+**Features:**
+- ✨ Interactive REPL with Tab completion
+- 📝 Watch mode for auto-validation
+- 🎨 Rich terminal output with colors and progress bars
+- ⚙️ Persistent configuration and aliases
+- 📋 Command history across sessions
+- 🚀 Bash/Zsh shell completions
+
+**Learn More:** [Interactive Guide](docs/INTERACTIVE_GUIDE.md) | [Examples](examples/interactive/)
 
 ## New Features
 
