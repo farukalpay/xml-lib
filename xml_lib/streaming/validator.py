@@ -353,6 +353,9 @@ class StreamingValidator:
         except Exception as e:
             state.add_error(f"Parsing error: {e}", error_type="parse")
 
+        # Set bytes_processed to actual file size for accuracy
+        state.bytes_processed = file_path.stat().st_size
+
         # Validate final state
         if state.element_stack:
             unclosed = ", ".join(state.element_stack)
@@ -402,6 +405,7 @@ class StreamingValidator:
         state.file_position = event.file_position
         state.line_number = event.line_number
         state.column_number = event.column_number
+        state.bytes_processed = event.file_position
 
         if event.type == EventType.START_ELEMENT:
             self._validate_start_element(event, state)

@@ -257,16 +257,19 @@ class PositionTrackingHandler(xml.sax.ContentHandler):
             attr_qname = attrs.getQNameByName(attr_name)
             attributes[attr_qname] = attrs.getValueByQName(attr_qname)
 
+        # Use local_name if qname is None (no namespace prefix)
+        element_name = qname or local_name
+
         # Create event
         event = self._create_event(
-            EventType.START_ELEMENT, name=qname, attributes=attributes
+            EventType.START_ELEMENT, name=element_name, attributes=attributes
         )
         event.namespace_uri = namespace_uri
         event.local_name = local_name
         self.events.append(event)
 
         # Update state
-        self.state.element_stack.append(qname)
+        self.state.element_stack.append(element_name)
         self.state.elements_seen += 1
         self.state.depth = len(self.state.element_stack)
 
@@ -279,19 +282,38 @@ class PositionTrackingHandler(xml.sax.ContentHandler):
         self.state.line_number = line
         self.state.column_number = col
 
+        # Update bytes processed (estimate)
+        bytes_estimate = len(element_name) + sum(len(k) + len(v) for k, v in attributes.items())
+        self.state.bytes_processed += bytes_estimate
+        self._last_position += bytes_estimate
+
     def endElementNS(self, name: tuple[str, str], qname: str) -> None:
         """Called when a namespaced element ends."""
         namespace_uri, local_name = name
 
-        event = self._create_event(EventType.END_ELEMENT, name=qname)
+        # Use local_name if qname is None (no namespace prefix)
+        element_name = qname or local_name
+
+        event = self._create_event(EventType.END_ELEMENT, name=element_name)
         event.namespace_uri = namespace_uri
         event.local_name = local_name
         self.events.append(event)
 
         # Update state
-        if self.state.element_stack and self.state.element_stack[-1] == qname:
+        if self.state.element_stack and self.state.element_stack[-1] == element_name:
             self.state.element_stack.pop()
             self.state.depth = len(self.state.element_stack)
+
+        # Update position
+        file_pos, line, col = self._get_position()
+        self.state.file_position = file_pos
+        self.state.line_number = line
+        self.state.column_number = col
+
+        # Update bytes processed (estimate)
+        bytes_estimate = len(element_name) + 3  # </name>
+        self.state.bytes_processed += bytes_estimate
+        self._last_position += bytes_estimate
 
 
 class StreamingParser:

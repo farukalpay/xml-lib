@@ -382,10 +382,10 @@ class TestFileGenerator:
         if namespace_enabled and random.random() < 0.2:
             attrs.append('xmlns="http://example.com/ns"')
 
-        # Generate random attributes
+        # Generate random attributes (use sample to avoid duplicates)
         attr_names = ["id", "type", "status", "created", "modified", "version"]
-        for _ in range(min(count, len(attr_names))):
-            name = random.choice(attr_names)
+        selected_names = random.sample(attr_names, min(count, len(attr_names)))
+        for name in selected_names:
             value = self._generate_attribute_value(name)
             attrs.append(f'{name}="{value}"')
 

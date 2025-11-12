@@ -33,7 +33,7 @@ class TestGeneratorConfig:
         assert config.attribute_count == 5
 
 
-class TestFileGenerator:
+class TestGeneratorClass:
     """Test TestFileGenerator class."""
 
     def test_generator_init(self):
