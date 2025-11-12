@@ -659,5 +659,213 @@ def phpify(
         sys.exit(1)
 
 
+@main.group()
+def pipeline() -> None:
+    """XML Pipeline automation commands.
+
+    Execute declarative XML processing pipelines with validation,
+    transformation, and output stages.
+    """
+    pass
+
+
+@pipeline.command("run")
+@click.argument("pipeline_file", type=click.Path(exists=True))
+@click.argument("input_xml", type=click.Path(exists=True))
+@click.option("--output-dir", "-o", help="Override output directory")
+@click.option("--var", "-v", multiple=True, help="Set variable (KEY=VALUE)")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format (default: text)",
+)
+@click.option("--verbose", "-V", is_flag=True, help="Verbose output")
+@click.pass_context
+def pipeline_run(
+    ctx: click.Context,
+    pipeline_file: str,
+    input_xml: str,
+    output_dir: str | None,
+    var: tuple[str, ...],
+    output_format: str,
+    verbose: bool,
+) -> None:
+    """Execute a pipeline from YAML definition.
+
+    \b
+    Examples:
+        xml-lib pipeline run pipelines/soap.yaml input.xml
+        xml-lib pipeline run pipelines/rss.yaml feed.xml -o out/
+        xml-lib pipeline run pipelines/ci.yaml data.xml -v ENV=prod
+    """
+    from xml_lib.pipeline import load_pipeline
+
+    if output_format == "text":
+        click.echo(f"🔄 Running pipeline: {pipeline_file}")
+        click.echo(f"   Input: {input_xml}")
+
+    # Parse variables from --var options
+    variables = {}
+    for var_str in var:
+        if "=" in var_str:
+            key, value = var_str.split("=", 1)
+            variables[key] = value
+        else:
+            click.echo(f"⚠️  Invalid variable format: {var_str} (expected KEY=VALUE)")
+
+    try:
+        # Load pipeline from YAML
+        pipeline_obj = load_pipeline(Path(pipeline_file))
+
+        # Override variables if provided
+        if variables:
+            pipeline_obj._loader_variables = variables
+
+        # Execute pipeline
+        result = pipeline_obj.execute(input_xml=input_xml)
+
+        # Output results
+        if output_format == "json":
+            click.echo(json.dumps(result.to_dict(), indent=2))
+        else:
+            click.echo(f"\n{'=' * 60}")
+            click.echo(f"Pipeline: {result.pipeline_name}")
+            click.echo(f"Status: {'✅ SUCCESS' if result.success else '❌ FAILED'}")
+            click.echo(f"Duration: {result.duration_seconds:.2f}s")
+            click.echo(f"Stages executed: {result.stages_executed}")
+            click.echo(f"Stages failed: {result.stages_failed}")
+            click.echo(f"{'=' * 60}")
+
+            if verbose or not result.success:
+                click.echo("\nStage Results:")
+                for stage_result in result.context.stage_results:
+                    status = "✅" if stage_result.success else "❌"
+                    click.echo(
+                        f"  {status} {stage_result.stage} "
+                        f"({stage_result.duration_seconds:.2f}s)"
+                    )
+                    if stage_result.error:
+                        click.echo(f"     Error: {stage_result.error}")
+
+        # Exit with appropriate code
+        sys.exit(0 if result.success else 1)
+
+    except Exception as e:
+        click.echo(f"\n❌ Pipeline failed: {e}")
+        if verbose:
+            import traceback
+
+            click.echo(traceback.format_exc())
+        sys.exit(1)
+
+
+@pipeline.command("list")
+@click.option("--templates-dir", default="templates/pipelines", help="Templates directory")
+def pipeline_list(templates_dir: str) -> None:
+    """List available pipeline templates.
+
+    Shows all pre-built pipeline templates with descriptions.
+    """
+    import yaml
+
+    templates_path = Path(templates_dir)
+
+    if not templates_path.exists():
+        click.echo(f"❌ Templates directory not found: {templates_dir}")
+        sys.exit(1)
+
+    click.echo("📋 Available Pipeline Templates:\n")
+
+    yaml_files = sorted(templates_path.glob("*.yaml"))
+    if not yaml_files:
+        click.echo(f"   No templates found in {templates_dir}")
+        sys.exit(0)
+
+    for yaml_file in yaml_files:
+        try:
+            with open(yaml_file) as f:
+                config = yaml.safe_load(f)
+
+            name = config.get("name", yaml_file.stem)
+            description = config.get("description", "No description")
+            stage_count = len(config.get("stages", []))
+
+            click.echo(f"  • {yaml_file.name}")
+            click.echo(f"    Name: {name}")
+            click.echo(f"    Description: {description}")
+            click.echo(f"    Stages: {stage_count}")
+            click.echo()
+
+        except Exception as e:
+            click.echo(f"  • {yaml_file.name} (error loading: {e})")
+            click.echo()
+
+
+@pipeline.command("dry-run")
+@click.argument("pipeline_file", type=click.Path(exists=True))
+@click.argument("input_xml", type=click.Path(exists=True))
+def pipeline_dry_run(pipeline_file: str, input_xml: str) -> None:
+    """Show pipeline stages without executing.
+
+    Useful for previewing what a pipeline will do before running it.
+
+    \b
+    Example:
+        xml-lib pipeline dry-run pipelines/soap.yaml input.xml
+    """
+    from xml_lib.pipeline import load_pipeline
+
+    click.echo(f"🔍 Dry run: {pipeline_file}\n")
+
+    try:
+        pipeline_obj = load_pipeline(Path(pipeline_file))
+
+        click.echo(f"Pipeline: {pipeline_obj.name}")
+        click.echo(f"Error Strategy: {pipeline_obj.error_strategy.value}")
+        click.echo(f"Rollback: {'Enabled' if pipeline_obj.rollback_enabled else 'Disabled'}")
+        click.echo(f"\nStages ({len(pipeline_obj.stages)}):\n")
+
+        for i, stage in enumerate(pipeline_obj.stages, 1):
+            click.echo(f"  {i}. {stage.name} ({stage.__class__.__name__})")
+
+        click.echo(f"\n✅ Pipeline is valid")
+        sys.exit(0)
+
+    except Exception as e:
+        click.echo(f"\n❌ Pipeline validation failed: {e}")
+        sys.exit(1)
+
+
+@pipeline.command("validate")
+@click.argument("pipeline_file", type=click.Path(exists=True))
+def pipeline_validate(pipeline_file: str) -> None:
+    """Validate pipeline YAML definition.
+
+    Checks that the pipeline definition is valid and all referenced
+    files (schemas, transforms, templates) exist.
+
+    \b
+    Example:
+        xml-lib pipeline validate pipelines/soap.yaml
+    """
+    from xml_lib.pipeline import load_pipeline
+
+    click.echo(f"🔍 Validating: {pipeline_file}")
+
+    try:
+        pipeline_obj = load_pipeline(Path(pipeline_file))
+
+        click.echo(f"✅ Pipeline definition is valid")
+        click.echo(f"   Name: {pipeline_obj.name}")
+        click.echo(f"   Stages: {len(pipeline_obj.stages)}")
+        sys.exit(0)
+
+    except Exception as e:
+        click.echo(f"❌ Validation failed: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     main()

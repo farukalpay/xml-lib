@@ -1,0 +1,64 @@
+# SOAP Message Validation and Processing Pipeline
+#
+# This pipeline validates SOAP envelopes, enriches them with metadata,
+# re-validates the enriched message, and generates an HTML report.
+#
+# Usage:
+#   xml-lib pipeline run templates/pipelines/soap-validation.yaml input.xml
+
+name: soap_validation
+description: Validate and enrich SOAP messages with metadata tracking
+
+# Error handling strategy:
+# - fail_fast: Stop on first error (default)
+# - continue: Log errors but continue pipeline
+# - rollback: Rollback to last snapshot on error
+# - retry: Retry failed stage with exponential backoff
+# - skip: Skip failed stage and continue
+error_strategy: rollback
+rollback_enabled: true
+max_snapshots: 50
+
+# Variables available to all stages
+variables:
+  timestamp: "{{ datetime.now().isoformat() }}"
+  version: "1.0"
+
+stages:
+  # Stage 1: Validate SOAP envelope structure
+  - type: validate
+    name: validate_soap_envelope
+    schemas_dir: schemas/soap
+    guardrails_dir: guardrails/soap
+    strict: true
+    streaming: false
+
+  # Stage 2: Transform - Add processing metadata
+  - type: transform
+    name: enrich_metadata
+    transform: transforms/soap/add-metadata.xsl
+    params:
+      timestamp: "${timestamp}"
+      version: "${version}"
+      processor: "xml-lib"
+
+  # Stage 3: Re-validate enriched message
+  - type: validate
+    name: validate_enriched
+    schemas_dir: schemas/soap
+    strict: true
+
+  # Stage 4: Output HTML report
+  - type: output
+    name: generate_report
+    format: html
+    output_path: out/soap/report.html
+    template: templates/soap-report.xsl
+
+  # Stage 5: Output JSON assertions ledger
+  - type: output
+    name: generate_assertions
+    format: assertions
+    output_path: out/soap/assertions.jsonl
+    options:
+      include_signatures: true

@@ -1,0 +1,87 @@
+# CI/CD XML Validation Pipeline
+#
+# This pipeline performs comprehensive validation suitable for CI/CD workflows:
+# pre-commit checks, schema compatibility, security linting, quality metrics,
+# and report generation.
+#
+# Usage:
+#   xml-lib pipeline run templates/pipelines/ci-validation.yaml changed-files.xml
+#
+# Typical integration:
+#   - Pre-commit hooks
+#   - GitHub Actions / GitLab CI
+#   - Jenkins / CircleCI
+
+name: ci_validation
+description: Comprehensive XML validation for CI/CD pipelines
+
+# Continue on errors to collect all issues, don't stop at first failure
+error_strategy: continue
+rollback_enabled: false  # No rollback needed for read-only validation
+
+variables:
+  commit_sha: "${COMMIT_SHA}"
+  branch_name: "${BRANCH_NAME}"
+  build_number: "${BUILD_NUMBER}"
+
+stages:
+  # Stage 1: Schema validation
+  - type: validate
+    name: schema_validation
+    schemas_dir: schemas
+    guardrails_dir: guardrails
+    strict: true
+    streaming: true
+    streaming_threshold: 5242880  # 5MB
+
+  # Stage 2: Schema compatibility check (ensure backward compatibility)
+  - type: validate
+    name: schema_compatibility
+    schemas_dir: schemas
+    guardrails_dir: guardrails/compatibility
+    strict: false  # Warnings OK, we want to see all compatibility issues
+
+  # Stage 3: Security linting (XXE, external entities, sensitive data)
+  - type: validate
+    name: security_linting
+    schemas_dir: schemas
+    guardrails_dir: guardrails/security
+    strict: true
+
+  # Stage 4: Code quality checks (formatting, best practices)
+  - type: validate
+    name: quality_checks
+    schemas_dir: schemas
+    guardrails_dir: guardrails/quality
+    strict: false
+
+  # Stage 5: Performance analysis (document size, complexity metrics)
+  - type: validate
+    name: performance_analysis
+    schemas_dir: schemas
+    guardrails_dir: guardrails/performance
+    strict: false
+
+  # Stage 6: Generate quality report (HTML)
+  - type: output
+    name: generate_quality_report
+    format: html
+    output_path: out/ci/quality-report.html
+    template: templates/ci-report.xsl
+
+  # Stage 7: Generate metrics (JSON for tooling integration)
+  - type: output
+    name: generate_metrics
+    format: json
+    output_path: out/ci/metrics.json
+
+  # Stage 8: Generate assertions ledger (for audit trail)
+  - type: output
+    name: generate_assertions
+    format: assertions
+    output_path: out/ci/assertions.jsonl
+    options:
+      include_signatures: true
+      commit_sha: "${commit_sha}"
+      branch: "${branch_name}"
+      build_number: "${build_number}"

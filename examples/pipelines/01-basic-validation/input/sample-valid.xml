@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <metadata>
+        <title>Sample Valid Document</title>
+        <author>John Doe</author>
+        <date>2024-01-01</date>
+        <version>1.0</version>
+    </metadata>
+    <content>
+        <section id="intro">
+            <heading>Introduction</heading>
+            <paragraph>This is a valid XML document that conforms to the schema.</paragraph>
+        </section>
+        <section id="body">
+            <heading>Main Content</heading>
+            <paragraph>This document demonstrates proper XML structure.</paragraph>
+            <list>
+                <item>Well-formed XML</item>
+                <item>Valid against schema</item>
+                <item>Follows best practices</item>
+            </list>
+        </section>
+        <section id="conclusion">
+            <heading>Conclusion</heading>
+            <paragraph>All validation checks should pass for this document.</paragraph>
+        </section>
+    </content>
+</document>

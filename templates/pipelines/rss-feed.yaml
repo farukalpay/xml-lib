@@ -1,0 +1,63 @@
+# RSS Feed Validation and Publishing Pipeline
+#
+# This pipeline validates RSS 2.0 feeds, normalizes dates, adds channel
+# metadata, and publishes to multiple formats.
+#
+# Usage:
+#   xml-lib pipeline run templates/pipelines/rss-feed.yaml feed.xml
+
+name: rss_feed_processing
+description: Validate, enrich, and publish RSS 2.0 feeds
+
+error_strategy: fail_fast
+rollback_enabled: true
+
+variables:
+  build_timestamp: "{{ datetime.now().isoformat() }}"
+  feed_version: "2.0"
+
+stages:
+  # Stage 1: Validate RSS 2.0 schema compliance
+  - type: validate
+    name: validate_rss_schema
+    schemas_dir: schemas/rss
+    strict: true
+    streaming: false
+
+  # Stage 2: Normalize date formats to ISO 8601
+  - type: transform
+    name: normalize_dates
+    transform: transforms/rss/normalize-dates.xsl
+
+  # Stage 3: Add channel metadata and tracking
+  - type: transform
+    name: add_channel_metadata
+    transform: transforms/rss/add-metadata.xsl
+    params:
+      timestamp: "${build_timestamp}"
+      generator: "xml-lib RSS Pipeline"
+
+  # Stage 4: Re-validate enriched feed
+  - type: validate
+    name: validate_enriched_feed
+    schemas_dir: schemas/rss
+    strict: true
+
+  # Stage 5: Output to XML (clean, formatted)
+  - type: output
+    name: output_xml
+    format: xml
+    output_path: out/rss/feed.xml
+
+  # Stage 6: Output to HTML (human-readable)
+  - type: output
+    name: output_html
+    format: html
+    output_path: out/rss/feed.html
+    template: templates/rss-feed.xsl
+
+  # Stage 7: Output to JSON (API format)
+  - type: output
+    name: output_json
+    format: json
+    output_path: out/rss/feed.json
