@@ -1,10 +1,15 @@
 """Type definitions and protocols for xml-lib."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Literal, Protocol, TypeAlias
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeAlias
+
+if TYPE_CHECKING:
+    from xml_lib.validator import ValidationResult
 
 # Phase types
 PhaseType: TypeAlias = Literal["begin", "start", "iteration", "end", "continuum"]
