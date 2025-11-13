@@ -57,6 +57,16 @@ from xml_lib.validator import ValidationResult, Validator
 # CLI entry point (for backward compatibility)
 from xml_lib.cli import main as app
 
+# Exception hierarchy
+from xml_lib.exceptions import (
+    XMLConfigurationError,
+    XMLFileNotFoundError,
+    XMLLibError,
+    XMLParseError,
+    XMLPublishingError,
+    XMLValidationError,
+)
+
 # Pipeline automation (for batch processing)
 try:
     from xml_lib.pipeline.engine import PipelineEngine
@@ -89,6 +99,13 @@ __all__ = [
     "MathPolicy",
     "TelemetrySink",
     "FileTelemetrySink",
+    # Exceptions
+    "XMLLibError",
+    "XMLConfigurationError",
+    "XMLFileNotFoundError",
+    "XMLParseError",
+    "XMLValidationError",
+    "XMLPublishingError",
     # CLI
     "app",
 ]

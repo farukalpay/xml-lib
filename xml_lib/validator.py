@@ -63,7 +63,29 @@ class ProgressReporter:
 
 @dataclass
 class ValidationResult:
-    """Result of validation."""
+    """Canonical result type for XML validation operations.
+
+    This is the standard result type returned by all validation functions in xml-lib.
+    It contains comprehensive information about the validation process and any issues found.
+
+    Attributes:
+        is_valid: True if all validations passed without errors
+        errors: List of validation errors found (may include schema, guardrail, or structural errors)
+        warnings: List of non-fatal warnings that don't prevent validation from passing
+        validated_files: List of file paths that were validated
+        checksums: Dictionary mapping file paths to SHA-256 checksums
+        timestamp: When the validation was performed
+        used_streaming: Whether streaming validation was used for any files (for large file handling)
+
+    Example:
+        >>> validator = Validator(schemas_dir=Path("schemas"), guardrails_dir=Path("guardrails"))
+        >>> result = validator.validate_project(Path("project"))
+        >>> if result.is_valid:
+        ...     print(f"✓ Validated {len(result.validated_files)} files")
+        ... else:
+        ...     for error in result.errors:
+        ...         print(f"✗ {error.file}:{error.line} - {error.message}")
+    """
 
     is_valid: bool
     errors: list[ValidationError] = field(default_factory=list)

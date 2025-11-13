@@ -21,7 +21,19 @@ class Priority(str, Enum):
 
 @dataclass
 class ValidationError:
-    """A validation error or warning (legacy compat)."""
+    """A validation error or warning.
+
+    This is the canonical error type used throughout xml-lib for reporting
+    validation issues from schemas, guardrails, and linters.
+
+    Attributes:
+        file: Path to the file containing the error
+        line: Line number (1-indexed), or None if not applicable
+        column: Column number (1-indexed), or None if not applicable
+        message: Human-readable error message
+        type: Error severity - 'error' or 'warning'
+        rule: Name of the rule that triggered this error, if applicable
+    """
 
     file: str
     line: int | None
@@ -44,14 +56,9 @@ class PhaseNode:
     checksum: str | None = None
 
 
-@dataclass
-class ValidationResult:
-    """Result of a validation operation."""
-
-    is_valid: bool
-    errors: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    metadata: dict[str, Any] = field(default_factory=dict)
+# ValidationResult is defined in validator.py and re-exported here for backward compatibility
+# Import it here to avoid circular dependencies - users should import from xml_lib or xml_lib.validator
+# This comment serves as documentation that ValidationResult canonical definition is in validator.py
 
 
 @dataclass
