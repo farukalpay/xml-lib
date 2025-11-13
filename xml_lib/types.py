@@ -6,10 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeAlias
-
-if TYPE_CHECKING:
-    from xml_lib.validator import ValidationResult
+from typing import Any, Literal, Protocol, TypeAlias
 
 # Phase types
 PhaseType: TypeAlias = Literal["begin", "start", "iteration", "end", "continuum"]
@@ -61,9 +58,40 @@ class PhaseNode:
     checksum: str | None = None
 
 
-# ValidationResult is defined in validator.py and re-exported here for backward compatibility
-# Import it here to avoid circular dependencies - users should import from xml_lib or xml_lib.validator
-# This comment serves as documentation that ValidationResult canonical definition is in validator.py
+@dataclass
+class ValidationResult:
+    """Canonical result type for XML validation operations.
+
+    This is the standard result type returned by all validation functions in xml-lib.
+    It contains comprehensive information about the validation process and any issues found.
+
+    Attributes:
+        is_valid: True if all validations passed without errors
+        errors: List of validation errors found (may include schema, guardrail, or structural errors)
+        warnings: List of non-fatal warnings that don't prevent validation from passing
+        validated_files: List of file paths that were validated
+        checksums: Dictionary mapping file paths to SHA-256 checksums
+        timestamp: When the validation was performed
+        used_streaming: Whether streaming validation was used for any files (for large file handling)
+
+    Example:
+        >>> from xml_lib import ValidationResult, ValidationError
+        >>> result = ValidationResult(
+        ...     is_valid=True,
+        ...     errors=[],
+        ...     warnings=[],
+        ...     validated_files=["test.xml"],
+        ...     checksums={"test.xml": "abc123..."},
+        ... )
+    """
+
+    is_valid: bool
+    errors: list[ValidationError] = field(default_factory=list)
+    warnings: list[ValidationError] = field(default_factory=list)
+    validated_files: list[str] = field(default_factory=list)
+    checksums: dict[str, str] = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=datetime.now)
+    used_streaming: bool = False
 
 
 @dataclass
