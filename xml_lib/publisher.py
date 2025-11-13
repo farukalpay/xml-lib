@@ -1,5 +1,6 @@
 """XSLT 3.0 publisher for HTML rendering."""
 
+import logging
 import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -9,6 +10,8 @@ from lxml import etree
 
 from xml_lib.sanitize import MathPolicy, Sanitizer
 from xml_lib.telemetry import TelemetrySink
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -299,15 +302,18 @@ class Publisher:
             result.success = False
             result.error = str(e)
 
-        # Log telemetry
+        # Log telemetry (failures don't abort publishing)
         duration = (datetime.now() - start_time).total_seconds()
         if self.telemetry:
-            self.telemetry.log_publish(
-                project=str(project_path),
-                success=result.success,
-                duration=duration,
-                output_files=len(result.files),
-            )
+            try:
+                self.telemetry.log_publish(
+                    project=str(project_path),
+                    success=result.success,
+                    duration=duration,
+                    output_files=len(result.files),
+                )
+            except Exception as e:
+                logger.warning(f"Telemetry logging failed: {e}")
 
         return result
 

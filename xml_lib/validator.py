@@ -2,6 +2,7 @@
 
 import hashlib
 import io
+import logging
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -14,6 +15,8 @@ from xml_lib.sanitize import MathPolicy, Sanitizer
 from xml_lib.storage import ContentStore
 from xml_lib.telemetry import TelemetrySink
 from xml_lib.types import ValidationError, ValidationResult
+
+logger = logging.getLogger(__name__)
 
 
 class ProgressReporter:
@@ -261,17 +264,20 @@ class Validator:
         if progress:
             progress.update("Running guardrail checks")
 
-        # Log telemetry
+        # Log telemetry (failures don't abort validation)
         duration = (datetime.now() - start_time).total_seconds()
         if self.telemetry:
-            self.telemetry.log_validation(
-                project=str(project_path),
-                success=result.is_valid,
-                duration=duration,
-                file_count=len(result.validated_files),
-                error_count=len(result.errors),
-                warning_count=len(result.warnings),
-            )
+            try:
+                self.telemetry.log_validation(
+                    project=str(project_path),
+                    success=result.is_valid,
+                    duration=duration,
+                    file_count=len(result.validated_files),
+                    error_count=len(result.errors),
+                    warning_count=len(result.warnings),
+                )
+            except Exception as e:
+                logger.warning(f"Telemetry logging failed: {e}")
 
         # Complete progress
         if progress:
@@ -317,14 +323,17 @@ class Validator:
                     )
                     duration = (datetime.now() - start_time).total_seconds()
                     if self.telemetry:
-                        self.telemetry.log_validation(
-                            project=str(path),
-                            success=True,
-                            duration=duration,
-                            file_count=0,
-                            error_count=0,
-                            warning_count=len(result.warnings),
-                        )
+                        try:
+                            self.telemetry.log_validation(
+                                project=str(path),
+                                success=True,
+                                duration=duration,
+                                file_count=0,
+                                error_count=0,
+                                warning_count=len(result.warnings),
+                            )
+                        except Exception as e:
+                            logger.warning(f"Telemetry logging failed: {e}")
                     self._last_result = result
                     return
                 if policy == MathPolicy.SANITIZE and sanitizer:
@@ -380,14 +389,17 @@ class Validator:
 
         duration = (datetime.now() - start_time).total_seconds()
         if self.telemetry:
-            self.telemetry.log_validation(
-                project=str(path),
-                success=result.is_valid,
-                duration=duration,
-                file_count=len(result.validated_files),
-                error_count=len(result.errors),
-                warning_count=len(result.warnings),
-            )
+            try:
+                self.telemetry.log_validation(
+                    project=str(path),
+                    success=result.is_valid,
+                    duration=duration,
+                    file_count=len(result.validated_files),
+                    error_count=len(result.errors),
+                    warning_count=len(result.warnings),
+                )
+            except Exception as e:
+                logger.warning(f"Telemetry logging failed: {e}")
 
         self._last_result = result
 
