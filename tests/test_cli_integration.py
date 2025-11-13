@@ -79,7 +79,7 @@ class TestValidateCommand:
         """Test validating a valid project succeeds."""
         result = runner.invoke(
             main,
-            ["validate", str(sample_project), "--telemetry", "none"],
+            ["--telemetry", "none", "validate", str(sample_project)],
         )
 
         # Should exit with code 0 for success
@@ -90,11 +90,11 @@ class TestValidateCommand:
         result = runner.invoke(
             main,
             [
+                "--telemetry",
+                "none",
                 "validate",
                 str(sample_project),
                 "--enable-streaming",
-                "--telemetry",
-                "none",
             ],
         )
 
@@ -105,7 +105,7 @@ class TestValidateCommand:
         nonexistent = tmp_path / "does-not-exist"
 
         result = runner.invoke(
-            main, ["validate", str(nonexistent), "--telemetry", "none"]
+            main, ["--telemetry", "none", "validate", str(nonexistent)]
         )
 
         # Should exit with non-zero code
@@ -114,7 +114,7 @@ class TestValidateCommand:
     def test_validate_output_contains_result(self, runner, sample_project):
         """Test that validate output contains meaningful results."""
         result = runner.invoke(
-            main, ["validate", str(sample_project), "--telemetry", "none"]
+            main, ["--telemetry", "none", "validate", str(sample_project)]
         )
 
         # Output should mention validation results
@@ -143,14 +143,14 @@ class TestValidateCommand:
         result = runner.invoke(
             main,
             [
+                "--telemetry",
+                "none",
                 "validate",
                 str(project),
                 "--schemas-dir",
                 str(custom_schemas),
                 "--guardrails-dir",
                 str(guardrails),
-                "--telemetry",
-                "none",
             ],
         )
 
@@ -207,8 +207,7 @@ class TestLintCommand:
     def test_lint_success(self, runner, sample_project):
         """Test linting a valid project."""
         result = runner.invoke(
-            main,
-            ["lint", str(sample_project), "--telemetry", "none"],
+            main, ["--telemetry", "none", "lint", str(sample_project)],
         )
 
         # Should complete successfully
@@ -219,12 +218,12 @@ class TestLintCommand:
         result = runner.invoke(
             main,
             [
+                "--telemetry",
+                "none",
                 "lint",
                 str(sample_project),
                 "--check-indentation",
                 "--check-attribute-order",
-                "--telemetry",
-                "none",
             ],
         )
 
@@ -238,7 +237,7 @@ class TestLintCommand:
             '<?xml version="1.0"?>\n<root attr2="b" attr1="a">\n   <child/>\n</root>'
         )
 
-        result = runner.invoke(main, ["lint", str(tmp_path), "--telemetry", "none"])
+        result = runner.invoke(main, ["--telemetry", "none", "lint", str(tmp_path)])
 
         # Should complete (may or may not report issues depending on linter strictness)
         assert result.exit_code in [0, 1]
@@ -257,7 +256,7 @@ class TestDiffCommand:
         file2.write_text(xml_content)
 
         result = runner.invoke(
-            main, ["diff", str(file1), str(file2), "--telemetry", "none"]
+            main, ["--telemetry", "none", "diff", str(file1), str(file2)]
         )
 
         # Should complete successfully
@@ -272,7 +271,7 @@ class TestDiffCommand:
         file2.write_text("<root><child>content2</child></root>")
 
         result = runner.invoke(
-            main, ["diff", str(file1), str(file2), "--telemetry", "none"]
+            main, ["--telemetry", "none", "diff", str(file1), str(file2)]
         )
 
         # Should complete and show differences
@@ -431,12 +430,12 @@ class TestCLITelemetryOptions:
         result = runner.invoke(
             main,
             [
-                "validate",
-                str(sample_project),
                 "--telemetry",
                 "file",
                 "--telemetry-target",
                 str(telemetry_file),
+                "validate",
+                str(sample_project),
             ],
         )
 
@@ -446,7 +445,7 @@ class TestCLITelemetryOptions:
     def test_telemetry_none(self, runner, sample_project):
         """Test validation with no telemetry."""
         result = runner.invoke(
-            main, ["validate", str(sample_project), "--telemetry", "none"]
+            main, ["--telemetry", "none", "validate", str(sample_project)]
         )
 
         assert result.exit_code == 0
@@ -459,7 +458,7 @@ class TestCLIIntegrationWorkflows:
         """Test a complete validate -> publish workflow."""
         # First validate
         validate_result = runner.invoke(
-            main, ["validate", str(sample_project), "--telemetry", "none"]
+            main, ["--telemetry", "none", "validate", str(sample_project)]
         )
 
         # Then publish
@@ -483,12 +482,12 @@ class TestCLIIntegrationWorkflows:
         """Test validate and lint commands on the same project."""
         # Validate
         validate_result = runner.invoke(
-            main, ["validate", str(sample_project), "--telemetry", "none"]
+            main, ["--telemetry", "none", "validate", str(sample_project)]
         )
 
         # Lint
         lint_result = runner.invoke(
-            main, ["lint", str(sample_project), "--telemetry", "none"]
+            main, ["--telemetry", "none", "lint", str(sample_project)]
         )
 
         # Both should complete successfully
