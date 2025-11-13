@@ -39,11 +39,13 @@ def sample_project(tmp_path):
 </grammar>"""
     (schemas / "lifecycle.rng").write_text(schema_content)
 
-    # Create guardrails directory (can be empty)
+    # Create guardrails directory (empty - no guardrail checks)
     guardrails = project / "lib" / "guardrails"
     guardrails.mkdir(parents=True)
+    # Add a dummy file to prevent directory issues
+    (guardrails / ".gitkeep").write_text("")
 
-    # Create sample XML files
+    # Create sample XML files that match the simple schema
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <document>
   <title>Sample Document</title>
@@ -79,7 +81,14 @@ class TestValidateCommand:
         """Test validating a valid project succeeds."""
         result = runner.invoke(
             main,
-            ["--telemetry", "none", "validate", str(sample_project)],
+            [
+                "--telemetry",
+                "none",
+                "validate",
+                str(sample_project),
+                "--guardrails-dir",
+                str(sample_project / "lib" / "guardrails"),
+            ],
         )
 
         # Should exit with code 0 for success
@@ -94,7 +103,9 @@ class TestValidateCommand:
                 "none",
                 "validate",
                 str(sample_project),
-                "--enable-streaming",
+                "--streaming",
+                "--guardrails-dir",
+                str(sample_project / "lib" / "guardrails"),
             ],
         )
 
@@ -445,7 +456,15 @@ class TestCLITelemetryOptions:
     def test_telemetry_none(self, runner, sample_project):
         """Test validation with no telemetry."""
         result = runner.invoke(
-            main, ["--telemetry", "none", "validate", str(sample_project)]
+            main,
+            [
+                "--telemetry",
+                "none",
+                "validate",
+                str(sample_project),
+                "--guardrails-dir",
+                str(sample_project / "lib" / "guardrails"),
+            ],
         )
 
         assert result.exit_code == 0
@@ -458,7 +477,15 @@ class TestCLIIntegrationWorkflows:
         """Test a complete validate -> publish workflow."""
         # First validate
         validate_result = runner.invoke(
-            main, ["--telemetry", "none", "validate", str(sample_project)]
+            main,
+            [
+                "--telemetry",
+                "none",
+                "validate",
+                str(sample_project),
+                "--guardrails-dir",
+                str(sample_project / "lib" / "guardrails"),
+            ],
         )
 
         # Then publish
@@ -482,7 +509,15 @@ class TestCLIIntegrationWorkflows:
         """Test validate and lint commands on the same project."""
         # Validate
         validate_result = runner.invoke(
-            main, ["--telemetry", "none", "validate", str(sample_project)]
+            main,
+            [
+                "--telemetry",
+                "none",
+                "validate",
+                str(sample_project),
+                "--guardrails-dir",
+                str(sample_project / "lib" / "guardrails"),
+            ],
         )
 
         # Lint

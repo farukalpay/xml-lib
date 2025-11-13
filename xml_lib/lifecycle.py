@@ -213,10 +213,37 @@ def validate_dag(dag: LifecycleDAG) -> ValidationResult:
             )
 
     is_valid = len(errors) == 0
+
+    # Convert string errors to ValidationError objects
+    error_objects = [
+        ValidationError(
+            file="",
+            line=None,
+            column=None,
+            message=err,
+            type="error",
+            rule="lifecycle-validation",
+        )
+        for err in errors
+    ]
+
+    # Convert string warnings to ValidationError objects
+    warning_objects = [
+        ValidationError(
+            file="",
+            line=None,
+            column=None,
+            message=warn,
+            type="warning",
+            rule="lifecycle-validation",
+        )
+        for warn in warnings
+    ]
+
     return ValidationResult(
         is_valid=is_valid,
-        errors=[],  # Convert strings to ValidationError objects if needed
-        warnings=[],
+        errors=error_objects,
+        warnings=warning_objects,
     )
 
 
