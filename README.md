@@ -254,6 +254,190 @@ xml-lib pipeline <Tab>        # Shows: run  list  dry-run
 
 **Learn More:** [Interactive Guide](docs/INTERACTIVE_GUIDE.md) | [Examples](examples/interactive/)
 
+## Programmatic Usage (Python API)
+
+xml-lib provides a clean, well-documented Python API for integrating XML validation, linting, and publishing into your own applications and scripts.
+
+### Quick Start
+
+```python
+from xml_lib import quick_validate
+
+# Validate a project with sensible defaults
+result = quick_validate("my-xml-project")
+
+if result.is_valid:
+    print(f"✓ All {len(result.validated_files)} files are valid!")
+else:
+    print(f"✗ Found {len(result.errors)} errors:")
+    for error in result.errors:
+        print(f"  {error.file}:{error.line} - {error.message}")
+```
+
+### Common Patterns
+
+**1. Basic Validation**
+
+```python
+from xml_lib import validate_xml
+
+result = validate_xml(
+    "my-project",
+    schemas_dir="schemas",
+    guardrails_dir="lib/guardrails",
+    enable_streaming=True,  # Efficient for large files
+    show_progress=True,     # Show progress indicator
+)
+
+print(f"Valid: {result.is_valid}")
+print(f"Files: {len(result.validated_files)}")
+print(f"Errors: {len(result.errors)}")
+```
+
+**2. Batch Processing**
+
+```python
+from xml_lib import create_validator
+from pathlib import Path
+
+# Create validator once, reuse for multiple projects
+validator = create_validator(
+    schemas_dir="schemas",
+    guardrails_dir="lib/guardrails",
+)
+
+# Validate multiple projects efficiently
+projects = [Path("project1"), Path("project2"), Path("project3")]
+for project in projects:
+    result = validator.validate_project(project)
+    print(f"{project}: {'✓' if result.is_valid else '✗'}")
+```
+
+**3. Linting**
+
+```python
+from xml_lib import lint_xml
+
+# Lint for formatting and security issues
+result = lint_xml(
+    "my-project",
+    check_indentation=True,
+    check_external_entities=True,  # Check for XXE vulnerabilities
+    indent_size=2,
+)
+
+print(f"Checked {result.files_checked} files")
+print(f"Errors: {result.error_count}, Warnings: {result.warning_count}")
+
+for issue in result.issues:
+    print(issue.format_text())
+```
+
+**4. Custom Workflows**
+
+```python
+from xml_lib import lint_xml, validate_xml
+
+# Stage 1: Lint files
+lint_result = lint_xml("project")
+if lint_result.has_errors:
+    print("✗ Linting failed!")
+    exit(1)
+
+# Stage 2: Validate against schemas
+validation_result = validate_xml("project", enable_streaming=True)
+if not validation_result.is_valid:
+    print("✗ Validation failed!")
+    exit(1)
+
+# Stage 3: Generate artifacts (only if validation passed)
+print("✓ All checks passed - generating artifacts...")
+```
+
+### API Reference
+
+The public API includes:
+
+**High-level functions** (recommended for most users):
+- `quick_validate()` - Validate with automatic discovery and defaults
+- `validate_xml()` - Full control over validation options
+- `create_validator()` - Create reusable validator instances
+- `lint_xml()` - Lint files for formatting and security
+- `publish_html()` - Publish XML to HTML (requires XSLT templates)
+
+**Core classes** (for advanced usage):
+- `Validator` - Main validation engine
+- `ValidationResult` - Validation results with errors/warnings
+- `XMLLinter` - XML linting engine
+- `LintResult` - Linting results
+- `Publisher` - HTML publishing engine
+
+**For detailed documentation:**
+
+```python
+import xml_lib
+help(xml_lib)                # Package overview
+help(xml_lib.quick_validate) # Function details
+help(xml_lib.Validator)      # Class documentation
+```
+
+### Examples
+
+See [`examples/programmatic/`](examples/programmatic/) for complete, runnable examples:
+
+1. **[Basic Validation](examples/programmatic/01_basic_validation.py)** - Getting started, error handling, progress indicators
+2. **[Batch Processing](examples/programmatic/02_batch_processing.py)** - Validating multiple projects, generating reports
+3. **[Custom Workflow](examples/programmatic/03_custom_workflow.py)** - Multi-stage pipeline with conditional logic
+
+Run any example:
+
+```bash
+python examples/programmatic/01_basic_validation.py
+```
+
+### Installation
+
+```bash
+# From PyPI (when published)
+pip install xml-lib
+
+# From source
+git clone https://github.com/farukalpay/xml-lib.git
+cd xml-lib
+pip install -e .
+```
+
+### Integration Examples
+
+**Pre-commit Hook:**
+
+```python
+#!/usr/bin/env python3
+from xml_lib import quick_validate
+import sys
+
+result = quick_validate(".")
+sys.exit(0 if result.is_valid else 1)
+```
+
+**pytest Integration:**
+
+```python
+def test_xml_files_are_valid():
+    from xml_lib import quick_validate
+    result = quick_validate(".")
+    assert result.is_valid, f"Found {len(result.errors)} errors"
+```
+
+**GitHub Actions:**
+
+```yaml
+- name: Validate XML
+  run: |
+    pip install xml-lib
+    python -c "from xml_lib import quick_validate; import sys; sys.exit(0 if quick_validate('.').is_valid else 1)"
+```
+
 ## New Features
 
 ### 🚀 Streaming Validation (for Large Files)
