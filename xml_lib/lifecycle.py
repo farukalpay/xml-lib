@@ -19,6 +19,7 @@ from xml_lib.types import (
     Priority,
     Reference,
     ReferenceError,
+    ValidationError,
     ValidationResult,
 )
 from xml_lib.utils.logging import get_logger, structured_log
