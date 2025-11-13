@@ -1,5 +1,7 @@
 """Type definitions and protocols for xml-lib."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -21,7 +23,19 @@ class Priority(str, Enum):
 
 @dataclass
 class ValidationError:
-    """A validation error or warning (legacy compat)."""
+    """A validation error or warning.
+
+    This is the canonical error type used throughout xml-lib for reporting
+    validation issues from schemas, guardrails, and linters.
+
+    Attributes:
+        file: Path to the file containing the error
+        line: Line number (1-indexed), or None if not applicable
+        column: Column number (1-indexed), or None if not applicable
+        message: Human-readable error message
+        type: Error severity - 'error' or 'warning'
+        rule: Name of the rule that triggered this error, if applicable
+    """
 
     file: str
     line: int | None
@@ -46,12 +60,38 @@ class PhaseNode:
 
 @dataclass
 class ValidationResult:
-    """Result of a validation operation."""
+    """Canonical result type for XML validation operations.
+
+    This is the standard result type returned by all validation functions in xml-lib.
+    It contains comprehensive information about the validation process and any issues found.
+
+    Attributes:
+        is_valid: True if all validations passed without errors
+        errors: List of validation errors found (may include schema, guardrail, or structural errors)
+        warnings: List of non-fatal warnings that don't prevent validation from passing
+        validated_files: List of file paths that were validated
+        checksums: Dictionary mapping file paths to SHA-256 checksums
+        timestamp: When the validation was performed
+        used_streaming: Whether streaming validation was used for any files (for large file handling)
+
+    Example:
+        >>> from xml_lib import ValidationResult, ValidationError
+        >>> result = ValidationResult(
+        ...     is_valid=True,
+        ...     errors=[],
+        ...     warnings=[],
+        ...     validated_files=["test.xml"],
+        ...     checksums={"test.xml": "abc123..."},
+        ... )
+    """
 
     is_valid: bool
-    errors: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    metadata: dict[str, Any] = field(default_factory=dict)
+    errors: list[ValidationError] = field(default_factory=list)
+    warnings: list[ValidationError] = field(default_factory=list)
+    validated_files: list[str] = field(default_factory=list)
+    checksums: dict[str, str] = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=datetime.now)
+    used_streaming: bool = False
 
 
 @dataclass

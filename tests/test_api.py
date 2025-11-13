@@ -538,3 +538,134 @@ class TestApiDocumentation:
 
         # Verify it works as documented
         assert isinstance(result, ValidationResult)
+
+
+class TestPublicAPIStability:
+    """Tests to ensure the public API types and exports remain stable."""
+
+    def test_validation_result_type_stability(self, tmp_path: Path) -> None:
+        """Ensure ValidationResult type has stable attributes."""
+        project = tmp_path / "project"
+        project.mkdir()
+
+        schemas = project / "schemas"
+        schemas.mkdir()
+
+        result = quick_validate(project)
+
+        # These attributes MUST exist for API stability
+        assert hasattr(result, "is_valid")
+        assert hasattr(result, "errors")
+        assert hasattr(result, "warnings")
+        assert hasattr(result, "validated_files")
+        assert hasattr(result, "checksums")
+        assert hasattr(result, "timestamp")
+        assert hasattr(result, "used_streaming")
+
+        # Check types
+        assert isinstance(result.is_valid, bool)
+        assert isinstance(result.errors, list)
+        assert isinstance(result.warnings, list)
+        assert isinstance(result.validated_files, list)
+        assert isinstance(result.checksums, dict)
+        assert isinstance(result.used_streaming, bool)
+
+    def test_validation_error_type_stability(self) -> None:
+        """Ensure ValidationError type has stable attributes."""
+        from xml_lib import ValidationError
+
+        error = ValidationError(
+            file="test.xml",
+            line=10,
+            column=5,
+            message="Test error",
+            type="error",
+            rule="test-rule",
+        )
+
+        # These attributes MUST exist for API stability
+        assert hasattr(error, "file")
+        assert hasattr(error, "line")
+        assert hasattr(error, "column")
+        assert hasattr(error, "message")
+        assert hasattr(error, "type")
+        assert hasattr(error, "rule")
+
+    def test_lint_result_type_stability(self, tmp_path: Path) -> None:
+        """Ensure LintResult type has stable attributes."""
+        xml_file = tmp_path / "test.xml"
+        xml_file.write_text('<?xml version="1.0"?>\n<root/>\n')
+
+        result = lint_xml(xml_file)
+
+        # These attributes MUST exist for API stability
+        assert hasattr(result, "issues")
+        assert hasattr(result, "files_checked")
+        assert hasattr(result, "error_count")
+        assert hasattr(result, "warning_count")
+        assert hasattr(result, "has_errors")
+
+    def test_math_policy_enum_values(self) -> None:
+        """Ensure MathPolicy enum has stable values."""
+        # These values MUST exist for API stability
+        assert hasattr(MathPolicy, "SANITIZE")
+        assert hasattr(MathPolicy, "SKIP")
+        assert hasattr(MathPolicy, "ERROR")
+
+        assert MathPolicy.SANITIZE.value == "sanitize"
+        assert MathPolicy.SKIP.value == "skip"
+        assert MathPolicy.ERROR.value == "error"
+
+    def test_public_api_exports(self) -> None:
+        """Ensure all documented public API exports are available."""
+        import xml_lib
+
+        # High-level functions
+        assert hasattr(xml_lib, "quick_validate")
+        assert hasattr(xml_lib, "validate_xml")
+        assert hasattr(xml_lib, "create_validator")
+        assert hasattr(xml_lib, "lint_xml")
+        assert hasattr(xml_lib, "publish_html")
+
+        # Core classes
+        assert hasattr(xml_lib, "Validator")
+        assert hasattr(xml_lib, "ValidationResult")
+        assert hasattr(xml_lib, "ValidationError")
+        assert hasattr(xml_lib, "XMLLinter")
+        assert hasattr(xml_lib, "LintResult")
+        assert hasattr(xml_lib, "LintIssue")
+        assert hasattr(xml_lib, "LintLevel")
+        assert hasattr(xml_lib, "Publisher")
+        assert hasattr(xml_lib, "PublishResult")
+
+        # Enums and types
+        assert hasattr(xml_lib, "MathPolicy")
+        assert hasattr(xml_lib, "TelemetrySink")
+        assert hasattr(xml_lib, "FileTelemetrySink")
+
+        # Version
+        assert hasattr(xml_lib, "__version__")
+
+    def test_all_exports_match_documentation(self) -> None:
+        """Ensure __all__ matches documented exports."""
+        import xml_lib
+
+        # Get __all__ if it exists
+        if hasattr(xml_lib, "__all__"):
+            all_exports = xml_lib.__all__
+            assert isinstance(all_exports, list)
+
+            # Key exports that must be in __all__
+            required_exports = [
+                "quick_validate",
+                "validate_xml",
+                "create_validator",
+                "lint_xml",
+                "publish_html",
+                "Validator",
+                "ValidationResult",
+                "ValidationError",
+            ]
+
+            for export in required_exports:
+                assert export in all_exports, f"{export} missing from __all__"

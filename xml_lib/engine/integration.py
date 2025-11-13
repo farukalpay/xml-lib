@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -10,6 +11,8 @@ from typing import Any
 from lxml import etree
 
 from xml_lib.engine.proofs import GuardrailProof, ProofResult
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -163,14 +166,17 @@ class EngineLedgerIntegration:
         if not hasattr(telemetry_sink, "log_event"):
             return
 
-        telemetry_sink.log_event(
-            "engine_proof_verification",
-            total_obligations=proof_result.summary.get("total_obligations", 0),
-            verified=proof_result.summary.get("verified", 0),
-            failed=proof_result.summary.get("failed", 0),
-            success_rate=proof_result.summary.get("success_rate", 0.0),
-            all_verified=proof_result.all_verified(),
-        )
+        try:
+            telemetry_sink.log_event(
+                "engine_proof_verification",
+                total_obligations=proof_result.summary.get("total_obligations", 0),
+                verified=proof_result.summary.get("verified", 0),
+                failed=proof_result.summary.get("failed", 0),
+                success_rate=proof_result.summary.get("success_rate", 0.0),
+                all_verified=proof_result.all_verified(),
+            )
+        except Exception as e:
+            logger.warning(f"Telemetry logging failed: {e}")
 
     def create_proof_artifact(
         self,

@@ -1,0 +1,75 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please provide details below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: I would like xml-lib to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: Alternative approaches...
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe your use case for this feature
+      placeholder: |
+        I need this feature because...
+        Example workflow:
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example Usage
+      description: Show how you would use this feature
+      render: python
+      placeholder: |
+        from xml_lib import new_feature
+
+        result = new_feature(...)
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Would you like to contribute this feature?
+      description: Are you willing to submit a PR for this feature?
+      options:
+        - label: Yes, I'm willing to contribute this feature
+        - label: I need help implementing this
+        - label: I'm suggesting this for someone else to implement
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples
+      placeholder: Links to similar features in other libraries, etc.

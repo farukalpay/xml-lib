@@ -19,6 +19,7 @@ from xml_lib.types import (
     Priority,
     Reference,
     ReferenceError,
+    ValidationError,
     ValidationResult,
 )
 from xml_lib.utils.logging import get_logger, structured_log
@@ -213,14 +214,37 @@ def validate_dag(dag: LifecycleDAG) -> ValidationResult:
             )
 
     is_valid = len(errors) == 0
+
+    # Convert string errors to ValidationError objects
+    error_objects = [
+        ValidationError(
+            file="",
+            line=None,
+            column=None,
+            message=err,
+            type="error",
+            rule="lifecycle-validation",
+        )
+        for err in errors
+    ]
+
+    # Convert string warnings to ValidationError objects
+    warning_objects = [
+        ValidationError(
+            file="",
+            line=None,
+            column=None,
+            message=warn,
+            type="warning",
+            rule="lifecycle-validation",
+        )
+        for warn in warnings
+    ]
+
     return ValidationResult(
         is_valid=is_valid,
-        errors=errors,
-        warnings=warnings,
-        metadata={
-            "node_count": len(dag.nodes),
-            "edge_count": sum(len(v) for v in dag.edges.values()),
-        },
+        errors=error_objects,
+        warnings=warning_objects,
     )
 
 
