@@ -202,10 +202,11 @@ def derive_xsd_from_examples(
     root = parse_xml(examples[0])
 
     # Build basic XSD structure
+    xs_ns = "http://www.w3.org/2001/XMLSchema"
     xsd_root = etree.Element(
-        "{http://www.w3.org/2001/XMLSchema}schema",
+        f"{{{xs_ns}}}schema",
+        nsmap={"xs": xs_ns},
         attrib={
-            "xmlns:xs": "http://www.w3.org/2001/XMLSchema",
             "elementFormDefault": "qualified",
         },
     )
@@ -273,10 +274,11 @@ def derive_relaxng_from_examples(
     root = parse_xml(examples[0])
 
     # Build RELAX NG structure
+    rng_ns = "http://relaxng.org/ns/structure/1.0"
     rng_root = etree.Element(
-        "{http://relaxng.org/ns/structure/1.0}grammar",
+        f"{{{rng_ns}}}grammar",
+        nsmap={None: rng_ns},
         attrib={
-            "xmlns": "http://relaxng.org/ns/structure/1.0",
             "datatypeLibrary": "http://www.w3.org/2001/XMLSchema-datatypes",
         },
     )

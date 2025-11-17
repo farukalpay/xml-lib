@@ -330,7 +330,9 @@ def engine_verify(
         raise typer.Exit(1)
 
     # Run fixed-point iteration
-    iterator = FixedPointIterator(op.apply, tolerance=1e-6, max_iterations=100)
+    iterator = FixedPointIterator(
+        operator=op, tolerance=1e-6, max_iterations=100, store_trajectory=True
+    )
     x0 = np.array([1.0, 2.0])
 
     with Progress(
@@ -339,14 +341,14 @@ def engine_verify(
         console=console,
     ) as progress:
         progress.add_task("[cyan]Running fixed-point iteration...", total=None)
-        fp_result = iterator.iterate(x0, record_trace=True)
+        fp_result = iterator.iterate(x0)
 
     duration = (time.time() - start_time) * 1000
 
     # Display results
-    console.print(f"[cyan]Converged:[/cyan] {fp_result.converged}")
-    console.print(f"[cyan]Iterations:[/cyan] {fp_result.iterations}")
-    console.print(f"[cyan]Final error:[/cyan] {fp_result.error:.2e}")
+    console.print(f"[cyan]Converged:[/cyan] {fp_result.is_converged()}")
+    console.print(f"[cyan]Iterations:[/cyan] {fp_result.metrics.iterations}")
+    console.print(f"[cyan]Final error:[/cyan] {fp_result.metrics.final_residual:.2e}")
 
     if fp_result.fixed_point is not None:
         console.print(f"[cyan]Fixed point:[/cyan] {fp_result.fixed_point}")
@@ -355,12 +357,12 @@ def engine_verify(
         command="engine verify",
         timestamp=datetime.now(UTC),
         duration_ms=duration,
-        status="success" if fp_result.converged else "failure",
+        status="success" if fp_result.is_converged() else "failure",
         summary={
             "operator_type": operator_type,
-            "converged": fp_result.converged,
-            "iterations": fp_result.iterations,
-            "error": fp_result.error,
+            "converged": fp_result.is_converged(),
+            "iterations": fp_result.metrics.iterations,
+            "error": fp_result.metrics.final_residual,
         },
     )
 
@@ -429,12 +431,15 @@ def pptx_export(
 
 @schema_app.command("derive")
 def schema_derive(
-    examples: list[Path] = typer.Argument(..., help="Example XML files"),
+    example_files: str = typer.Argument(..., help="Example XML files (comma-separated)"),
     output: Path = typer.Option(..., "--output", "-o", help="Output schema file"),
     schema_type: str = typer.Option("relaxng", "--type", "-t", help="Schema type (xsd or relaxng)"),
 ) -> None:
     """Derive schema from example XML documents."""
     start_time = time.time()
+
+    # Parse comma-separated file paths
+    examples = [Path(p.strip()) for p in example_files.split(",")]
 
     with Progress(
         SpinnerColumn(),
