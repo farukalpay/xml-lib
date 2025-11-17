@@ -30,6 +30,7 @@ venv/
 
 # Coverage / test
 .pytest_cache/
+.cache/
 .coverage
 htmlcov/
 .hypothesis/

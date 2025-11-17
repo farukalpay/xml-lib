@@ -362,3 +362,146 @@ class ProofEngine:
         }
 
         return ProofResult(obligations=all_obligations, summary=summary)
+
+
+@dataclass
+class Proof:
+    """Mathematical proof structure."""
+
+    title: str
+    assumptions: list[str] = field(default_factory=list)
+    steps: list[ProofStep] = field(default_factory=list)
+    conclusion: str = ""
+
+    def to_latex(self) -> str:
+        """Export proof to LaTeX format."""
+        lines = [
+            f"\\textbf{{{self.title}}}",
+            "",
+            "\\textbf{Assumptions:}",
+            "\\begin{itemize}",
+        ]
+        for assumption in self.assumptions:
+            lines.append(f"  \\item {assumption}")
+        lines.extend([
+            "\\end{itemize}",
+            "",
+            "\\textbf{Proof:}",
+            "\\begin{enumerate}",
+        ])
+        for step in self.steps:
+            lines.append(f"  \\item {step.description} \\\\")
+            lines.append(f"        \\textit{{{step.reasoning}}}")
+        lines.extend([
+            "\\end{enumerate}",
+            "",
+            f"\\textbf{{Conclusion:}} {self.conclusion}",
+        ])
+        return "\n".join(lines)
+
+    def to_html(self) -> str:
+        """Export proof to HTML format."""
+        lines = [
+            f"<h2>{self.title}</h2>",
+            "<h3>Assumptions:</h3>",
+            "<ul>",
+        ]
+        for assumption in self.assumptions:
+            lines.append(f"  <li>{assumption}</li>")
+        lines.extend([
+            "</ul>",
+            "<h3>Proof:</h3>",
+            "<ol>",
+        ])
+        for step in self.steps:
+            lines.append(f"  <li><strong>{step.description}</strong><br/>")
+            lines.append(f"      <em>{step.reasoning}</em></li>")
+        lines.extend([
+            "</ol>",
+            f"<h3>Conclusion:</h3><p>{self.conclusion}</p>",
+        ])
+        return "\n".join(lines)
+
+
+@dataclass
+class ProofGenerator:
+    """Generator for mathematical proofs from XML specifications."""
+
+    def generate_from_xml(self, xml_path) -> Proof:
+        """Generate proof from XML specification.
+
+        Args:
+            xml_path: Path to XML proof specification
+
+        Returns:
+            Proof instance
+        """
+        from lxml import etree
+        from pathlib import Path
+
+        if not Path(xml_path).exists():
+            raise FileNotFoundError(f"Proof specification not found: {xml_path}")
+
+        doc = etree.parse(str(xml_path))
+        root = doc.getroot()
+
+        # Extract title
+        title_elem = root.find("title")
+        title = title_elem.text if title_elem is not None else "Unnamed Proof"
+
+        # Extract assumptions
+        assumptions = []
+        assumptions_elem = root.find("assumptions")
+        if assumptions_elem is not None:
+            for assumption in assumptions_elem.findall("assumption"):
+                if assumption.text:
+                    assumptions.append(assumption.text)
+
+        # Extract steps
+        steps = []
+        steps_elem = root.find("steps")
+        if steps_elem is not None:
+            for i, step_elem in enumerate(steps_elem.findall("step")):
+                description = step_elem.text or ""
+                reasoning = step_elem.get("reasoning", "")
+                steps.append(
+                    ProofStep(
+                        step_id=f"step_{i+1}",
+                        description=description,
+                        reasoning=reasoning,
+                        result=True,
+                    )
+                )
+
+        # Extract conclusion
+        conclusion_elem = root.find("conclusion")
+        conclusion = conclusion_elem.text if conclusion_elem is not None else ""
+
+        return Proof(
+            title=title,
+            assumptions=assumptions,
+            steps=steps,
+            conclusion=conclusion,
+        )
+
+    def export_proof(self, proof: Proof, output_path, format: str = "latex") -> None:
+        """Export proof to file.
+
+        Args:
+            proof: Proof instance
+            output_path: Path to output file
+            format: Output format ('latex' or 'html')
+        """
+        from pathlib import Path
+
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if format == "latex":
+            content = proof.to_latex()
+        elif format == "html":
+            content = proof.to_html()
+        else:
+            raise ValueError(f"Unsupported format: {format}")
+
+        output_path.write_text(content)

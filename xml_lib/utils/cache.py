@@ -91,8 +91,8 @@ class SchemaCache(Generic[T]):
         try:
             with open(cache_file, "wb") as f:
                 pickle.dump(schema, f)
-        except pickle.PickleError:
-            # If pickling fails, just keep in memory
+        except (pickle.PickleError, TypeError):
+            # If pickling fails (e.g., lxml objects can't be pickled), just keep in memory
             pass
 
     def clear(self) -> None:
