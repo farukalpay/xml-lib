@@ -243,3 +243,32 @@ class FunctionOperator(Operator):
     def apply(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """Apply function."""
         return self.function(x)
+
+
+# Helper factory functions for CLI
+def contraction_operator(name: str, q: float = 0.9) -> ContractionOperator:
+    """Create a contraction operator with given contraction constant.
+
+    Args:
+        name: Operator name
+        q: Contraction constant in [0, 1)
+
+    Returns:
+        ContractionOperator instance
+    """
+    space = HilbertSpace(dimension=2, name="DefaultSpace")
+    return ContractionOperator(space=space, name=name, contraction_q=q)
+
+
+def projection_operator(name: str, dimension: int = 2) -> ProjectionOperator:
+    """Create a projection operator.
+
+    Args:
+        name: Operator name
+        dimension: Dimension of the Hilbert space
+
+    Returns:
+        ProjectionOperator instance
+    """
+    space = HilbertSpace(dimension=dimension, name="DefaultSpace")
+    return ProjectionOperator(space=space, name=name)

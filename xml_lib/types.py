@@ -86,12 +86,13 @@ class ValidationResult:
     """
 
     is_valid: bool
-    errors: list[ValidationError] = field(default_factory=list)
-    warnings: list[ValidationError] = field(default_factory=list)
+    errors: list[ValidationError] | list[str] = field(default_factory=list)
+    warnings: list[ValidationError] | list[str] = field(default_factory=list)
     validated_files: list[str] = field(default_factory=list)
     checksums: dict[str, str] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
     used_streaming: bool = False
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
